@@ -221,8 +221,7 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
                                  
                                  // Global Course Edit Panel
                                  if (isEditing)
-                                   // _buildGlobalEditPanel(course), // Mock call, need to update method signature first
-                                   Container(padding: const EdgeInsets.all(16), child: const Text("Edit Panel Placeholder")),
+                                   _buildGlobalEditPanel(course),
                                ],
                              );
                           }),
@@ -1008,5 +1007,184 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
       ),
     );
   }
-  */
+  // --- Global Course Edit Panel ---
+  Widget _buildGlobalEditPanel(Enrollment enrollment) {
+    // We'll use local state controllers/variables initialized in build or initState if possible, 
+    // but here we might need to rely on the passed enrollment and update it via a copy.
+    // However, for simplicity in this "placeholder" phase, let's just show editable fields that directly update a pending state object or use controllers.
+    
+    // Since this is inside a ListView builder, using controllers is tricky without a separate widget.
+    // But since only ONE panel is open at a time (_editingGlobalIndex), we can perhaps just use standard Inputs.
+    
+    return Container(
+      margin: const EdgeInsets.only(left: 90, bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50], 
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[300]!)
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+            // ROI Read-only
+            _buildReadOnlyField('Course Code', enrollment.courseCode ?? 'N/A'),
+            const SizedBox(height: 12),
+            
+            // Editable Section
+            _buildActionInput('Section', enrollment.section, (val) async {
+               // Immediate update for single fields or batch? 
+               // Let's do batch on Save.
+               // We need a local state variable for the "editing" enrollment.
+               // For now, let's just implement immediate update for simplicity or unimplemented warning.
+            }),
+            const SizedBox(height: 12),
+
+            // Read-Only Warning
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8), 
+                  border: Border.all(color: Colors.blue.withOpacity(0.2))
+              ),
+              child: const Row(
+                children: [
+                  Icon(Ionicons.information_circle, size: 16, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Expanded(child: Text("Schedule/Bindings for global courses are managed via the detailed view.", style: TextStyle(fontSize: 11, color: Colors.blue))),
+                ],
+              ),
+            ),
+             const SizedBox(height: 12),
+             
+             // Target Attendance
+            Text('Target Attendance: ${enrollment.targetAttendance.toInt()}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+            Slider(
+              value: enrollment.targetAttendance,
+              min: 0,
+              max: 100,
+              divisions: 20,
+              label: '${enrollment.targetAttendance.toInt()}%',
+              onChanged: (val) {
+                 // Update provider immediately? 
+                 // Better to have a 'Save' button pattern. 
+                 // But for now, let's keep it simple.
+                 // We will need a `_pendingEdits` map or similar if we want to support editing without saving immediately.
+                 // Given the constraints, let's make this read-only/placeholder or simple direct update.
+              },
+              onChangeEnd: (val) {
+                 final updated = enrollment.copyWith(targetAttendance: val);
+                 ref.read(enrollmentRepositoryProvider).updateEnrollment(updated);
+                 ref.invalidate(enrollmentsProvider);
+              },
+            ),
+
+            const SizedBox(height: 16),
+            const Text('Card Color', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _colorOptionForGlobal(enrollment, AppColors.pastelGreen),
+                const SizedBox(width: 8),
+                _colorOptionForGlobal(enrollment, AppColors.pastelPurple),
+                const SizedBox(width: 8),
+                _colorOptionForGlobal(enrollment, AppColors.pastelOrange),
+                const SizedBox(width: 8),
+                _colorOptionForGlobal(enrollment, AppColors.pastelBlue),
+                const SizedBox(width: 8),
+                _colorOptionForGlobal(enrollment, const Color(0xFFFCE7F3)), // Pink
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Expanded(child: PrimaryButton(
+                  text: 'Close', 
+                  onPressed: () => setState(() => _editingEnrollmentId = null)
+                )),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: () async {
+                    await ref.read(enrollmentRepositoryProvider).deleteEnrollment(enrollment.enrollmentId);
+                    ref.invalidate(enrollmentsProvider);
+                    setState(() => _editingEnrollmentId = null);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.red),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Icon(Ionicons.trash, color: Colors.red, size: 20),
+                  ),
+                )
+              ],
+            )
+        ],
+      )
+    ).animate().scaleY(alignment: Alignment.topCenter, duration: 200.ms);
+  }
+
+  Widget _buildReadOnlyField(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.transparent),
+          ),
+          child: Text(value, style: TextStyle(fontSize: 14, color: Colors.grey[700], fontWeight: FontWeight.w500)),
+        )
+      ],
+    );
+  }
+
+  Widget _buildActionInput(String label, String value, Function(String) onChanged) {
+    // Simplified for now, just header + text
+     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)), 
+        )
+      ],
+    );
+  }
+  
+  Widget _colorOptionForGlobal(Enrollment enrollment, Color color) {
+    bool isSelected = _parseColor(enrollment.colorTheme) == color;
+    return GestureDetector(
+      onTap: () async {
+        final hex = '#${color.value.toRadixString(16).substring(2)}';
+        final updated = enrollment.copyWith(colorTheme: hex);
+        await ref.read(enrollmentRepositoryProvider).updateEnrollment(updated);
+        ref.invalidate(enrollmentsProvider); // Refresh UI
+      },
+      child: Container(
+        width: 32, height: 32,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: isSelected ? Border.all(color: Colors.black, width: 2) : null,
+        ),
+      ),
+    );
+  }
 }
