@@ -4,16 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/presentation/providers/auth_provider.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  bool _checkingSession = true;
 
   @override
   void initState() {
@@ -23,6 +27,34 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
+    
+    _checkSession();
+  }
+  
+  Future<void> _checkSession() async {
+    // Artificial minimum delay for branding
+    await Future.delayed(const Duration(milliseconds: 800));
+    
+    try {
+      final userRepo = ref.read(userRepositoryProvider);
+      final hasUser = await userRepo.hasUser();
+      
+      if (hasUser) {
+        // Sync auth provider state
+        ref.read(authProvider.notifier).loginAsUser();
+        
+        if (mounted) {
+          context.go('/dashboard');
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Session check error: $e");
+    }
+    
+    if (mounted) {
+      setState(() => _checkingSession = false);
+    }
   }
 
   @override
@@ -33,6 +65,11 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    // While checking, show a minimal splash or the same UI without buttons?
+    // Let's show the UI but maybe loading indicator if it takes long? 
+    // Actually, showing the full UI immediately is fine, if we redirect quickly it's just a blip.
+    // If _checkingSession is true, maybe hide the "Get Started" button to prevent double nav.
+
     return Scaffold(
       backgroundColor: AppColors.bgApp,
       body: SafeArea(
@@ -67,7 +104,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                       errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 100, color: Colors.grey),
                     ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
 
-                    // Floating Element (SVG path approximation)
+                    // Floating Element
                     Positioned(
                       top: 0,
                       right: 0,
@@ -92,7 +129,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
+                   RichText(
                     text: TextSpan(
                       style: GoogleFonts.outfit(
                         fontSize: 42,
@@ -126,10 +163,13 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
               const Spacer(),
 
               // Bottom Action
-              PrimaryButton(
-                text: 'Get Started',
-                onPressed: () => context.push('/auth'),
-              ).animate().slideY(begin: 0.5, end: 0, delay: 400.ms).fadeIn(),
+              if (_checkingSession)
+                 const Center(child: CircularProgressIndicator())
+              else
+                PrimaryButton(
+                  text: 'Get Started',
+                  onPressed: () => context.push('/auth'),
+                ).animate().slideY(begin: 0.5, end: 0, delay: 400.ms).fadeIn(),
             ],
           ),
         ),

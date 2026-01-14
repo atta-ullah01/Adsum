@@ -5,9 +5,72 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/models.dart';
 
-class WizardOcrPage extends StatelessWidget {
+class WizardOcrPage extends ConsumerStatefulWidget {
   const WizardOcrPage({super.key});
+
+  @override
+  ConsumerState<WizardOcrPage> createState() => _WizardOcrPageState();
+}
+
+class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
+  bool _scanning = false;
+
+  Future<void> _performMockScan() async {
+    setState(() => _scanning = true);
+    
+    // Simulate API delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    try {
+      final repo = ref.read(enrollmentRepositoryProvider);
+      
+      // Add Mock Courses
+      final courses = [
+        Enrollment(
+          enrollmentId: 'col_100',
+          courseCode: 'COL100',
+          section: 'A',
+          colorTheme: '#6366F1', // Indigo
+          customCourse: const CustomCourse(code: 'COL100', name: 'Intro to CS', instructor: 'Dr. Smith', totalExpected: 28),
+        ),
+        Enrollment(
+          enrollmentId: 'mtl_101',
+          courseCode: 'MTL101',
+          section: 'B',
+          colorTheme: '#10B981', // Emerald
+          customCourse: const CustomCourse(code: 'MTL101', name: 'Linear Algebra', instructor: 'Prof. Gauss', totalExpected: 30),
+        ),
+         Enrollment(
+          enrollmentId: 'ell_201',
+          courseCode: 'ELL201',
+          section: 'A',
+          colorTheme: '#F59E0B', // Amber
+          customCourse: const CustomCourse(code: 'ELL201', name: 'Digital Electronics', instructor: 'Dr. Turing', totalExpected: 25),
+        ),
+      ];
+
+      for (var e in courses) {
+        // Simple distinct check or just add?
+        // If repo.addEnrollment handles ID conflict, good.
+        await repo.updateEnrollment(e); // updateEnrollment usually upserts or adds
+      }
+
+      if (mounted) {
+        // Navigate to Sensors (Step 3)
+        context.push('/sensors');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Scan Error: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _scanning = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +104,7 @@ class WizardOcrPage extends StatelessWidget {
                        color: Colors.black,
                        borderRadius: BorderRadius.circular(20),
                      ),
-                     child: const Text('Step 1 / 3', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                     child: const Text('Step 2 / 3', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                    ),
                 ],
               ),
@@ -68,7 +131,7 @@ class WizardOcrPage extends StatelessWidget {
               const SizedBox(height: 8),
               
               Text(
-                'Point camera at your registration slip to auto-import courses.',
+                'Point camera at your registration slip to auto-import courses via OCR.',
                 style: GoogleFonts.dmSans(fontSize: 16, color: AppColors.textMuted),
                 textAlign: TextAlign.start,
               ).animate().fadeIn(delay: 100.ms).moveY(begin: 10, end: 0),
@@ -78,31 +141,33 @@ class WizardOcrPage extends StatelessWidget {
               // Main Action Card (Dashed)
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                     // Camera logic
-                  },
+                  onTap: _scanning ? null : _performMockScan,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.pastelBlue,
+                      color: _scanning ? Colors.grey[200] : AppColors.pastelBlue,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.black.withOpacity(0.1), width: 2, style: BorderStyle.solid), // Dashed border workaround
+                      border: Border.all(color: Colors.black.withOpacity(0.1), width: 2, style: BorderStyle.solid), 
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                         Container(
-                           width: 80, height: 80,
-                           decoration: BoxDecoration(
-                             color: Colors.white,
-                             shape: BoxShape.circle,
-                             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 4))],
+                         if (_scanning)
+                           const CircularProgressIndicator()
+                         else ...[
+                           Container(
+                             width: 80, height: 80,
+                             decoration: BoxDecoration(
+                               color: Colors.white,
+                               shape: BoxShape.circle,
+                               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 4))],
+                             ),
+                             child: const Icon(Ionicons.camera, size: 32, color: AppColors.textMain),
                            ),
-                           child: const Icon(Ionicons.camera, size: 32, color: AppColors.textMain),
-                         ),
-                         const SizedBox(height: 16),
-                         Text('Tap to Open Camera', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
-                         const SizedBox(height: 4),
-                         Text('or upload from gallery', style: GoogleFonts.dmSans(fontSize: 13, color: AppColors.textMain.withOpacity(0.6))),
+                           const SizedBox(height: 16),
+                           Text('Tap to Scan Slip', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+                           const SizedBox(height: 4),
+                           Text('Auto-detect courses', style: GoogleFonts.dmSans(fontSize: 13, color: AppColors.textMain.withOpacity(0.6))),
+                         ]
                       ],
                     ),
                   ),
@@ -113,16 +178,19 @@ class WizardOcrPage extends StatelessWidget {
               
               // Bottom Buttons
               PrimaryButton(
-                text: 'Capture',
-                onPressed: () => context.push('/courses'),
+                text: _scanning ? 'Scanning...' : 'Simulate Capture',
+                onPressed: _scanning ? null : _performMockScan,
               ).animate().slideY(begin: 0.2, end: 0, delay: 300.ms).fadeIn(),
               
               const SizedBox(height: 16),
               
               GestureDetector(
-                onTap: () => context.push('/courses'),
+                onTap: () {
+                   // Skip to sensors
+                   context.push('/sensors');
+                },
                 child: Text(
-                  'Skip scan, add manually',
+                  'Skip scan, add manually later',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.dmSans(
                     fontSize: 14, 

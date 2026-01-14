@@ -274,7 +274,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           final event = allEvents[index];
                           final isMess = event.metadata['isMess'] == true;
                           final bgColor = isMess 
-                              ? _parseColor(event.metadata['bgColor'] ?? '#F5F5F5')
+                              ? _parseColor((event.metadata['bgColor'] as String?) ?? '#F5F5F5')
                               : _parseColor(event.color).withValues(alpha: 0.1);
                           final mainColor = _parseColor(event.color);
                           final timeStr = DateFormat('hh:mm a').format(event.startTime);
@@ -304,7 +304,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                             card = GestureDetector(
                               onTap: () => context.push('/subject-detail', extra: {
                                 'title': event.title,
-                                'code': 'CS-XXX', // TODO: Pass real code
+                                'code': 'View Details', // Fetched by ID
+                                'enrollmentId': event.enrollmentId,
                               }),
                               child: card,
                             );

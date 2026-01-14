@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:adsum/presentation/providers/action_center_provider.dart';
+import 'package:adsum/domain/models/action_item.dart';
 import 'package:go_router/go_router.dart';
 
 class PriorityAlertCarousel extends ConsumerStatefulWidget {
@@ -39,7 +40,7 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
     return dateStart.difference(todayStart).inDays;
   }
 
-  List<Map<String, dynamic>> _getAlertsForDate(DateTime date, List<Map<String, dynamic>> actionItems) {
+  List<Map<String, dynamic>> _getAlertsForDate(DateTime date, List<dynamic /*ActionItem*/ > actionItems) {
     // Don't show alerts for past dates
     if (_isPast(date)) {
       return [];
@@ -63,27 +64,30 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
 
       // 2. Action Items from Provider
       for (final item in actionItems) {
-        if (item['type'] == 'ATTENDANCE_RISK') {
+        // Cast check (dynamic list to support legacy calls if any, though provider gives ActionItem)
+        if (item is! ActionItem) continue;
+
+        if (item.type == ActionItemType.attendanceRisk) {
           alerts.add({
-            'title': item['title'],
-            'subtitle': item['body'] ?? 'Attendance critical',
+            'title': item.title,
+            'subtitle': item.body ?? 'Attendance critical',
             'time': 'Risk Level: High',
             'color': Colors.orange,
             'label': 'ATTENDANCE',
             'icon': Ionicons.warning,
           });
-        } else if (item['type'] == 'ASSIGNMENT_DUE') {
+        } else if (item.type == ActionItemType.assignmentDue) {
           alerts.add({
-            'title': item['title'],
-            'subtitle': item['body'] ?? 'Submission pending',
+            'title': item.title,
+            'subtitle': item.body ?? 'Submission pending',
             'time': 'Due soon',
             'color': Colors.blue,
             'label': 'ASSIGNMENT',
             'icon': Ionicons.document_text,
           });
-        } else if (item['type'] == 'CONFLICT') {
+        } else if (item.type == ActionItemType.conflict) {
            alerts.add({
-            'title': item['title'],
+            'title': item.title,
             'subtitle': 'Schedule Conflict Detected',
             'time': 'Action Required',
             'color': AppColors.danger,
@@ -121,7 +125,7 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
   @override
   Widget build(BuildContext context) {
     final actionItemsAsync = ref.watch(actionCenterProvider);
-    final actionItems = actionItemsAsync.value ?? [];
+    final actionItems = actionItemsAsync.asData?.value ?? [];
 
     final alerts = _getAlertsForDate(widget.selectedDate, actionItems);
 

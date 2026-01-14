@@ -4,9 +4,20 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class WizardSensorsPage extends StatelessWidget {
+class WizardSensorsPage extends ConsumerStatefulWidget {
   const WizardSensorsPage({super.key});
+
+  @override
+  ConsumerState<WizardSensorsPage> createState() => _WizardSensorsPageState();
+}
+
+class _WizardSensorsPageState extends ConsumerState<WizardSensorsPage> {
+  // State for toggles
+  bool _geofenceEnabled = true;
+  bool _motionEnabled = true;
+  bool _batteryEnabled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +99,8 @@ class WizardSensorsPage extends StatelessWidget {
                         subtitle: 'Auto-mark in class',
                         color: AppColors.pastelBlue,
                         delay: 100,
+                        isEnabled: _geofenceEnabled,
+                        onChanged: (val) => setState(() => _geofenceEnabled = val),
                       ),
                       _buildSensorCard(
                         icon: Ionicons.walk,
@@ -95,6 +108,8 @@ class WizardSensorsPage extends StatelessWidget {
                         subtitle: 'Activity Check',
                         color: AppColors.pastelYellow,
                         delay: 200,
+                        isEnabled: _motionEnabled,
+                        onChanged: (val) => setState(() => _motionEnabled = val),
                       ),
                       _buildSensorCard(
                         icon: Ionicons.battery_charging,
@@ -102,6 +117,8 @@ class WizardSensorsPage extends StatelessWidget {
                         subtitle: 'Run in bg',
                         color: AppColors.pastelGreen,
                         delay: 300,
+                        isEnabled: _batteryEnabled,
+                        onChanged: (val) => setState(() => _batteryEnabled = val),
                       ),
                       _buildFinishCard(context, delay: 300),
                     ],
@@ -122,54 +139,58 @@ class WizardSensorsPage extends StatelessWidget {
     required String subtitle,
     required Color color,
     required int delay,
+    required bool isEnabled,
+    required ValueChanged<bool> onChanged,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black.withOpacity(0.02)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 36, height: 36,
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.6), borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, size: 18, color: Colors.black),
-              ),
-              // Simulated iOS Switch
-              Container(
-                width: 50, height: 30,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(34), color: Colors.black),
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        margin: const EdgeInsets.all(4),
-                        width: 22, height: 22,
-                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      ),
-                    ),
-                  ],
+    return GestureDetector(
+      onTap: () => onChanged(!isEnabled),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.black.withOpacity(0.02)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.6), borderRadius: BorderRadius.circular(12)),
+                  child: Icon(icon, size: 18, color: Colors.black),
                 ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(subtitle, style: GoogleFonts.dmSans(fontSize: 13, color: AppColors.textMuted)),
-            ],
-          )
-        ],
+                // Simulated iOS Switch/Checkbox
+                Container(
+                  width: 50, height: 30,
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(34), 
+                    color: isEnabled ? Colors.black : Colors.black12
+                  ),
+                  child: Align(
+                    alignment: isEnabled ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                       width: 24, height: 24,
+                       decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(subtitle, style: GoogleFonts.dmSans(fontSize: 13, color: AppColors.textMuted)),
+              ],
+            )
+          ],
+        ),
       ),
     ).animate().slideY(begin: 0.2, end: 0, delay: delay.ms).fadeIn();
   }
@@ -177,8 +198,8 @@ class WizardSensorsPage extends StatelessWidget {
   Widget _buildFinishCard(BuildContext context, {required int delay}) {
     return GestureDetector(
       onTap: () {
-        // Navigate to Dashboard to complete onboarding
-        context.push('/dashboard');
+        // Navigate to Dashboard to complete onboarding - Clear Stack
+        context.go('/dashboard');
       },
       child: Container(
         padding: const EdgeInsets.all(24),

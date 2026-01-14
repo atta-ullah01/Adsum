@@ -238,7 +238,18 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
                               color: _parseColor(course.colorTheme),
                               isCustom: true,
                               onTap: () {
-                                // TODO: Edit Custom Course
+                                setState(() {
+                                  _editingEnrollmentId = course.enrollmentId;
+                                  _isEditingCustomCourse = true;
+                                  // Pre-fill form
+                                  _customNameCtrl.text = course.customCourse?.name ?? '';
+                                  _customCodeCtrl.text = course.customCourse?.code ?? '';
+                                  _customInstructorCtrl.text = course.customCourse?.instructor ?? '';
+                                  _selectedColor = _parseColor(course.colorTheme);
+                                  // _courseSlots should ideally be populated from ScheduleRepository, 
+                                  // but for this phase we'll keep the slots static/mock or clear them to avoid confusion
+                                  // since we haven't implemented fetching slots for edit form yet.
+                                });
                               },
                             ).animate().slideY(begin: 0.2, end: 0, delay: 200.ms).fadeIn();
                           }),
@@ -607,12 +618,15 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
                ),
                const SizedBox(width: 10),
                Container(
-                 padding: const EdgeInsets.all(12),
+                 width: 44, height: 44,
                  decoration: BoxDecoration(
                    border: Border.all(color: Colors.red),
                    borderRadius: BorderRadius.circular(50),
                  ),
-                 child: const Icon(Ionicons.trash, color: Colors.red, size: 20),
+                 child: IconButton(
+                    icon: const Icon(Ionicons.trash, color: Colors.red, size: 20),
+                    onPressed: _deleteCustomCourse,
+                 ),
                )
              ],
            )
@@ -622,69 +636,106 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
   }
 
   Future<void> _saveCustomCourse() async {
-    // 1. Create Custom Course Object
     final customCourse = CustomCourse(
       code: _customCodeCtrl.text,
       name: _customNameCtrl.text,
       instructor: _customInstructorCtrl.text,
     );
+    final colorHex = '#${_selectedColor.value.toRadixString(16).substring(2)}';
 
-    // 2. Add via Repository
     try {
-      final enrollment = await ref.read(enrollmentRepositoryProvider).addEnrollment(
-        customCourse: customCourse,
-        colorTheme: '#${_selectedColor.value.toRadixString(16).substring(2)}',
-      );
-      
-      // 3. Add slots to ScheduleRepository
-      final scheduleRepo = ref.read(scheduleRepositoryProvider);
-      
-      for (final slotMap in _courseSlots) {
-        final dayStr = slotMap['day']!;
-        final timeStr = slotMap['time']!; // "14:00 - 15:00"
+      if (_editingEnrollmentId != null) {
+        // UPDATE EXISTING
+        final repo = ref.read(enrollmentRepositoryProvider);
+        final existing = await repo.getEnrollment(_editingEnrollmentId!);
         
-        DayOfWeek? day;
-        switch (dayStr) {
-          case 'Mon': day = DayOfWeek.monday; break;
-          case 'Tue': day = DayOfWeek.tuesday; break;
-          case 'Wed': day = DayOfWeek.wednesday; break;
-          case 'Thu': day = DayOfWeek.thursday; break;
-          case 'Fri': day = DayOfWeek.friday; break;
-          case 'Sat': day = DayOfWeek.saturday; break;
-          case 'Sun': day = DayOfWeek.sunday; break;
+        if (existing != null) {
+          final updated = existing.copyWith(
+            customCourse: customCourse,
+            colorTheme: colorHex,
+          );
+          await repo.updateEnrollment(updated);
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Course Updated!")));
         }
+      } else {
+        // CREATE NEW
+        final enrollment = await ref.read(enrollmentRepositoryProvider).addEnrollment(
+          customCourse: customCourse,
+          colorTheme: colorHex,
+        );
         
-        if (day != null) {
-           final parts = timeStr.split(' - ');
-           if (parts.length == 2) {
-             await scheduleRepo.addCustomSlot(
-               enrollmentId: enrollment.enrollmentId,
-               dayOfWeek: day,
-               startTime: parts[0],
-               endTime: parts[1],
-             );
-           }
+        // Add slots (Only for new courses for now, as editing slots is complex)
+        final scheduleRepo = ref.read(scheduleRepositoryProvider);
+        for (final slotMap in _courseSlots) {
+          final dayStr = slotMap['day']!;
+          final timeStr = slotMap['time']!;
+          
+          DayOfWeek? day;
+          switch (dayStr) {
+            case 'Mon': day = DayOfWeek.mon; break;
+            case 'Tue': day = DayOfWeek.tue; break;
+            case 'Wed': day = DayOfWeek.wed; break;
+            case 'Thu': day = DayOfWeek.thu; break;
+            case 'Fri': day = DayOfWeek.fri; break;
+            case 'Sat': day = DayOfWeek.sat; break;
+            case 'Sun': day = DayOfWeek.sun; break;
+          }
+          
+          if (day != null) {
+             final parts = timeStr.split(' - ');
+             if (parts.length == 2) {
+               await scheduleRepo.addCustomSlot(
+                 enrollmentId: enrollment.enrollmentId,
+                 dayOfWeek: day,
+                 startTime: parts[0],
+                 endTime: parts[1],
+               );
+             }
+          }
         }
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Course Created!")));
       }
       
       setState(() {
         _isEditingCustomCourse = false;
-        // Clear form
+        _editingEnrollmentId = null;
         _customNameCtrl.clear();
         _customCodeCtrl.clear();
-        // Reset slots? _courseSlots is final list defined at top currently. 
-        // Ideally should be stateful. For now reset to default or keep it.
+        _customInstructorCtrl.clear();
       });
+      ref.invalidate(enrollmentsProvider);
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Course & Schedule Saved!")));
-        // Invalidate provider to refresh list
-        ref.invalidate(enrollmentsProvider); // This might be handled by watch stream but safe to invalidate
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
+    }
+  }
+
+  Future<void> _deleteCustomCourse() async {
+    if (_editingEnrollmentId == null) return;
+    
+    // Confirm Dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete Course?"), 
+        content: const Text("This cannot be undone."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+        ]
+      )
+    );
+
+    if (confirm == true) {
+      await ref.read(enrollmentRepositoryProvider).deleteEnrollment(_editingEnrollmentId!);
+      ref.invalidate(enrollmentsProvider);
+      setState(() {
+         _isEditingCustomCourse = false;
+         _editingEnrollmentId = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Course Deleted")));
     }
   }
 
@@ -730,284 +781,8 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
     );
   }
 
-  /*
   // --- Global Course Edit Panel ---
-  Widget _buildGlobalEditPanel(int index, Map<String, dynamic> course) {
-    List<Map<String, dynamic>> slots = course['slots'];
-    
-    return Container(
-      margin: const EdgeInsets.only(left: 90, bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
 
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-           // Read-only Info
-           Row(
-             children: [
-               Expanded(child: _buildReadOnlyField('Course', course['title'])),
-             ],
-           ),
-           const SizedBox(height: 12),
-           Row(
-             children: [
-               Expanded(child: _buildReadOnlyField('Code', course['code'])),
-               const SizedBox(width: 8),
-               Expanded(child: _buildReadOnlyField('Instructor', course['instructor'])),
-             ],
-           ),
-
-           const SizedBox(height: 16),
-           const Text("MY ENROLLMENT", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54)),
-           const SizedBox(height: 12),
-           
-           // Enrollment Fields (Section, Target)
-           Row(
-             children: [
-               Expanded(
-                 child: _buildDropdownField('Section', course['section'] ?? 'A', 
-                   onChanged: (val) {
-                     setState(() {
-                       _globalCourses[index]['section'] = val;
-                     });
-                   }
-                 )
-               ),
-               const SizedBox(width: 8),
-               Expanded(
-                 child: _buildEditableField('Target %', course['target'] ?? '75', 
-                   onChanged: (val) {
-                     // In real app, validate and save
-                     setState(() {
-                       _globalCourses[index]['target'] = val;
-                     });
-                   }
-                 )
-               ),
-             ],
-           ),
-           
-           const SizedBox(height: 16),
-           const Text("MY BINDINGS", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54)),
-           const SizedBox(height: 4),
-           const Text("Customize detection per slot. Global settings apply otherwise.", style: TextStyle(fontSize: 10, color: Colors.grey)),
-           const SizedBox(height: 12),
-           
-           // Warning for Global courses
-           Container(
-             padding: const EdgeInsets.all(10),
-             decoration: BoxDecoration(color: Colors.blue.withOpacity(0.05), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.blue.withOpacity(0.2))),
-             child: const Row(
-               children: [
-                 Icon(Ionicons.information_circle, size: 16, color: Colors.blue),
-                 SizedBox(width: 8),
-                 Expanded(child: Text("You can only modify bindings for global courses, not the schedule itself.", style: TextStyle(fontSize: 11, color: Colors.blue))),
-               ],
-             ),
-           ),
-           const SizedBox(height: 12),
-
-           // Schedule Slots with Bindings
-           ...slots.asMap().entries.map((entry) {
-             int sIdx = entry.key;
-             var slot = entry.value;
-             String? locBind = slot['bind_loc'];
-             String? wifiBind = slot['bind_wifi'];
-
-             return Container(
-               margin: const EdgeInsets.only(bottom: 8),
-               padding: const EdgeInsets.all(12),
-               decoration: BoxDecoration(
-                 color: Colors.white,
-                 borderRadius: BorderRadius.circular(12),
-                 border: Border.all(color: Colors.grey[200]!)
-               ),
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   Row(
-                     children: [
-                       Container(
-                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                         decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                         child: Text(slot['day'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                       ),
-                       const SizedBox(width: 12),
-                       Text(slot['time'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                       const Spacer(),
-                       Text(slot['loc'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                     ],
-                   ),
-                   const Divider(height: 20),
-                   // Binding Buttons
-                   Row(
-                     children: [
-                       Expanded(
-                         child: InkWell(
-                           onTap: () {
-                             _pickLocationForSlot(context, (val) {
-                               setState(() {
-                                 _globalCourses[index]['slots'][sIdx]['bind_loc'] = val;
-                               });
-                             });
-                           },
-                           child: Container(
-                             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                             decoration: BoxDecoration(
-                               color: locBind != null ? Colors.blue.withOpacity(0.1) : Colors.transparent,
-                               border: Border.all(color: locBind != null ? Colors.blue : Colors.grey[300]!),
-                               borderRadius: BorderRadius.circular(8),
-                             ),
-                             child: Row(
-                               mainAxisAlignment: MainAxisAlignment.center,
-                               children: [
-                                 Icon(Ionicons.navigate, size: 12, color: locBind != null ? Colors.blue : Colors.grey),
-                                 const SizedBox(width: 6),
-                                 Flexible(child: Text(locBind ?? "Bind GPS", style: TextStyle(fontSize: 11, color: locBind != null ? Colors.blue : Colors.grey[700], overflow: TextOverflow.ellipsis))),
-                               ],
-                             ),
-                           ),
-                         ),
-                       ),
-                       const SizedBox(width: 8),
-                       Expanded(
-                         child: InkWell(
-                           onTap: () {
-                             _pickWifiForSlot(context, (val) {
-                               setState(() {
-                                 _globalCourses[index]['slots'][sIdx]['bind_wifi'] = val;
-                               });
-                             });
-                           },
-                           child: Container(
-                             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                             decoration: BoxDecoration(
-                               color: wifiBind != null ? Colors.green.withOpacity(0.1) : Colors.transparent,
-                               border: Border.all(color: wifiBind != null ? Colors.green : Colors.grey[300]!),
-                               borderRadius: BorderRadius.circular(8),
-                             ),
-                             child: Row(
-                               mainAxisAlignment: MainAxisAlignment.center,
-                               children: [
-                                 Icon(Ionicons.wifi, size: 12, color: wifiBind != null ? Colors.green : Colors.grey),
-                                 const SizedBox(width: 6),
-                                 Flexible(child: Text(wifiBind ?? "Bind WiFi", style: TextStyle(fontSize: 11, color: wifiBind != null ? Colors.green : Colors.grey[700], overflow: TextOverflow.ellipsis))),
-                               ],
-                             ),
-                           ),
-                         ),
-                       ),
-                     ],
-                   )
-                 ],
-               ),
-             );
-           }),
-
-           const SizedBox(height: 16),
-            const Text('Card Color', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _colorOptionForGlobal(index, AppColors.pastelGreen),
-                const SizedBox(width: 8),
-                _colorOptionForGlobal(index, AppColors.pastelPurple),
-                const SizedBox(width: 8),
-                _colorOptionForGlobal(index, AppColors.pastelOrange),
-                const SizedBox(width: 8),
-                _colorOptionForGlobal(index, AppColors.pastelBlue),
-                const SizedBox(width: 8),
-                _colorOptionForGlobal(index, const Color(0xFFFCE7F3)), // Pink
-              ],
-            ),
-           const SizedBox(height: 16),
-
-           Row(
-             children: [
-               Expanded(child: PrimaryButton(text: 'Save Changes', onPressed: () => setState(() => _editingGlobalIndex = null))),
-               const SizedBox(width: 10),
-               Container(
-                 padding: const EdgeInsets.all(12),
-                 decoration: BoxDecoration(
-                   border: Border.all(color: Colors.red),
-                   borderRadius: BorderRadius.circular(50),
-                 ),
-                 child: const Icon(Ionicons.trash, color: Colors.red, size: 20),
-               )
-             ],
-           )
-        ],
-      ),
-    ).animate().scaleY(alignment: Alignment.topCenter, duration: 200.ms);
-  }
-
-  Widget _buildReadOnlyField(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 4),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.transparent),
-          ),
-          child: Text(value, style: TextStyle(fontSize: 14, color: Colors.grey[700], fontWeight: FontWeight.w500)),
-        )
-      ],
-    );
-  }
-
-  Widget _buildEditableField(String label, String value, {required ValueChanged<String> onChanged}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 4),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2), // Tighter padding for text field
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: TextFormField(
-            initialValue: value,
-            onChanged: onChanged,
-            style: const TextStyle(fontSize: 14),
-             decoration: const InputDecoration(
-              border: InputBorder.none,
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-    Widget _colorOptionForGlobal(int index, Color color) {
-    bool isSelected = _globalCourses[index]['color'] == color;
-    return GestureDetector(
-      onTap: () => setState(() => _globalCourses[index]['color'] = color),
-      child: Container(
-        width: 32, height: 32,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: isSelected ? Border.all(color: Colors.black, width: 2) : null,
-        ),
-      ),
-    );
-  }
-  // --- Global Course Edit Panel ---
   Widget _buildGlobalEditPanel(Enrollment enrollment) {
     // We'll use local state controllers/variables initialized in build or initState if possible, 
     // but here we might need to rely on the passed enrollment and update it via a copy.

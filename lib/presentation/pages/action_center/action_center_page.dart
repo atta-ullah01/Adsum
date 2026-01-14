@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:adsum/presentation/providers/action_center_provider.dart';
+import 'package:adsum/domain/models/action_item.dart';
+import 'package:intl/intl.dart';
 
 class ActionCenterPage extends ConsumerStatefulWidget {
   const ActionCenterPage({super.key});
@@ -166,7 +168,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
     );
   }
 
-  Widget _buildActiveList(List<Map<String, dynamic>> items) {
+  Widget _buildActiveList(List<ActionItem> items) {
     if (items.isEmpty) {
       return Center(
         child: Column(
@@ -185,7 +187,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
       separatorBuilder: (_, __) => const SizedBox(height: 24),
       itemBuilder: (context, index) {
         final item = items[index];
-        if (item['type'] == 'CONFLICT') {
+        if (item.type == ActionItemType.conflict) {
           return _buildConflictCard(item);
         } else {
           return _buildGenericActionCard(item);
@@ -195,10 +197,11 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
   }
 
   // --- CARD 1: CONFLCIT (Complex Split View) ---
-  Widget _buildConflictCard(Map<String, dynamic> item) {
-    final Color bg = item['bg'] ?? Colors.grey.shade100;
-    final Color accent = item['accent'] ?? Colors.black;
-    final payload = item['payload'];
+  Widget _buildConflictCard(ActionItem item) {
+    final Color bg = item.bgColor;
+    final Color accent = item.accentColor;
+    final payload = item.payload;
+    final dateStr = DateFormat('MMM d').format(item.createdAt);
     
     return Container(
       padding: const EdgeInsets.all(28),
@@ -212,8 +215,8 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Schedule Clash", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-                  Text(item['date'], style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
+                   Text("Schedule Clash", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+                   Text(dateStr, style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
                 ],
               ),
               Container(
@@ -244,9 +247,9 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(child: _buildActionButton("Keep Mine", Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, 'Keep Mine'))),
+              Expanded(child: _buildActionButton("Keep Mine", Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, 'KEEP_MINE'))),
               const SizedBox(width: 12),
-              Expanded(child: _buildActionButton("Accept Update", Colors.white, accent, () => _handleAction(item, 'Accept'))),
+              Expanded(child: _buildActionButton("Accept Update", Colors.white, accent, () => _handleAction(item, 'ACCEPT_UPDATE'))),
             ],
           )
         ],
@@ -255,29 +258,44 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
   }
 
   // --- CARD 2: GENERIC ACTION (Verify, Change, Assignment) ---
-  Widget _buildGenericActionCard(Map<String, dynamic> item) {
-    final Color bg = item['bg'] ?? Colors.grey.shade100;
-    final Color accent = item['accent'] ?? Colors.black; 
-    final payload = item['payload'];
+  Widget _buildGenericActionCard(ActionItem item) {
+    final Color bg = item.bgColor;
+    final Color accent = item.accentColor; 
+    final payload = item.payload;
+    final dateStr = DateFormat('MMM d').format(item.createdAt);
 
     IconData icon;
     String btn1 = "OK";
     String? btn2;
+    String action1 = "ACKNOWLEDGED";
+    String? action2;
 
-    if (item['type'] == 'VERIFY') {
-      icon = Ionicons.help_circle;
-      btn1 = "Yes, Present";
-      btn2 = "No, Absent";
-    } else if (item['type'] == 'ASSIGNMENT_DUE') {
-      icon = Ionicons.document_text;
-      btn1 = "Mark Done";
-      btn2 = "Snooze";
-    } else if (item['type'] == 'ATTENDANCE_RISK') {
-      icon = Ionicons.warning;
-      btn1 = "Details";
-    } else {
-      icon = Ionicons.information_circle; // Schedule Change
-      btn1 = "Acknowledge";
+    switch (item.type) {
+      case ActionItemType.verify:
+        icon = Ionicons.help_circle;
+        btn1 = "Yes, Present";
+        action1 = "YES_PRESENT";
+        btn2 = "No, Absent";
+        action2 = "NO_ABSENT";
+        break;
+      case ActionItemType.assignmentDue:
+        icon = Ionicons.document_text;
+        btn1 = "Mark Done";
+        action1 = "MARK_DONE";
+        btn2 = "Snooze";
+        action2 = "SNOOZE";
+        break;
+      case ActionItemType.attendanceRisk:
+        icon = Ionicons.warning;
+        btn1 = "Details";
+        action1 = "DETAILS";
+        break;
+      case ActionItemType.scheduleChange:
+      default:
+        icon = Ionicons.information_circle;
+        btn1 = "Acknowledge";
+        action1 = "ACKNOWLEDGED";
+        break;
     }
 
     return Container(
@@ -300,8 +318,8 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item['title'], style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-                      Text(item['date'], style: GoogleFonts.dmSans(fontSize: 12, color: Colors.black54)),
+                      Text(item.title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text(dateStr, style: GoogleFonts.dmSans(fontSize: 12, color: Colors.black54)),
                     ],
                   ),
                 ],
@@ -310,24 +328,24 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
           ),
           const SizedBox(height: 16),
           // Content
-          if (item['type'] == 'VERIFY') ...[
-             Text(payload['message'], style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87, height: 1.4)),
+          if (item.type == ActionItemType.verify) ...[
+             Text(payload['message'] ?? '', style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87, height: 1.4)),
              const SizedBox(height: 4),
              if (payload['course'] != null)
               Text(payload['course'], style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: accent)),
           ],
-          if (item['type'] == 'SCHEDULE_CHANGE') ...[
-             Text(payload['message'], style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87, height: 1.4)),
+          if (item.type == ActionItemType.scheduleChange) ...[
+             Text(payload['message'] ?? '', style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87, height: 1.4)),
           ],
-          if (item['type'] == 'ASSIGNMENT_DUE') ...[
+          if (item.type == ActionItemType.assignmentDue) ...[
              Text("Course: ${payload['course']}", style: GoogleFonts.dmSans(color: Colors.black54, fontSize: 13)),
-             Text(payload['work'], style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+             Text(payload['work'] ?? '', style: GoogleFonts.dmSans(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
              const SizedBox(height: 4),
-             Text(payload['due_text'], style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: accent)),
+             Text(payload['due_text'] ?? '', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: accent)),
           ],
-           if (item['type'] == 'ATTENDANCE_RISK') ...[
+           if (item.type == ActionItemType.attendanceRisk) ...[
              Text("Course: ${payload['course']}", style: GoogleFonts.dmSans(color: Colors.black54, fontSize: 13)),
-             Text(payload['message'], style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87, height: 1.4)),
+             Text(payload['message'] ?? '', style: GoogleFonts.dmSans(fontSize: 15, color: Colors.black87, height: 1.4)),
              const SizedBox(height: 4),
              if (payload['current_per'] != null)
               Text("Current: ${payload['current_per']}", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: accent)),
@@ -336,10 +354,10 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(child: _buildActionButton(btn1, Colors.white, accent, () => _handleAction(item, btn1))),
+              Expanded(child: _buildActionButton(btn1, Colors.white, accent, () => _handleAction(item, action1))),
               if (btn2 != null) ...[
                 const SizedBox(width: 12),
-                Expanded(child: _buildActionButton(btn2!, Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, btn2!))),
+                Expanded(child: _buildActionButton(btn2!, Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, action2!))),
               ]
             ],
           )
@@ -380,16 +398,16 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
     );
   }
 
-  void _handleAction(Map<String, dynamic> item, String action) {
-    ref.read(actionCenterProvider.notifier).resolveItem(item['item_id'], action);
+  void _handleAction(ActionItem item, String action) {
+    ref.read(actionCenterProvider.notifier).resolveItem(item.itemId, action);
     
     setState(() {
       _historyLog.insert(0, {
-        'type': item['type'],
-        'title': item['title'],
+        'type': item.type.toString(), // or map to icon
+        'title': item.title,
         'desc': "Action taken: $action",
         'timestamp': "Just now",
-        'status': action.toUpperCase(),
+        'status': action.toUpperCase().replaceAll('_', ' '),
         'icon': Ionicons.checkmark_circle
       });
     });

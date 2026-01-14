@@ -1,6 +1,6 @@
 # Adsum Development Plan 🛠️
 
-> **Status:** Phase 2 (UI Connection)
+> **Status:** Phase 2B (Complete)
 > **Goal:** Build a **robust, verification-driven** Student Productivity App.
 > **Philosophy:** *"If it isn't tested, it doesn't exist. If it can fail, plan for it."*
 
@@ -35,8 +35,8 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 | Phase 0 | ✅ Complete | Foundation of Robustness |
 | Phase 1A | ✅ Complete | Drift Database + JSON Service |
 | Phase 1B | ✅ Complete | Domain Models + Repositories |
-| Phase 2 | 🚧 Next | Connect UI to Data |
-| Phase 3 | ⏳ Pending | Sync Engine |
+| Phase 2 | ✅ Complete | Connect UI to Data & Onboarding |
+| Phase 3 | 🚧 Next | Sync Engine |
 | Phase 4 | ⏳ Pending | Domain Logic |
 | Phase 5 | ⏳ Pending | Security & CR Authority |
 | Phase 6 | ⏳ Pending | Integration & Observability |
@@ -132,7 +132,7 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 
 ---
 
-## 🚧 Phase 2: Connect UI to Data (CURRENT)
+## ✅ Phase 2: Connect UI to Data (COMPLETE)
 
 *Goal: Replace hardcoded mock data in demo pages with repository calls.*
 
@@ -146,17 +146,26 @@ The demo at `lib/presentation/` is presentation-only with mock data:
 
 | Page | Current State | Action Required |
 |------|--------------|-----------------|
-| Dashboard | Mock timeline data | Load from merged schedule |
-| CoursesPage | Inline course list | Load from `enrollmentsProvider` |
-| SubjectDetailPage | Mock stats | Load from `enrollmentRepository` |
-| ActionCenterPage | Assets JSON | Replace with `actionItemRepository` |
-| SettingsPage | Mock user | Load from `userProfileProvider` |
+| Dashboard | Load from merged schedule | Done ✅ |
+| CoursesPage | Load from `enrollmentsProvider` | Done ✅ |
+| SubjectDetailPage | Load from `enrollmentRepository` | Done ✅ |
+| ActionCenterPage | Connected to Repo | Done ✅ |
+| SettingsPage | Connected to UserRepo | Done ✅ |
 
-- [ ] Create `ScheduleService` to merge L1+L2+L3
-- [ ] Replace mock data in Dashboard with schedule provider
-- [ ] Connect CoursesPage to EnrollmentRepository
-- [ ] Connect ActionCenter to ActionItemRepository
-- [ ] Add reactive UI updates with Riverpod
+- [x] Create `ScheduleService` to merge L1+L2+L3
+- [x] Replace mock data in Dashboard with schedule provider
+- [x] Connect CoursesPage to EnrollmentRepository
+- [x] Connect SubjectDetailPage to EnrollmentRepository
+- [x] Connect ActionCenter to ActionItemRepository
+- [x] Connect SettingsPage to UserRepository
+- [x] Add reactive UI updates with Riverpod
+
+### 2.3 Phase 2B: Onboarding & Authentication (New)
+*Goal: Replace mock Auth and Wizard with real User creation.*
+
+- [x] **AuthPage**: Connect to `UserRepository` (Create/Get User)
+- [x] **Wizard**: Persist data to `EnrollmentRepository` and `Preferences`
+- [x] **Splash**: Route based on `UserRepository.currentUser` existence
 
 ### 🛑 VERIFICATION GATE 2
 > 1. Dashboard loads real enrollments
