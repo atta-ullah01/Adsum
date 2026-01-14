@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSUM - My Courses</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <style>
+        .course-card { 
+            background: white; 
+            border-radius: var(--radius-md); 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .source-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .source-global { background: var(--pastel-blue); color: #1D4ED8; }
+        .source-custom { background: var(--pastel-purple); color: #7C3AED; }
+        .edit-panel {
+            display: none;
+            padding: 16px;
+            background: #F9FAFB;
+            border-radius: var(--radius-md);
+            margin-top: -4px;
+            margin-bottom: 12px;
+            border: 1px solid #E5E7EB;
+        }
+        .edit-panel.open { display: block; }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .search-results.open { display: block; }
+        .search-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #F3F4F6;
+            cursor: pointer;
+        }
+        .search-item:hover { background: var(--pastel-yellow); }
+    </style>
+</head>
+<body>
+    <div class="app-container" style="background: var(--bg-app);">
+        
+        <!-- Header -->
+        <div class="page-header" style="padding-bottom: 10px;">
+            <div class="back-btn" onclick="history.back()">
+                <ion-icon name="chevron-back" style="font-size: 20px;"></ion-icon>
+            </div>
+            <!-- Restored Step Indicator -->
+            <div class="tag-black">Step 2 / 3</div>
+        </div>
+
+        <!-- Content -->
+        <div style="flex: 1; overflow-y: auto; padding: 0 var(--pad-page); padding-bottom: 120px;">
+            
+            <!-- Title Date -->
+            <h1 style="font-size: 28px; margin-bottom: 4px;">My Courses</h1>
+            <p style="margin-bottom: 30px; font-weight: 500;">3 courses today</p>
+
+            <!-- Search Bar (Pill) -->
+            <div style="margin-bottom: 40px; position: relative;">
+                <div class="search-pill">
+                    <ion-icon name="search" style="font-size: 20px; opacity: 0.4;"></ion-icon>
+                    <input type="text" id="course-search" placeholder="Search courses..." 
+                           style="border:none; background:transparent; font-family: inherit; font-size: 15px; width: 100%; outline: none;"
+                           onfocus="showResults()" onblur="setTimeout(hideResults, 200)">
+                </div>
+
+                <!-- Search Results (same logic, updated style) -->
+                <div class="search-results" id="search-results" style="top: 110%;">
+                    
+                    <!-- Prominent Link to Custom Course -->
+                     <div class="search-item search-item-prominent" onclick="location.href='04b_create_custom.html'">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; background: rgba(0,0,0,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <ion-icon name="add" style="font-size: 20px;"></ion-icon>
+                            </div>
+                            <div>
+                                <strong style="display: block; line-height: 1.2;">Create Custom Course</strong>
+                                <span class="text-sm" style="font-weight: 400; opacity: 0.7;">Can't find it? Add your own.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-item" onclick="addCourse('CS3001', 'Operating Systems', 'global')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Operating Systems</strong>
+                                <p class="text-sm" style="margin: 0; opacity: 0.6;">CS3001 • Dr. James</p>
+                            </div>
+                            <span class="source-badge source-global">Global</span>
+                        </div>
+                    </div>
+                    <div class="search-item" onclick="addCourse('CS3005', 'Computer Networks', 'global')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Computer Networks</strong>
+                                <p class="text-sm" style="margin: 0; opacity: 0.6;">CS3005 • Prof. Kumar</p>
+                            </div>
+                            <span class="source-badge source-global">Global</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline-container">
+                
+                <!-- 09:00 AM -->
+                <div class="timeline-row anim-slide anim-delay-1">
+                    <div class="time-col">09:00 AM</div>
+                    <div class="card-col">
+                        <div class="course-card-modern bg-pastel-green">
+                            <div>
+                                <h3>Compiler Design</h3>
+                                <p>LH-1 • Dr. Anetha</p>
+                            </div>
+                            <!-- Global Course: Locked Icon -->
+                            <ion-icon name="lock-closed-outline" style="font-size: 24px; opacity: 0.4;" title="Global Course (Managed by Uni)"></ion-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10:00 AM -->
+                <div class="timeline-row anim-slide anim-delay-2">
+                    <div class="time-col">10:00 AM</div>
+                    <div class="card-col">
+                        <div class="course-card-modern bg-pastel-orange">
+                            <div>
+                                <h3>Data Structures</h3>
+                                <p>LH-2 • Prof. Raman</p>
+                            </div>
+                            <!-- Global Course: Locked Icon -->
+                            <ion-icon name="lock-closed-outline" style="font-size: 24px; opacity: 0.4;" title="Global Course (Managed by Uni)"></ion-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 02:00 PM (Custom) -->
+                <div class="timeline-row anim-slide anim-delay-3">
+                    <div class="time-col">02:00 PM</div>
+                    <div class="card-col">
+                        <div class="course-card-modern bg-pastel-purple" id="custom-course" onclick="toggleEdit()" style="cursor: pointer;">
+                            <div>
+                                <h3>My Elective</h3>
+                                <p>Room 305 • Self</p>
+                            </div>
+                            <!-- Custom Course: Edit Icon (Wrapped in circle) -->
+                            <div style="width: 32px; height: 32px; background: rgba(0,0,0,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <ion-icon name="create" style="font-size: 16px; opacity: 0.7;"></ion-icon>
+                            </div>
+                        </div>
+
+                        <!-- Edit Panel (Moved here to exist within the flow) -->
+                        <div class="edit-panel" id="edit-panel" style="margin-top: 10px;">
+                             <div class="form-group" style="margin-bottom: 12px;">
+                                <label class="form-label">Course Name</label>
+                                <input type="text" class="form-select" value="My Elective" style="cursor: text;">
+                            </div>
+                            
+                            <!-- Added Course Code -->
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label class="form-label">Course Code <span style="color: #EF4444;">*</span></label>
+                                <input type="text" class="form-select" value="CUST001" style="cursor: text;">
+                            </div>
+
+                            <!-- Added Instructor -->
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label class="form-label">Instructor</label>
+                                <input type="text" class="form-select" value="Self" style="cursor: text;">
+                            </div>
+
+                            <div class="grid-2" style="margin-bottom: 12px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label">Start</label>
+                                    <input type="time" class="form-select" value="14:00">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label">End</label>
+                                    <input type="time" class="form-select" value="15:00">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-select" value="Room 305">
+                            </div>
+
+                            <!-- Added Color Selector -->
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label class="form-label">Card Color</label>
+                                <div class="color-selector">
+                                    <div class="color-option bg-pastel-green" onclick="selectEditColor(this)"></div>
+                                    <div class="color-option bg-pastel-purple selected" onclick="selectEditColor(this)"></div>
+                                    <div class="color-option bg-pastel-orange" onclick="selectEditColor(this)"></div>
+                                    <div class="color-option" style="background: #E0F2FE;" onclick="selectEditColor(this)"></div>
+                                    <div class="color-option" style="background: #FCE7F3;" onclick="selectEditColor(this)"></div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-black" onclick="saveEdit()" style="flex: 1; padding: 12px;">Save</button>
+                                <button class="btn btn-outline" onclick="removeCourse()" style="flex: 0; padding: 12px; border-color: #EF4444; color: #EF4444;">
+                                    <ion-icon name="trash"></ion-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Fixed Bottom Button -->
+        <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 414px; padding: 0 30px; box-sizing: border-box;">
+            <button class="btn btn-black" onclick="location.href='05_wizard_sensors.html'" style="width: 100%; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+                <span id="btn-text">Confirm & Continue</span>
+                <ion-icon name="arrow-forward"></ion-icon>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function showResults() {
+            document.getElementById('search-results').classList.add('open');
+        }
+        function hideResults() {
+            document.getElementById('search-results').classList.remove('open');
+        }
+        function addCourse(code, name, type) {
+            alert('Added: ' + name + ' (' + code + ') as ' + type);
+            hideResults();
+        }
+        function createCustom() {
+            alert('Opening custom course creator...');
+            hideResults();
+        }
+        function toggleEdit() {
+            document.getElementById('edit-panel').classList.toggle('open');
+        }
+        function saveEdit() {
+            alert('Saved!');
+            document.getElementById('edit-panel').classList.remove('open');
+        }
+        function removeCourse() {
+            if(confirm('Remove this custom course?')) {
+                document.getElementById('custom-course').style.display = 'none';
+                document.getElementById('edit-panel').style.display = 'none';
+            }
+        }
+        function selectEditColor(el) {
+            document.querySelectorAll('#edit-panel .color-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+    </script>
+</body>
+</html>

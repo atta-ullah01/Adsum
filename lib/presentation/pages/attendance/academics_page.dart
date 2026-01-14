@@ -1,67 +1,24 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
-import 'package:adsum/presentation/pages/courses/courses_page.dart'; // Added
+import 'package:adsum/presentation/pages/courses/courses_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 
-class AcademicsPage extends StatelessWidget {
+class AcademicsPage extends ConsumerWidget {
   const AcademicsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Mock Data for All Subject List
-    final List<Map<String, dynamic>> courses = [
-      {
-        "title": "Mobile App Design",
-        "code": "CS-302",
-        "percent": 0.90,
-        "color": AppColors.pastelPurple,
-        "bgDark": Colors.deepPurple,
-        "bunks": 4, // Safe
-        "isCustomCourse": false,
-      },
-      {
-        "title": "Theory of Computation",
-        "code": "CS-305",
-        "percent": 0.72,
-        "color": AppColors.pastelOrange, // Warning color
-        "bgDark": Colors.deepOrange,
-        "recover": 2, // Needs recovery
-        "isCustomCourse": false,
-      },
-      {
-        "title": "Computer Networks",
-        "code": "CS-304",
-        "percent": 0.78,
-        "color": AppColors.pastelBlue,
-        "bgDark": Colors.blue[800],
-        "bunks": 1,
-        "isCustomCourse": false,
-      },
-      {
-         "title": "Graph Theory",
-         "code": "MA-401",
-         "percent": 0.95,
-         "color": AppColors.pastelGreen,
-         "bgDark": Colors.green[800],
-         "bunks": 10,
-         "isCustomCourse": false,
-      },
-      {
-         "title": "My Private Elective",
-         "code": "CUSTOM-001",
-         "percent": 0.80,
-         "color": const Color(0xFFFFE0B2), // Light orange
-         "bgDark": Colors.orange[800],
-         "bunks": 5,
-         "isCustomCourse": true, // Custom course!
-      }
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Fetch Enrollments
+    final enrollmentsAsync = ref.watch(enrollmentsProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white, // Clean white bg
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -115,40 +72,55 @@ class AcademicsPage extends StatelessWidget {
                 ),
               ),
               
-              // 1. Smart Stats Card (Premium)
-              FadeSlideTransition(
-                index: 0,
-                child: _buildSummaryCard(courses),
+              enrollmentsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(child: Text('Error loading courses: $err')),
+                data: (enrollments) {
+                  if (enrollments.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. Smart Stats Card (Premium)
+                      FadeSlideTransition(
+                        index: 0,
+                        child: _buildSummaryCard(enrollments),
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
+                      // 2. Course List Header
+                       Row(
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         children: [
+                           Text("Enrolled Courses", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
+                           Text("${enrollments.length} Active", style: GoogleFonts.dmSans(color: AppColors.textMuted, fontWeight: FontWeight.bold)),
+                         ],
+                       ),
+                       const SizedBox(height: 16),
+                       
+                       // 3. Vertical List of Horizontal Pastel Cards
+                       ListView.separated(
+                         shrinkWrap: true,
+                         physics: const NeverScrollableScrollPhysics(),
+                         itemCount: enrollments.length,
+                         separatorBuilder: (c, i) => const SizedBox(height: 16),
+                         itemBuilder: (context, index) {
+                            final enrollment = enrollments[index];
+                            return FadeSlideTransition(
+                              index: index + 1,
+                              child: _buildCourseCard(context, enrollment),
+                            );
+                         },
+                       ),
+                       
+                       const SizedBox(height: 48), // Bottom Padding
+                    ],
+                  );
+                },
               ),
-              
-              const SizedBox(height: 32),
-              
-              // 2. Course List Header
-               Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                   Text("Enrolled Courses", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-                   Text("${courses.length} Active", style: GoogleFonts.dmSans(color: AppColors.textMuted, fontWeight: FontWeight.bold)),
-                 ],
-               ),
-               const SizedBox(height: 16),
-               
-               // 3. Vertical List of Horizontal Pastel Cards
-               ListView.separated(
-                 shrinkWrap: true,
-                 physics: const NeverScrollableScrollPhysics(),
-                 itemCount: courses.length,
-                 separatorBuilder: (c, i) => const SizedBox(height: 16),
-                 itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return FadeSlideTransition(
-                      index: index + 1,
-                      child: _buildCourseCard(context, course),
-                    );
-                 },
-               ),
-               
-               const SizedBox(height: 48), // Bottom Padding
             ],
           ),
         ),
@@ -164,16 +136,30 @@ class AcademicsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCard(List<Map<String, dynamic>> courses) {
-    int riskCount = courses.where((c) => c["percent"] < 0.75).length;
+  Widget _buildEmptyState() {
+     return Center(
+       child: Column(
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: [
+           const SizedBox(height: 50),
+           Icon(Ionicons.school_outline, size: 64, color: AppColors.textMuted),
+           const SizedBox(height: 16),
+           Text("No courses enrolled yet.", style: GoogleFonts.outfit(fontSize: 18, color: AppColors.textMuted)),
+           const SizedBox(height: 8),
+           Text("Tap + to add your courses.", style: GoogleFonts.dmSans(color: Colors.grey)),
+         ],
+       ),
+     );
+  }
+
+  Widget _buildSummaryCard(List<Enrollment> enrollments) {
+    int riskCount = enrollments.where((e) => e.stats.attendancePercent < e.targetAttendance).length;
     bool isSafe = riskCount == 0;
     
     // Calculate Total Safe Bunks
     int totalBunks = 0;
-    for (var c in courses) {
-      if (c.containsKey("bunks")) {
-        totalBunks += (c["bunks"] as int);
-      }
+    for (var e in enrollments) {
+      totalBunks += e.stats.safeBunks;
     }
     
     // Colors
@@ -234,33 +220,35 @@ class AcademicsPage extends StatelessWidget {
                      )
                    ],
                  )
-              ],
-            ),
-          )
+               ],
+             ),
+           )
         ],
       ),
     );
   }
 
-  Widget _buildCourseCard(BuildContext context, Map<String, dynamic> course) {
-    Color bg = course["color"];
-    Color textDark = course["bgDark"] ?? Colors.black;
-    double percent = course["percent"];
+  Widget _buildCourseCard(BuildContext context, Enrollment enrollment) {
+    Color bg = _parseColor(enrollment.colorTheme);
+    Color textDark = Colors.black; // Adjust based on contrast if needed
+    double percent = enrollment.stats.attendancePercent / 100;
+    if (percent.isNaN) percent = 0.0;
     
+    bool isRisky = enrollment.stats.attendancePercent < enrollment.targetAttendance;
+
     return GestureDetector(
       onTap: () {
         context.push('/subject-detail', extra: {
-          'title': course["title"],
-          'code': course["code"],
-          'isCustomCourse': course["isCustomCourse"] ?? false,
+          'title': enrollment.courseName,
+          'code': enrollment.effectiveCourseCode,
+          'isCustomCourse': enrollment.isCustom,
         });
       },
       child: Container(
-        // height: 140, // Removed fixed height to prevent bottom overflow
-        padding: const EdgeInsets.all(20), // Reduced Padding
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(24), // Slightly smaller radius for smaller card
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +259,7 @@ class AcademicsPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    course["title"], 
+                    enrollment.courseName, 
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textMain),
                     maxLines: 1, overflow: TextOverflow.ellipsis,
                   ),
@@ -280,23 +268,23 @@ class AcademicsPage extends StatelessWidget {
               ],
             ),
             
-            const SizedBox(height: 12), // Reduced Spacing
+            const SizedBox(height: 12),
             
             // Stats Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "${(percent * 100).toInt()}%",
+                  "${enrollment.stats.attendancePercent.toInt()}%",
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 32, color: AppColors.textMain),
                 ),
                 const SizedBox(width: 12),
                 Flexible( 
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 6.0),
-                    child: course.containsKey("bunks")
-                       ? Text("${course['bunks']} Safe Bunks", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)
-                       : Text("Recover ${course['recover']}", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.danger, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                    child: !isRisky
+                       ? Text("${enrollment.stats.safeBunks} Safe Bunks", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)
+                       : Text("Risk: below ${enrollment.targetAttendance.toInt()}%", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.danger, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                   ),
                 ),
               ],
@@ -310,7 +298,7 @@ class AcademicsPage extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: percent,
                 backgroundColor: Colors.white.withOpacity(0.5),
-                color: AppColors.textMain, // Standard Black/Gray
+                color: AppColors.textMain,
                 minHeight: 8,
               ),
             )
@@ -318,5 +306,11 @@ class AcademicsPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _parseColor(String hex) {
+     if (hex.startsWith('#')) hex = hex.substring(1);
+     if (hex.length == 6) hex = 'FF' + hex;
+     return Color(int.parse('0x$hex'));
   }
 }

@@ -1,29 +1,131 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/enrollment.dart';
+import 'package:adsum/domain/models/schedule.dart';
 import 'package:adsum/presentation/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 
-class CreateCustomCoursePage extends StatefulWidget {
+class CreateCustomCoursePage extends ConsumerStatefulWidget {
   const CreateCustomCoursePage({super.key});
 
   @override
-  State<CreateCustomCoursePage> createState() => _CreateCustomCoursePageState();
+  ConsumerState<CreateCustomCoursePage> createState() => _CreateCustomCoursePageState();
 }
 
-class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
+class _CreateCustomCoursePageState extends ConsumerState<CreateCustomCoursePage> {
   Color _selectedColor = AppColors.pastelGreen;
+  bool _isSaving = false;
 
-  // Schedule State
-  final List<Map<String, String>> _courseSlots = [
-     // Start empty or with default
-  ];
+  // Controllers
+  late TextEditingController _nameCtrl;
+  late TextEditingController _codeCtrl;
+  late TextEditingController _instructorCtrl;
+  late TextEditingController _attendanceCtrl;
+  late TextEditingController _sectionCtrl;
+
+  // Schedule State - Storing simple maps for UI, will convert to objects on save
+  // Format: { 'day': 'Mon', 'start': '09:00', 'end': '10:00', 'loc': '...', 'wifi': '...', 'lat': double, 'long': double }
+  final List<Map<String, dynamic>> _courseSlots = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController();
+    _codeCtrl = TextEditingController();
+    _instructorCtrl = TextEditingController();
+    _attendanceCtrl = TextEditingController(text: "75");
+    _sectionCtrl = TextEditingController(text: "A");
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _codeCtrl.dispose();
+    _instructorCtrl.dispose();
+    _attendanceCtrl.dispose();
+    _sectionCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createCourse() async {
+    if (_nameCtrl.text.isEmpty || _codeCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill in Name and Code')));
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final enrollmentRepo = ref.read(enrollmentRepositoryProvider);
+      final scheduleRepo = ref.read(scheduleRepositoryProvider);
+      final user = ref.read(userProfileProvider).value; // For user ID if needed for bindings
+
+      // 1. Create Enrollment with Custom Course
+      final enrollment = await enrollmentRepo.addEnrollment(
+        customCourse: CustomCourse(
+          code: _codeCtrl.text,
+          name: _nameCtrl.text,
+          instructor: _instructorCtrl.text.isNotEmpty ? _instructorCtrl.text : 'Self',
+        ),
+        section: _sectionCtrl.text,
+        targetAttendance: double.tryParse(_attendanceCtrl.text) ?? 75.0,
+        // Convert color to hex string if needed, currently passing hex fallback
+        colorTheme: '#${_selectedColor.value.toRadixString(16).substring(2)}',
+      );
+
+      // 2. Add Schedule Slots & Bindings
+      for (final slot in _courseSlots) {
+        // Add Slot
+        final dayEnum = DayOfWeek.fromString(slot['day'] as String);
+        final start = slot['start'] as TimeOfDay;
+        final end = slot['end'] as TimeOfDay;
+        
+        final customSlot = await scheduleRepo.addCustomSlot(
+          enrollmentId: enrollment.enrollmentId,
+          dayOfWeek: dayEnum,
+          startTime: "${start.hour}:${start.minute.toString().padLeft(2, '0')}", 
+          endTime: "${end.hour}:${end.minute.toString().padLeft(2, '0')}",
+        );
+
+        // Add Binding if location or wifi is set
+        final hasLoc = slot['lat'] != null && slot['long'] != null;
+        final hasWifi = slot['wifi'] != null && (slot['wifi'] as String).isNotEmpty;
+
+        if (hasLoc || hasWifi) {
+          await scheduleRepo.addBinding(
+            userId: user?.userId ?? 'unknown_user', // Fallback if user not loaded (rare)
+            ruleId: customSlot.ruleId,
+            scheduleType: ScheduleType.custom,
+            locationName: slot['loc'] as String?, // Can be null if only wifi
+            locationLat: slot['lat'] as double?,
+            locationLong: slot['long'] as double?,
+            wifiSsid: slot['wifi'] as String?,
+          );
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Custom course created!')));
+        context.pop();
+       // Trigger refresh if needed
+       ref.invalidate(enrollmentsProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error creating course: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // As per HTML style='background: white'
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -33,7 +135,7 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
+                   GestureDetector(
                     onTap: () => context.pop(),
                     child: Container(
                       width: 44, height: 44,
@@ -49,19 +151,18 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                     'New Custom Course',
                     style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(width: 44), // Spacer
+                  const SizedBox(width: 44),
                 ],
               ),
             ),
             
-            // Content
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 children: [
-                   _buildFormGroup('Course Name', 'e.g. Graphic Design'),
-                   _buildFormGroup('Course Code *', 'Required (e.g. CUST101)'),
-                   _buildFormGroup('Instructor / Professor', 'e.g. Prof. Sarah'),
+                   _buildFormGroup('Course Name', 'e.g. Graphic Design', _nameCtrl),
+                   _buildFormGroup('Course Code *', 'Required (e.g. CUST101)', _codeCtrl),
+                   _buildFormGroup('Instructor / Professor', 'e.g. Prof. Sarah', _instructorCtrl),
                    
                    // Schedule Builder
                    Text('CLASS SCHEDULE', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textMuted, letterSpacing: 0.5)),
@@ -91,26 +192,29 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                            Container(
                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                              decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                             child: Text(slot['day']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                             child: Text(slot['day'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                            ),
                            const SizedBox(width: 12),
                            Expanded(
                              child: Column(
                                crossAxisAlignment: CrossAxisAlignment.start,
                                children: [
-                                  Text(slot['time']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                  Text(slot['loc']!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                  Text("${(slot['start'] as TimeOfDay).format(context)} - ${(slot['end'] as TimeOfDay).format(context)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                  Text((slot['loc'] as String?) ?? (slot['wifi'] != null ? 'Wi-Fi Only' : 'No Location'), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                ],
                              )
                            ),
-                           const Icon(Ionicons.wifi, size: 14, color: Colors.green),
+                           if (slot['wifi'] != null) const Icon(Ionicons.wifi, size: 14, color: Colors.green),
+                           if (slot['lat'] != null) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Ionicons.location, size: 14, color: Colors.blue)),
                            const SizedBox(width: 8),
-                           const Icon(Ionicons.close_circle, color: Colors.red, size: 18),
+                           InkWell(
+                             onTap: () => setState(() => _courseSlots.remove(slot)),
+                             child: const Icon(Ionicons.close_circle, color: Colors.red, size: 18)
+                           ),
                          ],
                        ),
                      )),
                    
-                   const SizedBox(height: 12),
                    const SizedBox(height: 12),
                    GestureDetector(
                      onTap: _showAddSlotModal,
@@ -130,27 +234,30 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                    const SizedBox(height: 8),
                    Row(
                      children: [
-                       Expanded(child: _buildFormGroup('Target Attendance %', '75')),
+                       Expanded(child: _buildFormGroup('Target Attendance %', '75', _attendanceCtrl)),
                        const SizedBox(width: 16),
-                       Expanded(child: _buildFormGroup('Section', 'A')),
+                       Expanded(child: _buildFormGroup('Section', 'A', _sectionCtrl)),
                      ],
                    ),
                    
                    const SizedBox(height: 10),
                    Text('CARD COLOR', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textMuted, letterSpacing: 0.5)),
                    const SizedBox(height: 8),
-                   Row(
-                     children: [
-                       _colorOption(AppColors.pastelGreen),
-                       const SizedBox(width: 12),
-                       _colorOption(AppColors.pastelPurple),
-                       const SizedBox(width: 12),
-                       _colorOption(AppColors.pastelOrange),
-                       const SizedBox(width: 12),
-                       _colorOption(const Color(0xFFE0F2FE)), // Light Blue
-                       const SizedBox(width: 12),
-                       _colorOption(const Color(0xFFFCE7F3)), // Light Pink
-                     ],
+                   SingleChildScrollView(
+                     scrollDirection: Axis.horizontal,
+                     child: Row(
+                       children: [
+                         _colorOption(AppColors.pastelGreen),
+                         const SizedBox(width: 12),
+                         _colorOption(AppColors.pastelPurple),
+                         const SizedBox(width: 12),
+                         _colorOption(AppColors.pastelOrange),
+                         const SizedBox(width: 12),
+                         _colorOption(const Color(0xFFE0F2FE)), // Light Blue
+                         const SizedBox(width: 12),
+                         _colorOption(const Color(0xFFFCE7F3)), // Light Pink
+                       ],
+                     ),
                    ),
                    const SizedBox(height: 40),
                 ],
@@ -165,11 +272,8 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                 border: Border(top: BorderSide(color: Color(0xFFF3F4F6))),
               ),
               child: PrimaryButton(
-                text: 'Create Course',
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Custom course created!')));
-                  context.pop();
-                },
+                text: _isSaving ? 'Creating...' : 'Create Course',
+                onPressed: _isSaving ? () {} : _createCourse,
               ),
             ),
           ],
@@ -178,7 +282,7 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
     );
   }
 
-  Widget _buildFormGroup(String label, String placeholder, {bool isTime = false}) {
+  Widget _buildFormGroup(String label, String placeholder, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -192,12 +296,12 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
           child: TextField(
+            controller: controller,
             style: GoogleFonts.dmSans(fontSize: 15, color: AppColors.textMain),
             decoration: InputDecoration(
               hintText: placeholder,
               hintStyle: GoogleFonts.dmSans(color: Colors.black38),
               border: InputBorder.none,
-              // Adjust alignment for time inputs if needed
             ), 
           ),
         ),
@@ -222,9 +326,9 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
       ),
     );
   }
+
   // --- Picker Helpers for Modal ---
-  // Note: callback is used to update the State INSIDE the StatefulBuilder of the modal
-  void _pickLocationForModal(BuildContext modalContext, Function(String) onPick) {
+  void _pickLocationForModal(BuildContext modalContext, Function(String, double, double) onPick) {
     showModalBottomSheet(
       context: modalContext, 
       backgroundColor: Colors.white,
@@ -241,19 +345,10 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
               ListTile(
                  leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.blue[50], shape: BoxShape.circle), child: const Icon(Ionicons.location, color: Colors.blue)),
                  title: Text("Use Current Location", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
-                 subtitle: Text("Detected: LH-102 (12.934, 77.534)"),
+                 subtitle: Text("Mock: LH-102 (12.934, 77.534)"),
                  onTap: () {
-                   onPick("LH-102 (GPS)");
+                   onPick("LH-102 (GPS)", 12.934, 77.534); // Mock GPS
                    Navigator.pop(context);
-                 },
-              ),
-              const Divider(),
-              ListTile(
-                 leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle), child: const Icon(Ionicons.map, color: Colors.black)),
-                 title: Text("Pick on Map", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
-                 onTap: () {
-                   Navigator.pop(context);
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Map Picker Mock")));
                  },
               ),
             ],
@@ -296,7 +391,13 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
 
   void _showAddSlotModal() {
     String? tempLocation;
+    double? tempLat;
+    double? tempLong;
     String? tempWifi;
+    
+    String selectedDay = 'Monday';
+    TimeOfDay startTime = const TimeOfDay(hour: 9, minute: 0);
+    TimeOfDay endTime = const TimeOfDay(hour: 10, minute: 0);
 
     showModalBottomSheet(
       context: context,
@@ -305,6 +406,13 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
+          
+          String formatTime(TimeOfDay t) {
+            final now = DateTime.now();
+            final dt = DateTime(now.year, now.month, now.day, t.hour, t.minute);
+            return "${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}";
+          }
+
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 24),
             child: Column(
@@ -314,17 +422,53 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                 Text("Add Class Slot", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
                 
-                _buildDropdownField('Day of Week', 'Monday'),
+                // Day Dropdown
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE5E7EB))),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedDay,
+                      isExpanded: true,
+                      onChanged: (v) => setModalState(() => selectedDay = v!),
+                      items: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+                    ),
+                  ),
+                ),
+                
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Expanded(child: _buildTimePicker('Start', '09:00')),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                           final t = await showTimePicker(context: context, initialTime: startTime);
+                           if (t != null) setModalState(() => startTime = t);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE5E7EB))),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(formatTime(startTime)), const Icon(Ionicons.time_outline, size: 16)]),
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-                    Expanded(child: _buildTimePicker('End', '10:00')),
+                    Expanded(
+                       child: InkWell(
+                        onTap: () async {
+                           final t = await showTimePicker(context: context, initialTime: endTime);
+                           if (t != null) setModalState(() => endTime = t);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE5E7EB))),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(formatTime(endTime)), const Icon(Ionicons.time_outline, size: 16)]),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                _buildFormGroup('Location Name', ''),
                 
                 const SizedBox(height: 20),
                 const Text("BINDINGS (OPTIONAL)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
@@ -335,8 +479,12 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                           _pickLocationForModal(context, (val) {
-                             setModalState(() => tempLocation = val);
+                           _pickLocationForModal(context, (loc, lat, long) {
+                             setModalState(() {
+                               tempLocation = loc;
+                               tempLat = lat;
+                               tempLong = long;
+                             });
                            });
                         },
                         icon: Icon(Ionicons.navigate, size: 16, color: tempLocation != null ? Colors.blue : Colors.black),
@@ -372,9 +520,13 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
                 PrimaryButton(text: "Add Slot", onPressed: () {
                    setState(() {
                      _courseSlots.add({
-                       'day': 'Mon', 
-                       'time': '09:00 - 10:00', 
-                       'loc': tempLocation ?? 'New Loc' // Use picked location if available
+                       'day': selectedDay, 
+                       'start': formatTime(startTime), 
+                       'end': formatTime(endTime), 
+                       'loc': tempLocation,
+                       'lat': tempLat,
+                       'long': tempLong,
+                       'wifi': tempWifi
                      });
                    });
                    Navigator.pop(context);
@@ -385,30 +537,6 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
           );
         }
       ),
-    );
-  }
-  
-  Widget _buildDropdownField(String label, String value) {
-     return Container(
-       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-       decoration: BoxDecoration(
-         color: const Color(0xFFF9FAFB),
-         borderRadius: BorderRadius.circular(16),
-         border: Border.all(color: const Color(0xFFE5E7EB)),
-       ),
-       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(value), const Icon(Icons.arrow_drop_down)]),
-     );
-  }
-
-  Widget _buildTimePicker(String label, String time) {
-    return Container(
-       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-       decoration: BoxDecoration(
-         color: const Color(0xFFF9FAFB),
-         borderRadius: BorderRadius.circular(16),
-         border: Border.all(color: const Color(0xFFE5E7EB)),
-       ),
-       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(time), const Icon(Ionicons.time_outline, size: 16)]),
     );
   }
 }

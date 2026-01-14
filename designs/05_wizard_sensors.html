@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSUM - Sensors</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <style>
+         .switch-ios {
+            position: relative; display: inline-block; width: 50px; height: 30px;
+        }
+        .switch-ios input { opacity: 0; width: 0; height: 0; }
+        .slider-ios {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.5); transition: .4s; border-radius: 34px;
+        }
+        .slider-ios:before {
+            position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input:checked + .slider-ios { background-color: var(--black); }
+        input:checked + .slider-ios:before { transform: translateX(20px); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        
+        <div class="page-header">
+            <div class="back-btn" onclick="history.back()">
+                <ion-icon name="chevron-back"></ion-icon>
+            </div>
+            <div class="tag-black">Step 3 / 3</div>
+        </div>
+
+        <div style="padding: 0 var(--pad-page); overflow-y: auto;">
+             
+             <!-- Hero -->
+            <div class="anim-pop" style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <img src="assets/sensors_hero.png" style="width: 140px; height: auto;">
+            </div>
+
+             <h1 style="font-size: 28px; margin-bottom: 8px;">Magic Settings</h1>
+            <p style="margin-bottom: 24px;">Grant permissions to enable auto-attendance.</p>
+
+            <div class="grid-2" style="margin-bottom: 40px;">
+                
+                <!-- Geofence -->
+                <div class="card-pastel bg-blue anim-slide anim-delay-1" style="aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="display: flex; justify-content: space-between;">
+                         <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.6); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <ion-icon name="location" style="font-size: 18px;"></ion-icon>
+                         </div>
+                         <label class="switch-ios">
+                            <input type="checkbox" checked>
+                            <span class="slider-ios"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <h3>Geofence</h3>
+                        <p class="text-sm" style="margin-top: 4px;">Auto-mark in class</p>
+                    </div>
+                </div>
+
+                <!-- Motion -->
+                <div class="card-pastel bg-yellow anim-slide anim-delay-2" style="aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="display: flex; justify-content: space-between;">
+                         <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.6); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <ion-icon name="walk" style="font-size: 18px;"></ion-icon>
+                         </div>
+                         <label class="switch-ios">
+                            <input type="checkbox" checked>
+                            <span class="slider-ios"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <h3>Motion</h3>
+                        <p class="text-sm" style="margin-top: 4px;">Activity Check</p>
+                    </div>
+                </div>
+
+                <!-- Battery -->
+                <div class="card-pastel bg-green anim-slide anim-delay-3" style="aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div style="display: flex; justify-content: space-between;">
+                         <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.6); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <ion-icon name="battery-charging" style="font-size: 18px;"></ion-icon>
+                         </div>
+                         <label class="switch-ios">
+                            <input type="checkbox" checked>
+                            <span class="slider-ios"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <h3>Battery</h3>
+                        <p class="text-sm" style="margin-top: 4px;">Run in bg</p>
+                    </div>
+                </div>
+
+                 <!-- Done -->
+                <div class="card-pastel bg-black anim-slide anim-delay-3" onclick="location.href='dashboard.html'" style="aspect-ratio: 1/1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: black; color: white; border: none;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">🚀</div>
+                    <h3 style="color: white; font-size: 16px;">Finish</h3>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>

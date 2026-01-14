@@ -9,8 +9,19 @@
 * **Conflict Resolution UI:** Manually prompts the user to decide when local edits conflict with server updates.
 
 ---
+## 1. Onboarding & Identity Flow
 
-## 2. Dashboard & Time Management
+### University First Identity
+*   **University Selection**: Primary entry point. User must select University first.
+*   **Conditional Hostel Access**: Hostel list is fetched only *after* University selection.
+*   **Optional Fields**:
+    *   **Hostel**: Optional. Not all students live on campus.
+    *   **Section**: Optional, defaults to 'A'.
+    *   **Full Name**: Optional, defaults to 'Student' or derived from email.
+
+---
+
+## 2. Core System & Data Integrity
 
 ### Date Strip
 *Horizontal 7-day date picker at the top of the dashboard.*

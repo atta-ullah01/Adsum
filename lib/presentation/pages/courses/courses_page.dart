@@ -60,6 +60,14 @@ class _CoursesPageState extends ConsumerState<CoursesPage> {
 
     return Scaffold(
       backgroundColor: AppColors.bgApp,
+      floatingActionButton: widget.showWizard
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push('/sensors'),
+              backgroundColor: Colors.black,
+              label: Text('Continue', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+              icon: const Icon(Ionicons.arrow_forward),
+            )
+          : null,
       body: SafeArea(
         child: GestureDetector(
           onTap: () {

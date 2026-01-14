@@ -1,0 +1,85 @@
+[
+  {
+    "item_id": "c1",
+    "type": "CONFLICT",
+    "status": "PENDING",
+    "title": "CR vs Personal",
+    "body": "Math Lecture vs Gym Session",
+    "created_at": "2023-11-14T14:00:00Z",
+    "bg_color": "0xFFF3E8FF",
+    "accent_color": "0xFF6B46C1",
+    "payload": {
+      "conflict_category": "CR_VS_PERSONAL",
+      "sourceA": {
+        "label": "CR Update",
+        "title": "Math Lecture",
+        "subtitle": "Moved to 2 PM",
+        "layer": "L2"
+      },
+      "sourceB": {
+        "label": "Your Event",
+        "title": "Gym Session",
+        "subtitle": "Personal Calendar",
+        "layer": "L3"
+      }
+    }
+  },
+  {
+    "item_id": "v1",
+    "type": "VERIFY",
+    "status": "PENDING",
+    "title": "Attendance Check",
+    "body": "Were you at LH-102?",
+    "created_at": "2023-11-14T15:30:00Z",
+    "bg_color": "0xFFE0F2FE",
+    "accent_color": "0xFF0369A1",
+    "payload": {
+      "course": "Mobile App Design",
+      "message": "We detected you near LH-102. Were you present?"
+    }
+  },
+  {
+    "item_id": "a1",
+    "type": "ASSIGNMENT_DUE",
+    "status": "PENDING",
+    "title": "Assignment Due",
+    "body": "HCI Finance Dashboard",
+    "created_at": "2023-11-14T10:00:00Z",
+    "bg_color": "0xFFFFEAD0",
+    "accent_color": "0xFFC05621",
+    "payload": {
+      "work": "Finance Dashboard",
+      "course": "HCI",
+      "due_text": "Due in 28 hours"
+    }
+  },
+  {
+    "item_id": "s1",
+    "type": "SCHEDULE_CHANGE",
+    "status": "PENDING",
+    "title": "Class Cancelled",
+    "body": "Data Structures Cancelled",
+    "created_at": "2023-11-14T09:00:00Z",
+    "bg_color": "0xFFFEE2E2",
+    "accent_color": "0xFFDC2626",
+    "payload": {
+      "course": "Data Structures",
+      "message": "Prof. Rahul cancelled class due to emergency."
+    }
+  },
+  {
+    "item_id": "r1",
+    "type": "ATTENDANCE_RISK",
+    "status": "PENDING",
+    "title": "Low Attendance",
+    "body": "Falling below 75%",
+    "created_at": "2023-11-13T10:00:00Z",
+    "bg_color": "0xFFFEF2F2",
+    "accent_color": "0xFFEF4444",
+    "payload": {
+      "course": "Linear Algebra",
+      "current_per": "72%",
+      "message": "You need to attend next 3 classes to be safe."
+    }
+  }
+]

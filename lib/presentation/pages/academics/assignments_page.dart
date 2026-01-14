@@ -1,44 +1,24 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/work.dart';
 import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:adsum/presentation/pages/academics/widgets/create_assignment_sheet.dart';
+import 'package:intl/intl.dart';
 
-class AssignmentsPage extends StatefulWidget {
+class AssignmentsPage extends ConsumerStatefulWidget {
   const AssignmentsPage({super.key});
 
   @override
-  State<AssignmentsPage> createState() => _AssignmentsPageState();
+  ConsumerState<AssignmentsPage> createState() => _AssignmentsPageState();
 }
 
-class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProviderStateMixin {
+class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<Map<String, dynamic>> _pendingAssignments = [
-    {
-      "title": "Math Problem Set 3",
-      "subject": "CS-302 • Linear Algebra",
-      "deadline": "Tomorrow, 10:00 AM",
-      "isUrgent": true,
-      "type": "Homework"
-    },
-    {
-      "title": "Physics Lab Report",
-      "subject": "PH-401 • Quantum Physics",
-      "deadline": "Fri, 14 Nov",
-      "isUrgent": false,
-      "type": "Project"
-    },
-    {
-      "title": "Read Chapter 4",
-      "subject": "HS-101 • Psychology",
-      "deadline": "Mon, 17 Nov",
-      "isUrgent": false,
-      "type": "Reading"
-    },
-  ];
 
   @override
   void initState() {
@@ -48,6 +28,9 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    // Watch real data
+    final pendingAsync = ref.watch(pendingWorkProvider);
+
     return Scaffold(
       backgroundColor: Colors.grey[50], // Light background
       appBar: AppBar(
@@ -68,14 +51,24 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
           labelStyle: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
           tabs: const [
             Tab(text: "Pending"),
-            Tab(text: "Completed"),
+            Tab(text: "Completed"), // TODO: Add completedWorkProvider or filter
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildAssignmentList(_pendingAssignments),
+          // Pending Tab
+          pendingAsync.when(
+            data: (workItems) {
+              if (workItems.isEmpty) return _buildEmptyState("No pending tasks! 🎉");
+              return _buildAssignmentList(workItems);
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
+          ),
+          
+          // Completed Tab (Placeholder for now)
           _buildEmptyState("No completed tasks yet!"),
         ],
       ),
@@ -89,10 +82,9 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
            );
            
            if (result != null) {
-              // CR-Only: All work is broadcast
-              setState(() {
-                _pendingAssignments.insert(0, result);
-              });
+              // Refresh provider after adding (if CreateAssignmentSheet saves it)
+              ref.invalidate(pendingWorkProvider);
+              
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text("Signing & Broadcasting to Class..."),
                 backgroundColor: AppColors.accent,
@@ -107,7 +99,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
     );
   }
 
-  Widget _buildAssignmentList(List<Map<String, dynamic>> tasks) {
+  Widget _buildAssignmentList(List<Work> tasks) {
     return ListView.builder(
       padding: const EdgeInsets.all(20),
       itemCount: tasks.length,
@@ -121,11 +113,29 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, Map<String, dynamic> task) {
-    final bool isUrgent = task['isUrgent'] ?? false;
-    // Mock subject color based on text
-    final Color subjectColor = task['subject'].toString().contains("Math") ? Colors.indigo : 
-                             task['subject'].toString().contains("Physics") ? Colors.purple : Colors.teal;
+  Widget _buildTaskCard(BuildContext context, Work task) {
+    // Determine urgency: Due within 24 hours
+    final isUrgent = task.dueAt != null && 
+                     task.dueAt!.difference(DateTime.now()).inHours < 24 &&
+                     task.dueAt!.isAfter(DateTime.now());
+
+    // Color based on course (hashing logic for consistency)
+    final colors = [Colors.indigo, Colors.purple, Colors.teal, Colors.orange, Colors.blueGrey];
+    final subjectColor = colors[task.courseCode.hashCode % colors.length];
+
+    // Format deadline
+    String deadlineText = "No Deadline";
+    if (task.dueAt != null) {
+      final now = DateTime.now();
+      final diff = task.dueAt!.difference(now);
+      if (diff.inDays == 0) {
+        deadlineText = "Today, ${DateFormat.jm().format(task.dueAt!)}";
+      } else if (diff.inDays == 1) {
+        deadlineText = "Tomorrow, ${DateFormat.jm().format(task.dueAt!)}";
+      } else {
+        deadlineText = DateFormat('EEE, d MMM').format(task.dueAt!);
+      }
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -140,7 +150,8 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
-          onTap: () => context.push('/academics/detail', extra: task),
+          // Pass Work object to detail page
+          onTap: () => context.push('/academics/detail', extra: task.toJson()), // Temporary: passing JSON map to maintain generic route arg for now
           borderRadius: BorderRadius.circular(20),
           child: IntrinsicHeight(
             child: Row(
@@ -166,7 +177,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(color: subjectColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                              child: Text(task['type'].toUpperCase(), style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: subjectColor, letterSpacing: 0.5)),
+                              child: Text(task.workType.name.toUpperCase(), style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: subjectColor, letterSpacing: 0.5)),
                             ),
                             const Spacer(),
                             if (isUrgent)
@@ -186,12 +197,12 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
                         const SizedBox(height: 12),
                         // Title
                         Text(
-                          task['title'], 
+                          task.title, 
                           style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain)
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          task['subject'], 
+                          task.courseCode, 
                           style: GoogleFonts.dmSans(fontSize: 13, color: AppColors.textMuted, fontWeight: FontWeight.w500)
                         ),
                         const SizedBox(height: 16),
@@ -201,7 +212,7 @@ class _AssignmentsPageState extends State<AssignmentsPage> with SingleTickerProv
                             Icon(Ionicons.time_outline, size: 16, color: Colors.grey[400]),
                             const SizedBox(width: 8),
                             Text(
-                              "Due ${task['deadline']}", 
+                              "Due $deadlineText", 
                               style: GoogleFonts.dmSans(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)
                             ),
                             const Spacer(),

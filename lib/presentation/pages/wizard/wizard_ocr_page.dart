@@ -60,8 +60,8 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
       }
 
       if (mounted) {
-        // Navigate to Sensors (Step 3)
-        context.push('/sensors');
+        // Navigate to Courses (Step 3)
+        context.push('/courses');
       }
     } catch (e) {
       if (mounted) {
@@ -186,8 +186,8 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
               
               GestureDetector(
                 onTap: () {
-                   // Skip to sensors
-                   context.push('/sensors');
+                   // Skip scan, go to Courses
+                   context.push('/courses');
                 },
                 child: Text(
                   'Skip scan, add manually later',

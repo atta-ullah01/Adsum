@@ -1,8 +1,12 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 // --- Enums mimicking DATA_FLOW.md ---
 enum DayType {
@@ -13,68 +17,56 @@ enum DayType {
   noClass,
 }
 
-enum AttendanceStatus {
-  presentAuto,
-  presentManual,
-  absent,
-  pending,
-}
-
 // Data Model for a Single Day
 class CalendarEntry {
   final DayType type;
   final AttendanceStatus? status; // Only relevant if type == classDay
   final String? description; // e.g. "Diwali" or verification method
+  final AttendanceLog? log; // Source log if available
 
   const CalendarEntry({
     required this.type,
     this.status,
     this.description,
+    this.log,
   });
 }
 
-class HistoryLogPage extends StatefulWidget {
+class HistoryLogPage extends ConsumerStatefulWidget {
   final String courseTitle;
+  final String? courseCode; // Enforce filtering by course
   
-  const HistoryLogPage({super.key, required this.courseTitle});
+  const HistoryLogPage({
+    super.key, 
+    required this.courseTitle,
+    this.courseCode,
+  });
 
   @override
-  State<HistoryLogPage> createState() => _HistoryLogPageState();
+  ConsumerState<HistoryLogPage> createState() => _HistoryLogPageState();
 }
 
-class _HistoryLogPageState extends State<HistoryLogPage> {
-  // Mock Data using Structured Model
-  final Map<int, CalendarEntry> _calendarData = {
-    // Week 1
-    1: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto, description: "WiFi Verified"),
-    2: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto, description: "WiFi Verified"),
-    3: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentManual, description: "Self-Marked"),
-    5: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.absent, description: "Missed"),
-    
-    // Week 2
-    7: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    8: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    9: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.pending, description: "Waiting for CR"),
-    
-    // Week 3
-    12: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.absent),
-    13: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    14: CalendarEntry(type: DayType.holiday, description: "Diwali"),
-    15: CalendarEntry(type: DayType.cancelled, description: "Prof Sick"),
-    16: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    
-    // Week 4
-    19: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    20: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    21: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-    22: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.pending),
-    23: CalendarEntry(type: DayType.classDay, status: AttendanceStatus.presentAuto),
-  }; 
-
+class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
+  DateTime _currentMonth = DateTime.now();
   int _selectedDay = DateTime.now().day;
 
   @override
   Widget build(BuildContext context) {
+    // 1. Resolve Enrollment
+    final enrollmentsAsync = ref.watch(enrollmentsProvider);
+    final enrollment = enrollmentsAsync.asData?.value.firstWhere(
+      (e) => e.courseCode == widget.courseCode,
+      orElse: () => Enrollment(enrollmentId: 'unknown', courseCode: widget.courseCode ?? ''),
+    );
+    
+    // 2. Fetch Logs if enrollment found
+    final logsAsync = enrollment?.enrollmentId != 'unknown'
+        ? ref.watch(attendanceLogsProvider(enrollment!.enrollmentId))
+        : const AsyncValue<List<AttendanceLog>>.data([]);
+        
+    // 3. Fetch Calendar Events (Holidays)
+    final eventsAsync = ref.watch(calendarEventsProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -97,14 +89,23 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
               style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 4),
-            Text(
-              "November 2025", 
-              style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  DateFormat('MMMM yyyy').format(_currentMonth),
+                  style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                // Month Navigation could go here
+              ],
             ),
             const SizedBox(height: 24),
             
-            // Custom Calendar Grid
-            _buildCalendarGrid(),
+            if (logsAsync.isLoading || eventsAsync.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              // Custom Calendar Grid
+              _buildCalendarGrid(logsAsync.asData?.value ?? [], eventsAsync.asData?.value ?? []),
             
             const SizedBox(height: 32),
             const Divider(),
@@ -112,18 +113,52 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
             
             // Selected Day Details
             Text(
-              "Details for Nov $_selectedDay",
+              "Details for ${DateFormat('MMM').format(_currentMonth)} $_selectedDay",
               style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildDayDetails(_selectedDay),
+             if (logsAsync.hasValue && eventsAsync.hasValue)
+              _buildDayDetails(_selectedDay, logsAsync.value!, eventsAsync.value!),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCalendarGrid() {
+  // Helper to get entry for a specific day
+  CalendarEntry _getEntryForDay(int day, List<AttendanceLog> logs, List<CalendarEvent> events) {
+    final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+    
+    // Check for Holiday
+    final holiday = events.firstWhere(
+      (e) => isSameDay(e.date, date) && e.type == CalendarEventType.holiday,
+      orElse: () => CalendarEvent(eventId: '', title: '', date: date, type: CalendarEventType.personal), // Dummy
+    );
+    if (holiday.eventId.isNotEmpty) {
+      return CalendarEntry(type: DayType.holiday, description: holiday.title);
+    }
+
+    // Check for Log
+    try {
+        final log = logs.firstWhere((l) => isSameDay(l.date, date));
+        // Map Log Status to UI Type/Status
+        return CalendarEntry(
+          type: DayType.classDay,
+          status: log.status,
+          description: log.source.name, // e.g. "WIFI"
+          log: log,
+        );
+    } catch (_) {
+        // No log found
+        return const CalendarEntry(type: DayType.noClass);
+    }
+  }
+
+  bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  Widget _buildCalendarGrid(List<AttendanceLog> logs, List<CalendarEvent> events) {
+    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -132,10 +167,10 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
       ),
-      itemCount: 30, 
+      itemCount: daysInMonth, 
       itemBuilder: (context, index) {
         final day = index + 1;
-        final entry = _calendarData[day] ?? const CalendarEntry(type: DayType.noClass);
+        final entry = _getEntryForDay(day, logs, events);
         final isSelected = day == _selectedDay;
         
         Color bgColor = Colors.transparent;
@@ -155,13 +190,8 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
         } else if (entry.type == DayType.classDay) {
           // 2. If Class, check Status
           switch (entry.status) {
-            case AttendanceStatus.presentAuto:
+            case AttendanceStatus.present:
               bgColor = AppColors.pastelGreen;
-              textColor = Colors.green[800]!;
-              break;
-            case AttendanceStatus.presentManual:
-              bgColor = Colors.transparent;
-              border = Border.all(color: Colors.green[800]!, width: 1.5);
               textColor = Colors.green[800]!;
               break;
             case AttendanceStatus.absent:
@@ -210,8 +240,8 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
     );
   }
 
-  Widget _buildDayDetails(int day) {
-    final entry = _calendarData[day] ?? const CalendarEntry(type: DayType.noClass);
+  Widget _buildDayDetails(int day, List<AttendanceLog> logs, List<CalendarEvent> events) {
+    final entry = _getEntryForDay(day, logs, events);
     
     if (entry.type == DayType.noClass) {
       return Center(
@@ -245,16 +275,10 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
     } else if (entry.type == DayType.classDay) {
        // Check Status
        switch (entry.status!) {
-         case AttendanceStatus.presentAuto:
-           statusText = "Present (Auto)";
+         case AttendanceStatus.present:
+           statusText = "Present";
            statusColor = Colors.green[800]!;
            icon = Ionicons.checkmark_circle;
-           break;
-         case AttendanceStatus.presentManual:
-           statusText = "Present (Manual)";
-           statusColor = Colors.green[800]!;
-           icon = Ionicons.checkmark_circle_outline;
-           fillIcon = false;
            break;
          case AttendanceStatus.absent:
            statusText = "Absent";
@@ -314,29 +338,17 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            if (entry.status == AttendanceStatus.pending)
-              // VERIFY button for pending
-              SizedBox(
+            // Placeholder: In a real app, logic to mark attendance goes here
+             SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
-                  onPressed: () => _showVerifyDialog(context),
-                  icon: const Icon(Ionicons.checkmark_done_outline),
-                  label: const Text("Verify Attendance"),
+                  onPressed: () {
+                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Attendance override coming soon in Phase 3")));
+                  },
+                  icon: const Icon(Ionicons.flag_outline),
+                  label: const Text("Report Issue"),
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.orange[800],
-                  ),
-                ),
-              )
-            else
-              // EDIT button for already marked
-              SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: () => _showEditDialog(context),
-                  icon: const Icon(Ionicons.create_outline),
-                  label: const Text("Edit Status"),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                    foregroundColor: Colors.grey,
                   ),
                 ),
               )
@@ -347,86 +359,10 @@ class _HistoryLogPageState extends State<HistoryLogPage> {
   }
 
   void _showVerifyDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Verify Attendance", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text("Were you present for this class?", style: GoogleFonts.dmSans(color: Colors.grey)),
-            const SizedBox(height: 16),
-            
-            ListTile(
-              leading: const Icon(Ionicons.checkmark_circle, color: Colors.green),
-              title: const Text("I was Present"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Marked as Present ✓")),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Ionicons.close_circle, color: AppColors.danger),
-              title: const Text("I was Absent"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Marked as Absent")),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+    // Logic for verification (skipped for now as Phase 2B focus is viewing data)
   }
 
   void _showEditDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Edit Status", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            
-            ListTile(
-              leading: const Icon(Ionicons.checkmark_circle, color: Colors.green),
-              title: const Text("Present"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Status updated to Present")),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Ionicons.close_circle, color: AppColors.danger),
-              title: const Text("Absent"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Status updated to Absent")),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+     // Logic for edit (skipped for now)
   }
 }

@@ -17,6 +17,9 @@ class AppLogger {
   static const int _maxFileSizeBytes = 10 * 1024 * 1024; // 10MB
   static const int _maxLogFiles = 7;
   
+  /// Set to false during tests to avoid MissingPluginException from path_provider
+  static bool enableFileLogging = true;
+  
   AppLogger._();
   
   static Future<void> initialize() async {
@@ -113,6 +116,7 @@ class AppLogger {
   }
   
   static Future<void> _writeToFile(LogEntry entry) async {
+    if (!enableFileLogging) return;
     try {
       if (_logFile == null) await _initLogFile();
       if (_logFile == null) return;

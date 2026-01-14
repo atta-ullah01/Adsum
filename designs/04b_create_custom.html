@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSUM - Create Custom Course</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+    <div class="app-container" style="background: white;">
+        
+        <!-- Header -->
+        <div class="page-header">
+            <div class="back-btn" onclick="history.back()">
+                <ion-icon name="chevron-back" style="font-size: 20px;"></ion-icon>
+            </div>
+            <h1 style="font-size: 18px; margin: 0;">New Custom Course</h1>
+            <div style="width: 44px;"></div> <!-- Spacer -->
+        </div>
+
+        <!-- Content -->
+        <div style="flex: 1; overflow-y: auto; padding: 20px var(--pad-page);">
+            
+            <div class="form-group">
+                <label class="form-label">Course Name</label>
+                <input type="text" class="form-select" placeholder="e.g. Graphic Design" style="cursor: text; background: #F9FAFB;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Course Code <span style="color: #EF4444;">*</span></label>
+                <input type="text" class="form-select" placeholder="Required (e.g. CUST101)" required style="cursor: text; background: #F9FAFB;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Instructor / Professor</label>
+                <input type="text" class="form-select" placeholder="e.g. Prof. Sarah" style="cursor: text; background: #F9FAFB;">
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-select" value="09:00" style="background: #F9FAFB;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-select" value="10:00" style="background: #F9FAFB;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-select" placeholder="e.g. Room 304 or Zoom Link" style="cursor: text; background: #F9FAFB;">
+            </div>
+
+            <!-- Color Theme Selector -->
+            <div class="form-group">
+                <label class="form-label">Card Color</label>
+                <div class="color-selector">
+                    <div class="color-option bg-pastel-green selected" onclick="selectColor(this)"></div>
+                    <div class="color-option bg-pastel-purple" onclick="selectColor(this)"></div>
+                    <div class="color-option bg-pastel-orange" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #E0F2FE;" onclick="selectColor(this)"></div>
+                    <div class="color-option" style="background: #FCE7F3;" onclick="selectColor(this)"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sticky Footer Button -->
+        <div style="padding: 24px; background: white; border-top: 1px solid #f3f4f6;">
+            <button class="btn btn-black" onclick="saveCourse()">
+                Create Course
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        function selectColor(el) {
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function saveCourse() {
+            // In a real app, this would save data.
+            // For prototype, we just go back.
+            alert('Custom course created! Returning to schedule...');
+            location.href = '04_courses.html';
+        }
+    </script>
+</body>
+</html>

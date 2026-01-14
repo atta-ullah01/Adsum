@@ -1,23 +1,46 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:adsum/domain/models/work.dart';
+import 'package:adsum/data/providers/data_providers.dart';
 
-class WorkDetailPage extends StatefulWidget {
+class WorkDetailPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> workItem;
 
   const WorkDetailPage({super.key, required this.workItem});
 
   @override
-  State<WorkDetailPage> createState() => _WorkDetailPageState();
+  ConsumerState<WorkDetailPage> createState() => _WorkDetailPageState();
 }
 
-class _WorkDetailPageState extends State<WorkDetailPage> {
+class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
+  late Work _work;
+  // Mock comments for now
   final List<Map<String, dynamic>> _comments = [
     {"user_id": "prof_alan", "text": "Make sure to double check the determinants.", "created_at": "2h ago", "isMe": false},
     {"user_id": "current_user", "text": "Thanks professor!", "created_at": "1h ago", "isMe": true},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      _work = Work.fromJson(widget.workItem);
+    } catch (e) {
+      // Fallback or error handling if JSON is invalid
+      // For now, creating a dummy Work object to prevent crash
+      _work = Work(
+        workId: (widget.workItem['work_id'] as String?) ?? 'unknown',
+        courseCode: (widget.workItem['course_code'] as String?) ?? 'Unknown',
+        workType: WorkType.assignment,
+        title: (widget.workItem['title'] as String?) ?? 'Error Load',
+        createdAt: DateTime.now(),
+      );
+    }
+  }
 
   void _addComment(String text) {
     setState(() {
@@ -32,21 +55,21 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> item = widget.workItem;
-    final String workType = item['work_type'] ?? "ASSIGNMENT";
-    
     // Determine Color & Icon based on work_type
     Color typeColor;
     IconData typeIcon;
-    if (workType == 'EXAM') {
-      typeColor = Colors.red;
-      typeIcon = Ionicons.alert_circle;
-    } else if (workType == 'QUIZ') {
-      typeColor = Colors.purple;
-      typeIcon = Ionicons.timer;
-    } else {
-      typeColor = Colors.blue; 
-      typeIcon = Ionicons.document_text;
+    switch (_work.workType) {
+      case WorkType.exam:
+        typeColor = Colors.red;
+        typeIcon = Ionicons.alert_circle;
+        break;
+      case WorkType.quiz:
+        typeColor = Colors.purple;
+        typeIcon = Ionicons.timer;
+        break;
+      default:
+        typeColor = Colors.blue; 
+        typeIcon = Ionicons.document_text;
     }
 
     return Scaffold(
@@ -96,41 +119,41 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
             // 1. Meta Tags (Pills)
             Row(
               children: [
-                _buildTag(item['course_code'] ?? "General", AppColors.primary),
+                _buildTag(_work.courseCode, AppColors.primary),
                 const SizedBox(width: 8),
-                _buildTag(workType, typeColor, icon: typeIcon),
+                _buildTag(_work.workType.name, typeColor, icon: typeIcon),
               ],
             ),
             const SizedBox(height: 16),
             
             // 2. Big Title
             Text(
-              item['title'] ?? "Untitled Work",
+              _work.title,
               style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.bold, height: 1.1, color: AppColors.textMain),
             ),
             const SizedBox(height: 16),
 
             // 3. Dynamic Key Dates / Info
-            if (workType == 'ASSIGNMENT')
-               _buildMetaRow(Ionicons.time_outline, "Due ${item['due_at'] ?? 'No Date'}"),
+            if (_work.workType == WorkType.assignment)
+               _buildMetaRow(Ionicons.time_outline, "Due ${_work.dueAt != null ? _work.dueAt.toString() : 'No Date'}"), // Better formatting needed
             
-            if (workType == 'QUIZ')
+            if (_work.workType == WorkType.quiz)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMetaRow(Ionicons.calendar_outline, "Window: ${item['start_at']} - ${item['due_at']}"),
+                  _buildMetaRow(Ionicons.calendar_outline, "Window: ${_work.startAt} - ${_work.dueAt}"),
                   const SizedBox(height: 8),
-                   _buildMetaRow(Ionicons.hourglass_outline, "Duration: ${item['duration_minutes']} mins"),
+                   _buildMetaRow(Ionicons.hourglass_outline, "Duration: ${_work.durationMinutes} mins"),
                 ],
               ),
 
-             if (workType == 'EXAM')
+             if (_work.workType == WorkType.exam)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMetaRow(Ionicons.calendar, "Date: ${item['start_at']}"),
+                  _buildMetaRow(Ionicons.calendar, "Date: ${_work.startAt}"),
                   const SizedBox(height: 8),
-                   _buildMetaRow(Ionicons.location_outline, "Venue: ${item['venue'] ?? 'TBD'}"),
+                   _buildMetaRow(Ionicons.location_outline, "Venue: ${_work.venue ?? 'TBD'}"),
                 ],
               ),
             
@@ -142,7 +165,7 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
             Text("DETAILS", style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1)),
             const SizedBox(height: 12),
             Text(
-              item['description'] ?? "No additional details provided.",
+              _work.description ?? "No additional details provided.",
               style: GoogleFonts.dmSans(fontSize: 16, height: 1.6, color: AppColors.textMain),
             ),
             
@@ -164,7 +187,12 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
             const SizedBox(height: 16),
             
             // Comment List (from work_comments schema)
-            ..._comments.map((c) => _buildComment(c['user_id'], c['text'], c['created_at'], isMe: c['isMe'])),
+            ..._comments.map((c) => _buildComment(
+              (c['user_id'] as String?) ?? 'Anonymous',
+              (c['text'] as String?) ?? '',
+              (c['created_at'] as String?) ?? '',
+              isMe: (c['isMe'] as bool?) ?? false
+            )),
             
             const SizedBox(height: 100), // Space for FAB
           ],
@@ -175,9 +203,17 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: () {
-             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Marked as Done! 🎉")));
-             context.pop();
+          onPressed: () async {
+             // Connect to real service
+             await ref.read(workServiceProvider).markSubmitted(_work.workId);
+             
+             // Refresh list
+             ref.invalidate(pendingWorkProvider);
+
+             if (context.mounted) {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Marked as Completed! 🎉")));
+               context.pop();
+             }
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.textMain, 

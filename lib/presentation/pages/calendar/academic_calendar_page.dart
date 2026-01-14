@@ -1,50 +1,25 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:adsum/presentation/pages/calendar/add_event_page.dart';
 
-class AcademicCalendarPage extends StatefulWidget {
+class AcademicCalendarPage extends ConsumerStatefulWidget {
   const AcademicCalendarPage({super.key});
 
   @override
-  State<AcademicCalendarPage> createState() => _AcademicCalendarPageState();
+  ConsumerState<AcademicCalendarPage> createState() => _AcademicCalendarPageState();
 }
 
-class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
+class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
   DateTime _focusedMonth = DateTime(2026, 1);
   DateTime _selectedDay = DateTime.now();
-  
-  // Mock Data
-  final Map<String, List<Map<String, dynamic>>> _events = {
-    "2025-11": [
-      {"date": DateTime(2025, 11, 4), "title": "Diwali", "type": "Holiday", "source": "Admin", "isActive": true},
-      {"date": DateTime(2025, 11, 14), "title": "Children's Day", "type": "DaySwap", "order": "Fri", "source": "Admin", "isActive": true},
-    ],
-    "2025-12": [
-      {"date": DateTime(2025, 12, 12), "title": "End Semester Exams", "type": "Exam", "source": "Admin", "isActive": true},
-      {"date": DateTime(2025, 12, 25), "title": "Christmas", "type": "Holiday", "source": "Admin", "isActive": true},
-    ],
-    "2026-01": [
-      {"date": DateTime(2026, 01, 01), "title": "New Year", "type": "Holiday", "source": "Admin", "isActive": true},
-      {"date": DateTime(2026, 01, 10), "title": "CS101 Cancelled", "type": "Cancel", "source": "CR", "isActive": true, "course": "CS101"},
-      {"date": DateTime(2026, 01, 12), "title": "PH100 Rescheduled to 3 PM", "type": "Reschedule", "source": "CR", "isActive": true, "course": "PH100", "newTime": "15:00"},
-      {"date": DateTime(2026, 01, 14), "title": "MA102 Extra Class", "type": "ExtraClass", "source": "CR", "isActive": true, "course": "MA102", "time": "16:00"},
-      {"date": DateTime(2026, 01, 15), "title": "CS101 Assignment 1", "type": "Assignment", "source": "Course", "isActive": true, "dueAt": "23:59"},
-      {"date": DateTime(2026, 01, 15), "title": "Math Quiz 1", "type": "Quiz", "source": "Course", "isActive": true, "dueAt": "14:00"}, // Same day as assignment
-      {"date": DateTime(2026, 01, 15), "title": "Gym Session", "type": "Personal", "source": "User", "isActive": true}, // Same day
-      {"date": DateTime(2026, 01, 26), "title": "Republic Day", "type": "Holiday", "source": "Admin", "isActive": true},
-      {"date": DateTime(2026, 01, 27), "title": "Following Monday Schedule", "type": "DaySwap", "order": "Mon", "source": "CR", "isActive": true},
-    ],
-    "2026-04": [
-       {"date": DateTime(2026, 04, 04), "title": "Mahavir Jayanti", "type": "Holiday", "source": "Admin", "isActive": true},
-       {"date": DateTime(2026, 04, 07), "title": "Good Friday", "type": "Holiday", "source": "Admin", "isActive": true},
-       {"date": DateTime(2026, 04, 14), "title": "Dr. Ambedkar Jayanti", "type": "Holiday", "source": "Admin", "isActive": true},
-    ]
-  };
 
   @override
   void initState() {
@@ -57,6 +32,10 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch Events from Provider
+    final eventsAsync = ref.watch(calendarEventsProvider);
+    
+    // Derived days list
     List<DateTime> days = _getDaysInMonth(_focusedMonth);
     
     return Scaffold(
@@ -78,85 +57,91 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
           )
         ],
       ),
-      body: Column(
-        children: [
-          // 1. Calendar View
-          Container(
-            padding: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
-            ),
-            child: Column(
-              children: [
-                // Month Nav
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Ionicons.chevron_back, color: Colors.grey),
-                        onPressed: () => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1)),
-                      ),
-                      Text(
-                        DateFormat("MMMM yyyy").format(_focusedMonth),
-                        style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                      IconButton(
-                        icon: const Icon(Ionicons.chevron_forward, color: Colors.grey),
-                        onPressed: () => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1)),
-                      ),
-                    ],
-                  ),
+      body: eventsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error loading calendar: $err')),
+        data: (events) {
+          return Column(
+            children: [
+              // 1. Calendar View
+              Container(
+                padding: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
                 ),
-                
-                // Weekday Headers
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-                        .map((d) => SizedBox(width: 40, child: Center(child: Text(d, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.grey)))))
-                        .toList(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                
-                // Grid
-                SizedBox(
-                  height: 300, // Fixed height for grid roughly
-                  child: GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 7,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 8,
-                      childAspectRatio: 0.9,
+                child: Column(
+                  children: [
+                    // Month Nav
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Ionicons.chevron_back, color: Colors.grey),
+                            onPressed: () => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1)),
+                          ),
+                          Text(
+                            DateFormat("MMMM yyyy").format(_focusedMonth),
+                            style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
+                          IconButton(
+                            icon: const Icon(Ionicons.chevron_forward, color: Colors.grey),
+                            onPressed: () => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1)),
+                          ),
+                        ],
+                      ),
                     ),
-                    itemCount: days.length + _getFirstWeekdayOfMonth(_focusedMonth) - 1,
-                    itemBuilder: (context, index) {
-                      int offset = _getFirstWeekdayOfMonth(_focusedMonth) - 1;
-                      if (index < offset) return const SizedBox(); 
-                      DateTime day = days[index - offset];
-                      return _buildDayCell(day);
-                    },
-                  ),
+                    
+                    // Weekday Headers
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                            .map((d) => SizedBox(width: 40, child: Center(child: Text(d, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.grey)))))
+                            .toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Grid
+                    SizedBox(
+                      height: 300, // Fixed height for grid roughly
+                      child: GridView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 7,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 8,
+                          childAspectRatio: 0.9,
+                        ),
+                        itemCount: days.length + _getFirstWeekdayOfMonth(_focusedMonth) - 1,
+                        itemBuilder: (context, index) {
+                          int offset = _getFirstWeekdayOfMonth(_focusedMonth) - 1;
+                          if (index < offset) return const SizedBox(); 
+                          DateTime day = days[index - offset];
+                          return _buildDayCell(day, events);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          
-          // 2. Selected Day Events (Agenda)
-          Expanded(
-            child: Container(
-              color: AppColors.bgApp,
-              child: _buildAgendaList(),
-            ),
-          ),
-        ],
+              ),
+              
+              // 2. Selected Day Events (Agenda)
+              Expanded(
+                child: Container(
+                  color: AppColors.bgApp,
+                  child: _buildAgendaList(events),
+                ),
+              ),
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -166,12 +151,23 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
           );
           
           if (result != null && result is Map) {
-             setState(() {
-                DateTime d = result['date'];
-                String key = DateFormat("yyyy-MM").format(d);
-                if (!_events.containsKey(key)) _events[key] = [];
-                _events[key]!.add(result as Map<String, dynamic>);
-             });
+             // Add Event via Service
+             final typeStr = result['type'] as String? ?? 'Personal';
+             final type = CalendarEventType.values.firstWhere(
+               (e) => e.name.toLowerCase() == typeStr.toLowerCase(), 
+               orElse: () => CalendarEventType.personal
+             );
+
+             await ref.read(calendarServiceProvider).addEvent(
+               title: result['title'],
+               date: result['date'],
+               type: type,
+               startTime: result['startTime'],
+               endTime: result['endTime'],
+               description: result['description'],
+             );
+             // Verify/Invalidate
+             ref.invalidate(calendarEventsProvider);
           }
         },
         backgroundColor: Colors.black,
@@ -181,20 +177,23 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
     );
   }
 
-  Widget _buildDayCell(DateTime day) {
-    List<Map<String, dynamic>> events = _getEventsOnDate(day);
+  Widget _buildDayCell(DateTime day, List<CalendarEvent> allEvents) {
+    List<CalendarEvent> events = _getEventsOnDate(day, allEvents);
     bool isSelected = isSameDay(day, _selectedDay);
     bool isToday = isSameDay(day, DateTime.now());
     
-    // Get unique marker colors for this day
-    List<Color> markerColors = events.where((e) => e['isActive']).map((event) {
-      if (event['type'] == 'Holiday') return AppColors.danger;
-      if (event['type'] == 'Exam' || event['type'] == 'Quiz') return AppColors.accent;
-      if (['Cancel', 'Reschedule', 'ExtraClass', 'DaySwap'].contains(event['type'])) return AppColors.primary;
-      if (event['type'] == 'Personal') return AppColors.secondary;
-      if (event['type'] == 'Assignment') return Colors.orange;
-      return Colors.grey;
-    }).toSet().toList(); // Remove duplicates
+    // Get unique marker colors
+    List<Color> markerColors = events.where((e) => e.isActive).map((event) {
+      switch (event.type) {
+        case CalendarEventType.holiday: return AppColors.danger;
+        case CalendarEventType.exam:
+        case CalendarEventType.quiz: return AppColors.accent;
+        case CalendarEventType.daySwap: return AppColors.primary;
+        case CalendarEventType.personal: return AppColors.secondary;
+        case CalendarEventType.assignment: return Colors.orange;
+        default: return Colors.grey;
+      }
+    }).toSet().toList();
 
     return InkWell(
       onTap: () => setState(() => _selectedDay = day),
@@ -238,8 +237,8 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
     );
   }
 
-  Widget _buildAgendaList() {
-    List<Map<String, dynamic>> dayEvents = _getEventsOnDate(_selectedDay);
+  Widget _buildAgendaList(List<CalendarEvent> allEvents) {
+    List<CalendarEvent> dayEvents = _getEventsOnDate(_selectedDay, allEvents);
     
     return ListView(
       padding: const EdgeInsets.all(24),
@@ -284,28 +283,37 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
     );
   }
 
-  Widget _buildEventDetailsCard(Map<String, dynamic> event) {
-    bool isHoliday = event['type'] == "Holiday";
-    bool isExam = event['type'] == "Exam";
-    bool isAssignment = event['type'] == "Assignment";
-    bool isQuiz = event['type'] == "Quiz";
-    bool isCRModification = ['Cancel', 'Reschedule', 'ExtraClass', 'DaySwap'].contains(event['type']);
-    bool isActive = event['isActive'];
+  Widget _buildEventDetailsCard(CalendarEvent event) {
+    // Colors based on Type
+    Color bgDate;
+    Color textDate;
     
-    // Premium Colors
-    // Exam and Quiz share the same color (Yellow/Accent)
-    // CR Modifications (Cancel, Reschedule, ExtraClass, DaySwap) share blue
-    Color bgDate = isHoliday ? AppColors.pastelPink : ((isExam || isQuiz) ? AppColors.pastelYellow : (isCRModification ? AppColors.pastelBlue : AppColors.pastelBlue));
-    Color textDate = isHoliday ? AppColors.danger : ((isExam || isQuiz) ? const Color(0xFFB45309) : (isCRModification ? AppColors.primary : AppColors.primary));
-    
-    if (event['type'] == 'Personal') {
-       bgDate = AppColors.pastelPurple;
-       textDate = AppColors.secondary;
-    } else if (isAssignment) {
-       bgDate = Colors.orange.shade50;
-       textDate = Colors.orange;
+    switch (event.type) {
+      case CalendarEventType.holiday:
+        bgDate = AppColors.pastelPink;
+        textDate = AppColors.danger;
+        break;
+      case CalendarEventType.exam:
+      case CalendarEventType.quiz:
+        bgDate = AppColors.pastelYellow;
+        textDate = const Color(0xFFB45309);
+        break;
+      case CalendarEventType.daySwap:
+        bgDate = AppColors.pastelBlue;
+        textDate = AppColors.primary;
+        break;
+      case CalendarEventType.personal:
+        bgDate = AppColors.pastelPurple;
+        textDate = AppColors.secondary;
+        break;
+      case CalendarEventType.assignment:
+        bgDate = Colors.orange.shade50;
+        textDate = Colors.orange;
+        break;
+      default:
+        bgDate = Colors.grey.shade100;
+        textDate = Colors.grey.shade700;
     }
-    // Quiz color logic removed as it now shares with Exam
 
     return FadeSlideTransition(
       index: 0,
@@ -329,18 +337,18 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
                    Container(
                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                      decoration: BoxDecoration(color: bgDate, borderRadius: BorderRadius.circular(12)),
-                     child: Text(event['type'].toUpperCase(), style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: textDate)),
+                     child: Text(event.type.displayName.toUpperCase(), style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: textDate)),
                    ),
-                   if (isActive)
+                   if (event.isActive)
                      Icon(Ionicons.notifications_outline, color: textDate, size: 20)
                  ],
                ),
                const SizedBox(height: 16),
-               Text(event['title'], style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold)),
-               if (event.containsKey('description') && event['description'].isNotEmpty)
+               Text(event.title, style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold)),
+               if (event.description != null && event.description!.isNotEmpty)
                  Padding(
                    padding: const EdgeInsets.only(top: 8),
-                   child: Text(event['description'], style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey)),
+                   child: Text(event.description!, style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey)),
                  ),
                  
                const SizedBox(height: 24),
@@ -349,14 +357,10 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
                
                Row(
                  children: [
-                    _buildMetaItem(Ionicons.person_outline, "Source: ${event['source']}"),
-                    if (event.containsKey('order')) ...[
+                    _buildMetaItem(Ionicons.calendar_outline, "Date: ${DateFormat('d MMM').format(event.date)}"),
+                    if (event.startTime != null) ...[
                        const SizedBox(width: 24),
-                       _buildMetaItem(Ionicons.swap_horizontal, "Follows ${event['order']}"),
-                    ],
-                    if (event.containsKey('dueAt')) ...[
-                       const SizedBox(width: 24),
-                       _buildMetaItem(Ionicons.time_outline, "Due: ${event['dueAt']}"),
+                       _buildMetaItem(Ionicons.time_outline, event.startTime!),
                     ]
                  ],
                )
@@ -387,98 +391,15 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
     return DateTime(month.year, month.month, 1).weekday;
   }
   
-  Map<String, dynamic>? _getEventOnDate(DateTime date) {
-    String key = DateFormat("yyyy-MM").format(date);
-    if (!_events.containsKey(key)) return null;
-    try {
-      return _events[key]!.firstWhere((e) => isSameDay(e['date'], date));
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  // NEW: Get ALL events on a specific date
-  List<Map<String, dynamic>> _getEventsOnDate(DateTime date) {
-    String key = DateFormat("yyyy-MM").format(date);
-    if (!_events.containsKey(key)) return [];
-    return _events[key]!.where((e) => isSameDay(e['date'], date)).toList();
+  List<CalendarEvent> _getEventsOnDate(DateTime date, List<CalendarEvent> allEvents) {
+    return allEvents.where((e) => isSameDay(e.date, date)).toList();
   }
   
   bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
-  // Keep _showDayOrderSheet mostly same, just update styles if needed
-  void _showDayOrderSheet(Map<String, dynamic> event) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 24),
-            Text("Edit Day Details", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
-             const SizedBox(height: 8),
-            Text("Date: ${DateFormat("EEEE, d MMMM yyyy").format(event['date'])}", style: GoogleFonts.dmSans(color: Colors.grey)),
-            
-            const SizedBox(height: 24),
-            
-            // Toggle Active
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text("Active Event", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-              trailing: Switch(
-                value: event['isActive'], 
-                onChanged: (val) {
-                  setState(() => event['isActive'] = val);
-                  Navigator.pop(context);
-                },
-                activeColor: Colors.black,
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            if (event['isActive'] && (event['type'] == 'DaySwap' || event['type'] == 'Holiday')) ...[
-               Text("Day Order Override", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.grey)),
-               const SizedBox(height: 12),
-               Wrap(
-                 spacing: 8,
-                 children: ["Default", "Mon", "Tue", "Wed", "Thu", "Fri"].map((day) {
-                   bool isSelected = (event['order'] ?? "Default") == day || (day == "Default" && !event.containsKey('order'));
-                   return ChoiceChip(
-                     label: Text(day),
-                     selected: isSelected,
-                     onSelected: (val) {
-                       setState(() {
-                         if (day == "Default") {
-                           event.remove('order');
-                           if (event['title'].contains("Holiday")) event['type'] = "Holiday";
-                         } else {
-                           event['order'] = day;
-                           event['type'] = "DaySwap";
-                         }
-                         event['source'] = "User";
-                       });
-                       Navigator.pop(context);
-                     },
-                     selectedColor: Colors.black,
-                     labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-                   );
-                 }).toList(),
-               )
-            ],
-            
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
+  // Placeholder for edit (view-only or toggle visibility in future)
+  void _showDayOrderSheet(CalendarEvent event) {
+     // TODO: Implement Edit Event logic
+     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Editing event is coming in Phase 3")));
   }
 }

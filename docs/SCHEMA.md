@@ -180,7 +180,7 @@
 | `requested_at` | Timestamp | | |
 | `reviewed_at` | Timestamp | | Null until reviewed |
 
-*Note: CR scope is per course+section. Multiple CRs per section allowed. Once approved, CR generates signing key on first action.*
+*Note: CR scope is strictly **per-section**. A user can be CR for "CS101-A" but not "CS101-B". Admin approval grants authority only for that specific `course_code` + `section` combination.*
 
 #### `verification_votes`
 *Crowd-sourced class status voting (see Section 10: Student Collaboration in FEATURES.md).*
@@ -364,17 +364,17 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
 ]
 ```
 
-#### Type-Specific Payloads
+#### Type-Specific Payloads (Strict Schema)
 
 **CONFLICT:**
 ```json
 {
-  "conflict_category": "CR_VS_PERSONAL", // OFFICIAL_VS_PERSONAL, CR_VS_PERSONAL, PERSONAL_VS_PERSONAL
+  "conflict_category": "OFFICIAL_VS_PERSONAL", // Enum: OFFICIAL_VS_PERSONAL, CR_VS_PERSONAL, PERSONAL_VS_PERSONAL
   "sourceA": {
-    "label": "CR Update",      // Display label (e.g., "CR Update", "Your Event")
-    "title": "Math Lecture",   // Event title
-    "subtitle": "Moved to 2 PM", // Context description
-    "layer": "L2"              // Source layer (L1=Admin, L2=CR, L3=User)
+    "label": "CR Update",
+    "title": "Math Lecture",
+    "subtitle": "Moved to 2 PM",
+    "layer": "L2"
   },
   "sourceB": {
     "label": "Your Event",
@@ -404,9 +404,9 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
 **ASSIGNMENT_DUE:**
 ```json
 {
-  "work": "Finance Dashboard",  // Assignment/work title
-  "course": "HCI",              // Course name
-  "due_text": "Due in 28 hours" // Human-readable due string
+  "work": "Finance Dashboard",
+  "course": "HCI",
+  "due_text": "Due in 28 hours"
 }
 ```
 
@@ -414,7 +414,7 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
 ```json
 {
   "course": "Linear Algebra",
-  "current_per": "72%",         // Current attendance percentage
+  "current_per": "72%",
   "message": "You need to attend next 3 classes to be safe."
 }
 ```

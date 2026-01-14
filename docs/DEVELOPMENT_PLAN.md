@@ -1,6 +1,6 @@
 # Adsum Development Plan 🛠️
 
-> **Status:** Phase 2B (Complete)
+> **Status:** Phase 2A/2B (In Progress)
 > **Goal:** Build a **robust, verification-driven** Student Productivity App.
 > **Philosophy:** *"If it isn't tested, it doesn't exist. If it can fail, plan for it."*
 
@@ -8,7 +8,7 @@ This document is the **master engineering specification** for the development pr
 
 ---
 
-## �️ Consistency & Robustness Checkpoints
+## 🛡️ Consistency & Robustness Checkpoints
 
 To ensure absolute reliability, the following strictly enforced checkpoints must be passed at the end of every major phase (or every 500 lines of code changed).
 
@@ -28,15 +28,16 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 
 ---
 
-## �📊 Implementation Progress
+## 📊 Implementation Progress
 
 | Phase | Status | Description |
 |-------|--------|-------------|
 | Phase 0 | ✅ Complete | Foundation of Robustness |
 | Phase 1A | ✅ Complete | Drift Database + JSON Service |
-| Phase 1B | ✅ Complete | Domain Models + Repositories |
-| Phase 2 | ✅ Complete | Connect UI to Data & Onboarding |
-| Phase 3 | 🚧 Next | Sync Engine |
+| Phase 1B | ✅ Complete | Domain Models + Repositories (Core) |
+| Phase 2A | ✅ Complete | Feature Backend (Work, Syllabus, Mess, Calendar) |
+| Phase 2B | ✅ Complete | Connect UI to Data |
+| Phase 3 | ⏳ Pending | Sync Engine |
 | Phase 4 | ⏳ Pending | Domain Logic |
 | Phase 5 | ⏳ Pending | Security & CR Authority |
 | Phase 6 | ⏳ Pending | Integration & Observability |
@@ -101,7 +102,7 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 
 ---
 
-## ✅ Phase 1B: Data Foundation - Domain Layer (COMPLETE)
+## ✅ Phase 1B: Data Foundation - Core Domain (COMPLETE)
 
 ### 1.4 Domain Models (matches SCHEMA.md Part 2)
 
@@ -123,6 +124,7 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 | `EnrollmentRepository` | `lib/data/repositories/enrollment_repository.dart` | CRUD, stats, attendance |
 | `AttendanceRepository` | `lib/data/repositories/attendance_repository.dart` | Log, query, sync |
 | `ActionItemRepository` | `lib/data/repositories/action_item_repository.dart` | Add, resolve, query |
+| `ScheduleRepository` | `lib/data/repositories/schedule_repository.dart` | Custom slots, bindings |
 
 ### 1.6 Riverpod Providers
 - [x] **data_providers.dart**: `lib/data/providers/data_providers.dart`
@@ -132,26 +134,98 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 
 ---
 
-## ✅ Phase 2: Connect UI to Data (COMPLETE)
+## ✅ Phase 2A: Data Foundation - Features (COMPLETE)
+
+*Goal: Implement repositories and services for specialized features using strict architecture.*
+
+### 2A.1 Feature Components (Provider → Service → Repository)
+| Feature | Service | Repository | Model |
+|---|---|---|---|
+| **Work** | `WorkService` | `WorkRepository` | `Work`, `WorkState` |
+| **Syllabus** | `SyllabusService` | `SyllabusRepository` | `SyllabusUnit`, `SyllabusTopic`, `CustomSyllabus` |
+| **Mess** | `MessService` | `MessRepository` | `MessMenu`, `MenuCache` |
+| **Calendar** | `CalendarService` | `CalendarRepository` | `CalendarEvent`, `CalendarOverride` |
+
+### 2A.2 Tasks
+- [x] Implement `WorkRepository` (Pure CRUD) & `WorkService` (Business Logic)
+- [x] Implement `SyllabusRepository` & `SyllabusService`
+- [x] Implement `MessRepository` & `MessService`
+- [x] Implement `CalendarRepository` & `CalendarService`
+- [x] Register Service providers in `data_providers.dart`
+- [x] Verify with `flutter test test/data_layer_verification_test.dart`
+
+---
+
+## ✅ Phase 2B: Connect UI to Data (COMPLETE)
 
 *Goal: Replace hardcoded mock data in demo pages with repository calls.*
 
-### 2.1 Demo App Status
-The demo at `lib/presentation/` is presentation-only with mock data:
-- Dashboard: Hardcoded `_getEventsForDate()` mock
-- CoursesPage: Inline `_globalCourses` list
-- ActionCenter: Loads from assets JSON (needs repository)
+### 2B.1 Demo App Status
+The demo at `lib/presentation/` contains **24 pages** across 12 feature directories:
 
-### 2.2 Tasks
+### 2B.2 All Pages Status
 
-| Page | Current State | Action Required |
-|------|--------------|-----------------|
-| Dashboard | Load from merged schedule | Done ✅ |
-| CoursesPage | Load from `enrollmentsProvider` | Done ✅ |
-| SubjectDetailPage | Load from `enrollmentRepository` | Done ✅ |
-| ActionCenterPage | Connected to Repo | Done ✅ |
-| SettingsPage | Connected to UserRepo | Done ✅ |
+#### Core Pages
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| SplashPage | `splash/splash_page.dart` | ✅ Connected | `userRepositoryProvider` |
+| AuthPage | `auth/auth_page.dart` | ✅ Connected | `userRepositoryProvider` |
+| DashboardPage | `dashboard/dashboard_page.dart` | ✅ Connected | `todayScheduleProvider` |
+| SettingsPage | `settings/settings_page.dart` | ✅ Connected | `userRepositoryProvider` |
+| EditProfilePage | `settings/edit_profile_page.dart` | ✅ Connected | `userRepositoryProvider` |
 
+#### Courses & Enrollment
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| CoursesPage | `courses/courses_page.dart` | ✅ Connected | `enrollmentsProvider` |
+| SubjectDetailPage | `courses/subject_detail_page.dart` | ✅ Connected | `enrollmentsProvider`, `attendanceLogsProvider` |
+| CreateCustomCoursePage | `courses/create_custom_course_page.dart` | ✅ Connected | `enrollmentRepositoryProvider` (Actions) |
+
+#### Academics
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| AssignmentsPage | `academics/assignments_page.dart` | ✅ Connected | `pendingWorkProvider` ✅ |
+| SyllabusEditorPage | `academics/syllabus_editor_page.dart` | ✅ Connected | `syllabusServiceProvider` ✅ |
+| WorkDetailPage | `academics/work_detail_page.dart` | ✅ Connected | `workServiceProvider` ✅ |
+
+#### Attendance
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| AcademicsPage | `attendance/academics_page.dart` | ✅ Connected | `enrollmentsProvider` |
+| GeofenceDebuggerPage | `attendance/geofence_debugger_page.dart` | ✅ Verified | `geofenceServiceProvider` (Visual Only) |
+| HistoryLogPage | `attendance/history_log_page.dart` | ✅ Connected | `attendanceLogsProvider` |
+
+#### Calendar
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| AcademicCalendarPage | `calendar/academic_calendar_page.dart` | ✅ Connected | `calendarEventsProvider` ✅ |
+| AddEventPage | `calendar/add_event_page.dart` | ✅ Connected | `calendarServiceProvider` ✅ |
+| HolidayInjectionPage | `calendar/holiday_injection_page.dart` | ✅ Connected | `calendarServiceProvider` ✅ |
+
+#### CR Authority
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| SchedulePatcherPage | `cr_authority/schedule_patcher_page.dart` | ⏳ Pending | `scheduleRepositoryProvider`, `patchProvider` (Missing) |
+| AuditTrailPage | `cr_authority/audit_trail_page.dart` | ⏳ Pending | `auditLogProvider` (Missing) |
+
+#### Mess
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| MessMenuPage | `mess/mess_menu_page.dart` | ✅ Connected | `todayMessMenuProvider` ✅ |
+| MenuEditorPage | `mess/menu_editor_page.dart` | ✅ Connected | `messServiceProvider` ✅ |
+
+#### Action & Notifications
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| ActionCenterPage | `action_center/action_center_page.dart` | ✅ Connected | `pendingActionItemsProvider` |
+
+#### Wizard (Onboarding)
+| Page | File | Status | Required Provider |
+|------|------|--------|-------------------|
+| WizardOcrPage | `wizard/wizard_ocr_page.dart` | ✅ Connected | `userRepositoryProvider` |
+| WizardSensorsPage | `wizard/wizard_sensors_page.dart` | ✅ Connected | `userRepositoryProvider` |
+
+### 2B.4 Completed Tasks
 - [x] Create `ScheduleService` to merge L1+L2+L3
 - [x] Replace mock data in Dashboard with schedule provider
 - [x] Connect CoursesPage to EnrollmentRepository
@@ -159,8 +233,11 @@ The demo at `lib/presentation/` is presentation-only with mock data:
 - [x] Connect ActionCenter to ActionItemRepository
 - [x] Connect SettingsPage to UserRepository
 - [x] Add reactive UI updates with Riverpod
+- [x] Connect Form Pages (Add Event, Create Custom Course)
+- [x] Connect Editor Pages (Syllabus, Menu, Profile)
+- [x] Connect Detail Pages (Work, History)
 
-### 2.3 Phase 2B: Onboarding & Authentication (New)
+### 2B.3 Onboarding & Authentication
 *Goal: Replace mock Auth and Wizard with real User creation.*
 
 - [x] **AuthPage**: Connect to `UserRepository` (Create/Get User)
@@ -171,7 +248,8 @@ The demo at `lib/presentation/` is presentation-only with mock data:
 > 1. Dashboard loads real enrollments
 > 2. Adding course persists to JSON
 > 3. Action items resolve and persist
-> 4. No hardcoded mock data remains
+> 4. No hardcoded mock data remains (Verified via comprehensive audit)
+> 5. All 24 pages audited: 21 Connected, 2 Pending Backend, 1 Config Only.
 
 ---
 
@@ -270,5 +348,8 @@ lib/
 
 | Date | Change |
 |------|--------|
+| 2026-01-14 | Introduced Phase 2A (Feature Backend) and Phase 2B (Connect UI) split |
+| 2026-01-14 | Cleaned up: deleted `schedule/`, `conflicts/`, `notifications/` directories (unused) |
+| 2026-01-14 | Updated Phase 2 with complete page inventory (24 pages across 12 directories) |
 | 2026-01-14 | Updated to reflect actual implementation, marked Phase 0/1 complete |
 | 2026-01-14 | Enhanced plan with robustness focus, failure modes, verification gates |

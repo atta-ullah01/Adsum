@@ -4,6 +4,7 @@ import 'package:adsum/presentation/pages/attendance/geofence_debugger_page.dart'
 import 'package:adsum/presentation/pages/courses/subject_detail_page.dart';
 import 'package:adsum/presentation/pages/mess/mess_menu_page.dart';
 import 'package:adsum/presentation/pages/mess/menu_editor_page.dart';
+import 'package:adsum/domain/models/mess.dart';
 import 'package:adsum/presentation/pages/calendar/academic_calendar_page.dart';
 import 'package:adsum/presentation/pages/calendar/holiday_injection_page.dart';
 import 'package:adsum/presentation/pages/settings/settings_page.dart';
@@ -25,7 +26,7 @@ import 'package:adsum/presentation/pages/cr_authority/schedule_patcher_page.dart
 import 'package:adsum/presentation/pages/cr_authority/audit_trail_page.dart';
 
 final router = GoRouter(
-  initialLocation: '/dashboard',
+  initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
@@ -103,7 +104,12 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/mess/editor',
-      builder: (context, state) => const MenuEditorPage(),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        final day = extra['day'] as MessDayOfWeek? ?? MessDayOfWeek.mon;
+        final hostelId = extra['hostelId'] as String? ?? '';
+        return MenuEditorPage(day: day, hostelId: hostelId);
+      },
     ),
     
     // Phase 7: Calendar
@@ -140,7 +146,10 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/syllabus-editor',
-      builder: (context, state) => const SyllabusEditorPage(),
+      builder: (context, state) {
+        final extras = state.extra as Map<String, dynamic>;
+        return SyllabusEditorPage(courseCode: extras['courseCode']);
+      },
     ),
     // Phase 10: CR Authority
     GoRoute(

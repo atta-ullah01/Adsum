@@ -49,17 +49,7 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
   
   final List<String> _tabs = ["Stats", "Syllabus", "Work", "Info"];
 
-  // Mock Syllabus Data (Keep as placeholder until Syllabus feature is real)
-  final List<Map<String, dynamic>> _syllabusUnits = [
-    {
-      "title": "Unit 1: Introduction to Flutter",
-      "topics": [
-        {"name": "Dart Basics", "done": true},
-        {"name": "Widget Tree & Element Tree", "done": true},
-        {"name": "Stateless vs Stateful", "done": false},
-      ]
-    }, // ... clipped for brevity, assuming we keep syllabus mocks for now as per plan
-  ];
+
   
   // Helper to find enrollment
   Enrollment? get _enrollment {
@@ -351,9 +341,9 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
                  children: [
                    Text("Past 7 Days", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
                    TextButton(
-                     onPressed: () => context.push('/history-log', extra: {'title': widget.courseTitle}),
-                     child: Text("View Calendar", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: AppColors.primary)),
-                   )
+                     onPressed: () => context.push('/history-log', extra: {'title': widget.courseTitle, 'courseCode': widget.courseCode}),
+                     child: const Text("View All"),
+                   ),
                  ],
                ),
                const SizedBox(height: 16),
@@ -438,137 +428,167 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
   }
 
 
-  // --- SYLLABUS VIEW (Restored Card + Linear Content) ---
+  // --- SYLLABUS VIEW ---
   Widget _buildSyllabusView() {
-    int totalTopics = 0;
-    int completedTopics = 0;
-    for (var unit in _syllabusUnits) {
-       for (var topic in unit["topics"]) {
-         totalTopics++;
-         if (topic["done"] == true) completedTopics++;
-       }
-    }
-    double progress = totalTopics == 0 ? 0 : completedTopics / totalTopics;
-    String percentage = "${(progress * 100).toInt()}%";
+    final syllabusAsync = ref.watch(customSyllabusProvider(widget.courseCode));
+    final progressAsync = ref.watch(syllabusProgressProvider(widget.courseCode));
 
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        // 1. Progress Card Restored (Container) but with Linear Content
-        FadeSlideTransition(
-          index: 0,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.pastelGreen, // Green for tab
-              borderRadius: BorderRadius.circular(32),
-            ),
+    return syllabusAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error loading syllabus: $err')),
+      data: (syllabus) {
+        final units = syllabus?.units ?? [];
+        if (units.isEmpty) {
+          return Center(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Overall Progress", style: GoogleFonts.dmSans(color: Colors.green[900], fontSize: 14, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        Text("$completedTopics / $totalTopics Topics", style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green[900])),
-                      ],
-                    ),
-                    Text(percentage, style: GoogleFonts.outfit(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.green[900])), // All Green
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Linear Progress on Card
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progress, 
-                    backgroundColor: Colors.white,
-                    color: Colors.green, // All Green
-                    minHeight: 12,
-                  ),
+                const Icon(Ionicons.book_outline, size: 48, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text("No syllabus found", style: GoogleFonts.dmSans(color: Colors.grey)),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: () {
+                    context.push('/syllabus-editor', extra: {'courseCode': widget.courseCode});
+                  },
+                  icon: const Icon(Ionicons.add),
+                  label: const Text("Create Syllabus"),
                 ),
               ],
             ),
-          ),
-        ),
-        
-        const SizedBox(height: 32),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          );
+        }
+
+        final completedTopicIds = progressAsync.asData?.value ?? [];
+
+        int totalTopics = 0;
+        int completedTopics = 0;
+        for (var unit in units) {
+          for (var topic in unit.topics) {
+            totalTopics++;
+            if (completedTopicIds.contains(topic.topicId)) completedTopics++;;
+          }
+        }
+
+        double progress = totalTopics == 0 ? 0 : completedTopics / totalTopics;
+        String percentage = "${(progress * 100).toInt()}%";
+
+        return ListView(
+          padding: const EdgeInsets.all(24),
           children: [
-            Text("Modules", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-            if (_isCustom)
-              TextButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Edit/Import Syllabus — Coming Soon!")),
-                  );
-                },
-                icon: const Icon(Ionicons.create_outline, size: 18),
-                label: const Text("Edit / Import"),
-                style: TextButton.styleFrom(foregroundColor: Colors.grey),
-              )
-          ],
-        ),
-        const SizedBox(height: 16),
-        
-        // 2. Units Accordion List
-        ...List.generate(_syllabusUnits.length, (index) {
-          final unit = _syllabusUnits[index];
-          return FadeSlideTransition(
-            index: index + 1,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+            // 1. Progress Card
+            FadeSlideTransition(
+              index: 0,
               child: Container(
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.bgApp, 
-                  borderRadius: BorderRadius.circular(24),
+                  color: AppColors.pastelGreen,
+                  borderRadius: BorderRadius.circular(32),
                 ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent), 
-                  child: ExpansionTile(
-                    shape: const Border(),
-                    collapsedShape: const Border(),
-                    title: Text(unit["title"], style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: AppColors.textMain, fontSize: 16)),
-                    subtitle: Text("${unit['topics'].length} Topics", style: GoogleFonts.dmSans(color: AppColors.textMuted, fontSize: 13)),
-                    childrenPadding: const EdgeInsets.only(bottom: 16),
-                    iconColor: AppColors.textMain,
-                    children: (unit["topics"] as List).map<Widget>((topic) {
-                      final bool isDone = topic["done"];
-                      return ListTile(
-                        dense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                        title: Text(
-                          topic["name"], 
-                          style: GoogleFonts.dmSans(
-                            color: isDone ? Colors.grey[400] : AppColors.textMain,
-                            decoration: isDone ? TextDecoration.lineThrough : null,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Overall Progress", style: GoogleFonts.dmSans(color: Colors.green[900], fontSize: 14, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text("$completedTopics / $totalTopics Topics", style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green[900])),
+                          ],
                         ),
-                        leading: _buildCustomCheckbox(isDone, () {
-                             setState(() {
-                               topic["done"] = !isDone; 
-                             });
-                        }),
-                      );
-                    }).toList(),
-                  ),
+                        Text(percentage, style: GoogleFonts.outfit(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.green[900])),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: Colors.white,
+                        color: Colors.green,
+                        minHeight: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          );
-        }),
-      ],
+
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Modules", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
+                TextButton.icon(
+                  onPressed: () {
+                    context.push('/syllabus-editor', extra: {'courseCode': widget.courseCode});
+                  },
+                  icon: const Icon(Ionicons.create_outline, size: 18),
+                  label: const Text("Edit / Import"),
+                  style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                )
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // 2. Units Accordion List
+            ...List.generate(units.length, (index) {
+              final unit = units[index];
+              return FadeSlideTransition(
+                index: index + 1,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.bgApp,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Theme(
+                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        shape: const Border(),
+                        collapsedShape: const Border(),
+                        title: Text(unit.title, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: AppColors.textMain, fontSize: 16)),
+                        subtitle: Text("${unit.topics.length} Topics", style: GoogleFonts.dmSans(color: AppColors.textMuted, fontSize: 13)),
+                        childrenPadding: const EdgeInsets.only(bottom: 16),
+                        iconColor: AppColors.textMain,
+                        children: unit.topics.map<Widget>((topic) {
+                          final bool isDone = completedTopicIds.contains(topic.topicId);
+                          return ListTile(
+                            dense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                            title: Text(
+                              topic.title,
+                              style: GoogleFonts.dmSans(
+                                color: isDone ? Colors.grey[400] : AppColors.textMain,
+                                decoration: isDone ? TextDecoration.lineThrough : null,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            leading: _buildCustomCheckbox(isDone, () async {
+                              // Optimistic update handled by provider invalidation in service
+                              await ref.read(syllabusServiceProvider).toggleComplete(widget.courseCode, topic.topicId);
+                              ref.invalidate(syllabusProgressProvider(widget.courseCode));
+                            }),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
-  
+
   Widget _buildCustomCheckbox(bool isChecked, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSUM - Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <div class="page-header">
+            <div class="back-btn" onclick="history.back()">
+                <ion-icon name="chevron-back" style="font-size: 20px;"></ion-icon>
+            </div>
+            <div class="avatar-sm" style="background: #eee;">
+               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" />
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div style="flex: 1; overflow-y: auto; padding-bottom: 40px;">
+            
+            <!-- Hero Image Integration -->
+            <div class="anim-pop" style="padding: 0 var(--pad-page); margin-bottom: 10px; display: flex; justify-content: center;">
+                <img src="assets/auth_hero.png" style="width: 120px; height: auto;">
+            </div>
+
+            <div style="padding: 0 var(--pad-page); text-align: center;">
+                <h1 style="font-size: 24px; margin-bottom: 20px;">Choose your Identity</h1>
+            </div>
+
+            <div style="padding: 0 var(--pad-page); margin-bottom: 30px;" class="anim-slide">
+                <div class="form-group">
+                    <label class="form-label">Select University</label>
+                    <select class="form-select">
+                        <option>IIT Delhi</option>
+                        <option>IIT Bombay</option>
+                        <option>BITS Pilani</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Your Hostel</label>
+                    <select class="form-select">
+                        <option>Hostel Udaigiri</option>
+                        <option>Hostel H1</option>
+                        <option>Girls Hostel A</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="padding: 0 var(--pad-page); display: flex; flex-direction: column; gap: 20px;">
+                
+                <!-- Student Option -->
+                <div class="card-pastel bg-yellow anim-slide anim-delay-1" onclick="location.href='03_wizard_ocr.html'">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 13px;">
+                            Student
+                        </div>
+                        <ion-icon name="logo-google" style="font-size: 28px; opacity: 0.8;"></ion-icon>
+                    </div>
+                    <h3>Login with Google</h3>
+                    <p style="font-size: 13px; opacity: 0.7; margin-top: 4px;">University Account</p>
+                    
+                    <div style="margin-top: 20px; display: flex; align-items: center;">
+                        <div style="display: flex; margin-right: 10px;">
+                            <div class="avatar-sm" style="background:#ddd;"></div>
+                            <div class="avatar-sm" style="background:#ccc; margin-left: -10px;"></div>
+                            <div class="avatar-sm" style="background:#bbb; margin-left: -10px;"></div>
+                        </div>
+                        <span class="text-sm">+24k Users</span>
+                    </div>
+                </div>
+
+                <!-- Guest Option -->
+                <div class="card-pastel bg-purple anim-slide anim-delay-2" onclick="location.href='03_wizard_ocr.html'" style="display: flex; align-items: center; justify-content: space-between;">
+                     <div>
+                         <h3>Guest Mode</h3>
+                         <p class="text-sm" style="margin-top: 4px;">Local Storage Only</p>
+                     </div>
+                     <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                         <ion-icon name="person" style="font-size: 20px;"></ion-icon>
+                     </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

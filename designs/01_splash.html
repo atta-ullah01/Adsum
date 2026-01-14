@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSUM - Welcome</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+</head>
+<body>
+    <div class="app-container" style="padding: 30px; display: flex; flex-direction: column;">
+        
+        <!-- Top Branding -->
+        <div style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-top: 20px; color: var(--text-main);">
+            /adsum:
+        </div>
+
+        <!-- Hero Region -->
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -40px;">
+            
+            <!-- The Illustration -->
+            <div class="anim-pop" style="width: 100%; max-width: 320px; position: relative;">
+                <img src="assets/onboarding_hero.png" style="width: 100%; height: auto; transform: scale(1.1); mix-blend-mode: multiply;">
+                
+                <!-- Floating Elements -->
+                <div style="position: absolute; top: 0; right: 0; animation: float 6s infinite;">
+                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <path d="M20 5V35M5 20H35" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
+                     </svg>
+                </div>
+            </div>
+
+            <!-- Text Content -->
+            <div class="anim-slide" style="text-align: left; width: 100%; margin-top: 30px;">
+                <h1 style="font-size: 42px; margin-bottom: 12px; letter-spacing: -1px; color: var(--text-main);">
+                    Attendance.<br>
+                    <span style="opacity: 0.5;">Simplified.</span>
+                </h1>
+                <p style="color: var(--text-main); opacity: 0.7; font-size: 18px; line-height: 1.6; font-weight: 500;">
+                    Manage your entire campus life<br>
+                    seamlessly from your pocket.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Bottom Action -->
+        <div class="anim-slide" style="margin-bottom: 20px;">
+
+            <button class="btn btn-black" onclick="location.href='02_auth.html'">
+                Get Started
+            </button>
+        </div>
+
+    </div>
+
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(10deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+    </style>
+</body>
+</html>

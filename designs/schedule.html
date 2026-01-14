@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADSUM Schedule - Sample 2</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <style>
+        /* Specific styles for Schedule Page */
+        .calendar-strip {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 0 var(--pad-page);
+            margin-bottom: 24px;
+            scrollbar-width: none;
+        }
+        .calendar-strip::-webkit-scrollbar { display: none; }
+
+        .date-capsule {
+            min-width: 60px;
+            height: 80px;
+            background: white;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-muted);
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .date-capsule.active {
+            background: var(--text-main);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .date-capsule .day { font-size: 12px; }
+        .date-capsule .date { font-size: 18px; font-weight: 700; font-family: var(--font-heading); }
+        .date-capsule .dot { width: 4px; height: 4px; background: var(--secondary); border-radius: 50%; opacity: 0; }
+        .date-capsule.has-event .dot { opacity: 1; }
+
+        .timeline-connector {
+            position: absolute;
+            left: 38px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #E0E0E0;
+            z-index: 0;
+        }
+
+        .schedule-item {
+            display: flex;
+            gap: 20px;
+            padding: 0 var(--pad-page);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .schedule-time {
+            width: 50px;
+            text-align: right;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-top: 20px;
+        }
+
+        .schedule-card {
+            flex: 1;
+            background: white;
+            border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 0;
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+            border-left: 4px solid var(--primary);
+        }
+
+        .schedule-card.lab { border-left-color: var(--secondary); background: #FFF8F6; }
+        .schedule-card.exam { border-left-color: var(--danger); background: #FFF5F5; }
+
+        .tag {
+            display: inline-block;
+            background: rgba(0,0,0,0.05);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .schedule-card h3 {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+        
+        .schedule-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .avatars-stack {
+            display: flex;
+            margin-top: 12px;
+        }
+        .avatars-stack img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            margin-left: -8px;
+        }
+        .avatars-stack img:first-child { margin-left: 0; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header" style="background: white; padding-bottom: 20px; border-radius: 0 0 30px 30px; box-shadow: var(--shadow-soft); margin-bottom: 30px;">
+            <div class="user-greeting">
+                <ion-icon name="chevron-back-outline" style="font-size: 24px;"></ion-icon>
+            </div>
+            <h1 style="font-family: var(--font-heading); font-size: 20px;">August 2024</h1>
+            <div class="avatar" style="width: 40px; height: 40px;">
+                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar">
+            </div>
+        </div>
+
+        <!-- Date Strip -->
+        <div class="calendar-strip">
+            <div class="date-capsule">
+                <span class="day">Mon</span>
+                <span class="date">16</span>
+            </div>
+            <div class="date-capsule">
+                <span class="day">Tue</span>
+                <span class="date">17</span>
+                <div class="dot"></div>
+            </div>
+            <div class="date-capsule">
+                <span class="day">Wed</span>
+                <span class="date">18</span>
+            </div>
+            <div class="date-capsule active has-event">
+                <span class="day">Thu</span>
+                <span class="date">19</span>
+                <div class="dot"></div>
+            </div>
+             <div class="date-capsule">
+                <span class="day">Fri</span>
+                <span class="date">20</span>
+                <div class="dot"></div>
+            </div>
+             <div class="date-capsule">
+                <span class="day">Sat</span>
+                <span class="date">21</span>
+            </div>
+        </div>
+
+        <!-- Schedule List -->
+        <div style="position: relative; padding-bottom: 100px;">
+            <div class="timeline-connector"></div>
+
+            <!-- Item 1 -->
+            <div class="schedule-item">
+                <div class="schedule-time">09:30 AM</div>
+                <div class="schedule-card">
+                    <span class="tag">Lecture</span>
+                    <h3>Mobile App Design</h3>
+                    <p><ion-icon name="location-outline"></ion-icon> LH-102 • Prof. Sarah</p>
+                    <div class="avatars-stack">
+                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" alt="">
+                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" alt="">
+                         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=3" alt="">
+                         <span style="font-size: 10px; margin-left: 4px; align-self: center; color: var(--text-muted);">+5 friends</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="schedule-item">
+                <div class="schedule-time">11:00 AM</div>
+                <div class="schedule-card lab">
+                    <span class="tag" style="background: var(--secondary-light); color: var(--secondary);">Laboratory</span>
+                    <h3>Website Design Responsive</h3>
+                    <p><ion-icon name="wifi-outline"></ion-icon> Computer Lab 4</p>
+                     <p style="margin-top: 8px; font-size: 11px; color: var(--secondary);"><ion-icon name="warning-outline"></ion-icon> Attendance Low (65%)</p>
+                </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="schedule-item">
+                <div class="schedule-time">02:30 PM</div>
+                <div class="schedule-card exam">
+                    <span class="tag" style="background: #FFD9D9; color: var(--danger);">Quiz</span>
+                    <h3>Finance Dashboard</h3>
+                    <p><ion-icon name="time-outline"></ion-icon> 30 Mins • 20 Marks</p>
+                </div>
+            </div>
+
+        </div>
+        
+          <!-- Navigation Bar -->
+        <div class="navbar">
+            <div class="nav-item">
+                <ion-icon name="grid-outline"></ion-icon>
+            </div>
+            <div class="nav-item active">
+                <ion-icon name="calendar-outline"></ion-icon>
+            </div>
+            <div class="fab">
+                <ion-icon name="add-outline"></ion-icon>
+            </div>
+            <div class="nav-item">
+                <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+            </div>
+            <div class="nav-item">
+                <ion-icon name="settings-outline"></ion-icon>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

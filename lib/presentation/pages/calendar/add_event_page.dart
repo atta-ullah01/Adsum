@@ -1,25 +1,28 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-class AddEventPage extends StatefulWidget {
+class AddEventPage extends ConsumerStatefulWidget {
   final DateTime? initialDate;
   const AddEventPage({super.key, this.initialDate});
 
   @override
-  State<AddEventPage> createState() => _AddEventPageState();
+  ConsumerState<AddEventPage> createState() => _AddEventPageState();
 }
 
-class _AddEventPageState extends State<AddEventPage> {
+class _AddEventPageState extends ConsumerState<AddEventPage> {
   late TextEditingController _titleCtrl;
   late TextEditingController _descCtrl;
   late DateTime _startDate;
   late DateTime _endDate;
   TimeOfDay _startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 10, minute: 0);
+  bool _isSaving = false;
   
   @override
   void initState() {
@@ -28,6 +31,43 @@ class _AddEventPageState extends State<AddEventPage> {
     _descCtrl = TextEditingController();
     _startDate = widget.initialDate ?? DateTime.now();
     _endDate = _startDate;
+  }
+
+  Future<void> _saveEvent() async {
+    if (_titleCtrl.text.isEmpty) return;
+    
+    setState(() => _isSaving = true);
+    
+    try {
+      final calendarService = ref.read(calendarServiceProvider);
+      
+      // Format times as HH:mm strings
+      final startTimeStr = '${_startTime.hour.toString().padLeft(2, '0')}:${_startTime.minute.toString().padLeft(2, '0')}';
+      final endTimeStr = '${_endTime.hour.toString().padLeft(2, '0')}:${_endTime.minute.toString().padLeft(2, '0')}';
+      
+      await calendarService.addEvent(
+        title: _titleCtrl.text,
+        date: _startDate,
+        startTime: startTimeStr,
+        endTime: endTimeStr,
+        description: _descCtrl.text.isNotEmpty ? _descCtrl.text : null,
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event Created!')),
+        );
+        context.pop(true); // Return true to indicate success
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to create event: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -45,25 +85,10 @@ class _AddEventPageState extends State<AddEventPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              if (_titleCtrl.text.isEmpty) return;
-              
-              // Construct Event
-              final newEvent = {
-                "title": _titleCtrl.text,
-                "description": _descCtrl.text,
-                "date": _startDate, // Treating as single day event for calendar view simplicity
-                "startTime": _startTime.format(context),
-                "endTime": _endTime.format(context),
-                "type": "Personal",
-                "source": "User",
-                "isActive": true
-              };
-              
-              context.pop(newEvent);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Event Created!")));
-            },
-            child: Text("Save", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 16)),
+            onPressed: _isSaving ? null : _saveEvent,
+            child: _isSaving 
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text("Save", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 16)),
           )
         ],
       ),

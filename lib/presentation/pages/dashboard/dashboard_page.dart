@@ -26,66 +26,34 @@ class DashboardPage extends ConsumerStatefulWidget {
 class _DashboardPageState extends ConsumerState<DashboardPage> {
   DateTime _selectedDate = DateTime.now();
 
-  // Helper to generate Mess events (Mock for now until MessRepository exists)
-  List<ScheduleEvent> _getMessEvents(DateTime date) {
-    // Only show mess for today/future or recent past
-    // Simple logic: Breakfast at 8, Lunch at 12:30
+  // Convert MessMenu items to ScheduleEvents for timeline display
+  List<ScheduleEvent> _convertMessToEvents(List<MessMenu> menus, DateTime date) {
     final events = <ScheduleEvent>[];
-    final breakfastTime = DateTime(date.year, date.month, date.day, 8, 0);
-    final lunchTime = DateTime(date.year, date.month, date.day, 12, 30);
-
-    events.add(ScheduleEvent(
-      id: 'mess_breakfast_${date.day}',
-      title: 'Breakfast',
-      subtitle: _getBreakfastForDay(date.weekday),
-      startTime: breakfastTime,
-      endTime: breakfastTime.add(const Duration(minutes: 30)),
-      type: ScheduleEventType.event, // Using event type for Mess
-      color: '#616161', // Grey 700
-      metadata: {'isMess': true, 'bgColor': '#F5F5F5'}, // Grey 100
-    ));
-
-    events.add(ScheduleEvent(
-      id: 'mess_lunch_${date.day}',
-      title: 'Lunch',
-      subtitle: _getLunchForDay(date.weekday),
-      startTime: lunchTime,
-      endTime: lunchTime.add(const Duration(minutes: 45)),
-      type: ScheduleEventType.event,
-      color: '#616161',
-      metadata: {'isMess': true, 'bgColor': '#F5F5F5'},
-    ));
-
+    
+    for (final menu in menus) {
+      final timeParts = menu.startTime.split(':');
+      final hour = int.tryParse(timeParts[0]) ?? 8;
+      final minute = timeParts.length > 1 ? (int.tryParse(timeParts[1]) ?? 0) : 0;
+      final startTime = DateTime(date.year, date.month, date.day, hour, minute);
+      
+      final endParts = menu.endTime.split(':');
+      final endHour = int.tryParse(endParts[0]) ?? hour + 1;
+      final endMinute = endParts.length > 1 ? (int.tryParse(endParts[1]) ?? 0) : 0;
+      final endTime = DateTime(date.year, date.month, date.day, endHour, endMinute);
+      
+      events.add(ScheduleEvent(
+        id: 'mess_${menu.menuId}',
+        title: menu.mealType.displayName,
+        subtitle: menu.items,
+        startTime: startTime,
+        endTime: endTime,
+        type: ScheduleEventType.event,
+        color: '#616161',
+        metadata: {'isMess': true, 'bgColor': '#F5F5F5'},
+      ));
+    }
+    
     return events;
-  }
-
-  String _getBreakfastForDay(int weekday) {
-    const items = [
-      'Poha, Tea, Eggs',
-      'Idli, Sambar, Coffee',
-      'Paratha, Curd, Tea',
-      'Upma, Tea, Banana',
-      'Bread, Omelette, Juice',
-      'Chole Bhature, Lassi',
-      'Pancakes, Milk, Fruits',
-    ];
-    // Safety check for index
-    if (weekday < 1 || weekday > 7) return items[0];
-    return items[weekday - 1];
-  }
-
-  String _getLunchForDay(int weekday) {
-    const items = [
-      'Rice, Dal, Roti, Paneer',
-      'Rice, Rajma, Salad',
-      'Biryani, Raita',
-      'Rice, Dal Makhani, Roti',
-      'Pulao, Kadhi, Papad',
-      'Chole Rice, Pickle',
-      'Special Thali',
-    ];
-    if (weekday < 1 || weekday > 7) return items[0];
-    return items[weekday - 1];
   }
 
   String _getGreeting() {
@@ -125,23 +93,32 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _getGreeting(),
-                        style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                      Text(
-                        "Attaullah",
-                        style: GoogleFonts.outfit(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textMain,
-                        ),
-                      ),
-                    ],
-                  ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final userAsync = ref.watch(userProfileProvider);
+                        final userName = userAsync.maybeWhen(
+                          data: (user) => user?.fullName ?? 'User',
+                          orElse: () => 'User',
+                        );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getGreeting(),
+                              style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey[600]),
+                            ),
+                            Text(
+                              userName,
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textMain,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
 
                   // Actions Row
                   Row(
@@ -227,16 +204,28 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
             // Scrollable Timeline Content
             Expanded(
-              child: scheduleAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('Error: $err')),
-                data: (events) {
-                  // Merge with mess events
-                  final messEvents = _getMessEvents(_selectedDate);
-                  final allEvents = [...events, ...messEvents];
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final scheduleResult = ref.watch(scheduleForDateProvider(_selectedDate));
+                  final messDay = MessDayOfWeek.fromDateTime(_selectedDate);
+                  final messMenusAsync = ref.watch(messMenuForDayProvider(messDay));
                   
-                  // Sort by start time
-                  allEvents.sort((a, b) => a.startTime.compareTo(b.startTime));
+                  // Extract mess menus from AsyncValue (default to empty if loading/error)
+                  final messMenus = messMenusAsync.maybeWhen(
+                    data: (menus) => menus,
+                    orElse: () => <MessMenu>[],
+                  );
+                  
+                  return scheduleResult.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(child: Text('Error: $err')),
+                    data: (events) {
+                      // Convert and merge mess events
+                      final messEvents = _convertMessToEvents(messMenus, _selectedDate);
+                      final allEvents = [...events, ...messEvents];
+                      
+                      // Sort by start time
+                      allEvents.sort((a, b) => a.startTime.compareTo(b.startTime));
 
                   if (allEvents.isEmpty) {
                     return Center(
@@ -322,7 +311,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           );
                         },
                       ),
-                    ],
+                        ],
+                      );
+                    },
                   );
                 },
               ),

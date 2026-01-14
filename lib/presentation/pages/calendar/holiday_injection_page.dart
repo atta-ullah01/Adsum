@@ -1,17 +1,20 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 
-class HolidayInjectionPage extends StatefulWidget {
+class HolidayInjectionPage extends ConsumerStatefulWidget {
   const HolidayInjectionPage({super.key});
 
   @override
-  State<HolidayInjectionPage> createState() => _HolidayInjectionPageState();
+  ConsumerState<HolidayInjectionPage> createState() => _HolidayInjectionPageState();
 }
 
-class _HolidayInjectionPageState extends State<HolidayInjectionPage> {
+class _HolidayInjectionPageState extends ConsumerState<HolidayInjectionPage> {
   bool _isProcessing = false;
 
   @override
@@ -105,9 +108,35 @@ class _HolidayInjectionPageState extends State<HolidayInjectionPage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         setState(() => _isProcessing = true);
-                        Future.delayed(const Duration(seconds: 2), () {
+                        
+                        final service = ref.read(calendarServiceProvider);
+                        
+                        // Add real events
+                        await service.addEvent(
+                          title: "Mahavir Jayanti",
+                          date: DateTime(2026, 4, 4),
+                          type: CalendarEventType.holiday,
+                          description: "Imported from PDF",
+                        );
+                        await service.addEvent(
+                          title: "Good Friday",
+                          date: DateTime(2026, 4, 7),
+                          type: CalendarEventType.holiday,
+                          description: "Imported from PDF",
+                        );
+                        await service.addEvent(
+                          title: "Dr. Ambedkar Jayanti",
+                          date: DateTime(2026, 4, 14),
+                          type: CalendarEventType.holiday,
+                          description: "Imported from PDF",
+                        );
+                        
+                        // Trigger refresh
+                        ref.invalidate(calendarEventsProvider);
+
+                        Future.delayed(const Duration(seconds: 1), () {
                           if (mounted) {
                             context.pop();
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Holidays Imported to Calendar!")));

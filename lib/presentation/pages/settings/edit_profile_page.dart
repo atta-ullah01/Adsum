@@ -1,28 +1,32 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 
-class EditProfilePage extends StatefulWidget {
+class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  ConsumerState<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   // Controllers
   late TextEditingController _nameCtrl;
   late TextEditingController _sectionCtrl;
+  bool _isInitialized = false;
+  bool _isSaving = false;
   
   // Selection State
   String? _selectedUniId;
   String? _selectedHostelId;
-  String _uniName = "";
-  String _hostelName = "";
+  String _uniName = "Select University";
+  String _hostelName = "Select Hostel";
 
-  // Mock Data (Simulating Supabase Tables)
+  // Mock Data (Static config for now)
   final List<Map<String, String>> _universities = [
       {'id': 'u1', 'name': 'MIT ADT University'},
       {'id': 'u2', 'name': 'IIT Delhi'},
@@ -40,26 +44,69 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: "Attaullah");
-    _sectionCtrl = TextEditingController(text: "A");
-    
-    // Initial Values
-    _selectedUniId = 'u1';
-    _selectedHostelId = 'h1';
-    _updateDisplayNames();
+    _nameCtrl = TextEditingController();
+    _sectionCtrl = TextEditingController();
+  }
+  
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _sectionCtrl.dispose();
+    super.dispose();
   }
 
   void _updateDisplayNames() {
-      final uni = _universities.firstWhere((u) => u['id'] == _selectedUniId, orElse: () => {'name': 'Select University'});
-      final hostel = _hostels.firstWhere((h) => h['id'] == _selectedHostelId, orElse: () => {'name': 'Select Hostel'});
-      setState(() {
-          _uniName = uni['name']!;
-          _hostelName = _selectedHostelId == null ? "Select Hostel" : hostel['name']!;
-      });
+      if (_selectedUniId != null) {
+        final uni = _universities.firstWhere((u) => u['id'] == _selectedUniId, orElse: () => {'name': 'Select University'});
+        _uniName = uni['name']!;
+      } else {
+        _uniName = "Select University";
+      }
+
+      if (_selectedHostelId != null) {
+        final hostel = _hostels.firstWhere((h) => h['id'] == _selectedHostelId, orElse: () => {'name': 'Select Hostel'});
+        _hostelName = hostel['name']!;
+      } else {
+        _hostelName = "Select Hostel";
+      }
+      
+      if (mounted) setState(() {});
+  }
+
+  Future<void> _saveProfile() async {
+    setState(() => _isSaving = true);
+    try {
+      final currentUser = ref.read(userProfileProvider).value;
+      if (currentUser == null) throw Exception("User not loaded");
+
+      final updatedUser = currentUser.copyWith(
+        fullName: _nameCtrl.text.trim(),
+        defaultSection: _sectionCtrl.text.trim(),
+        universityId: _selectedUniId,
+        homeHostelId: _selectedHostelId,
+      );
+
+      await ref.read(userRepositoryProvider).saveUser(updatedUser);
+      
+      // Update provider
+      ref.invalidate(userProfileProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Updated!")));
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating profile: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProfileProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -82,106 +129,125 @@ class _EditProfilePageState extends State<EditProfilePage> {
             Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: TextButton(
-                    onPressed: () {
-                    context.pop({
-                        "name": _nameCtrl.text,
-                        "uni": _uniName,
-                        "hostel": _hostelName
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Updated!")));
-                    },
+                    onPressed: _isSaving ? null : _saveProfile,
                     style: TextButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     ),
-                    child: Text("Save", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: _isSaving 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                      : Text("Save", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: Stack(
-                children: [
-                   Container(
-                     padding: const EdgeInsets.all(8),
-                     decoration: BoxDecoration(
-                         color: Colors.white, 
-                         shape: BoxShape.circle, 
-                         border: Border.all(color: Colors.grey.shade100, width: 2),
-                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 24, offset: const Offset(0, 8))]
-                     ),
-                     child: CircleAvatar(
-                         radius: 64, 
-                         backgroundColor: AppColors.primary, 
-                         child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : "A", style: GoogleFonts.outfit(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold))
-                     ),
-                   ),
-                  Positioned(
-                    bottom: 0, right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                          color: Colors.black, 
-                          shape: BoxShape.circle, 
-                          border: Border.all(color: Colors.white, width: 4),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))]
-                      ),
-                      child: const Icon(Ionicons.camera, color: Colors.white, size: 20),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(height: 48),
-            
-            _buildField("Full Name", _nameCtrl, Ionicons.person),
-            const SizedBox(height: 24),
-            
-            // University Selector
-            _buildSelector("University", _uniName, Ionicons.school, () => _showPicker(
-                title: "Select University",
-                items: _universities,
-                onSelected: (id) {
-                    setState(() {
-                        _selectedUniId = id;
-                        _selectedHostelId = null; // Reset Hostel on Uni Change
-                        _updateDisplayNames();
-                    });
-                }
-            )),
-            
-            const SizedBox(height: 24),
-            
-            // Hostel Selector (Dependent)
-            _buildSelector("Hostel / Residence", _hostelName, Ionicons.home, () {
-                if (_selectedUniId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a university first")));
-                    return;
-                }
-                final filteredHostels = _hostels.where((h) => h['uni_id'] == _selectedUniId).toList();
-                _showPicker(
-                    title: "Select Hostel",
-                    items: filteredHostels,
-                    onSelected: (id) {
-                         setState(() {
-                             _selectedHostelId = id;
-                             _updateDisplayNames();
-                         });
-                    }
-                );
-            }),
+      body: userAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Error loading profile: $err")),
+        data: (user) {
+          if (user == null) {
+            return Center(child: Text("Profile not found", style: GoogleFonts.dmSans(color: Colors.red)));
+          }
 
-            const SizedBox(height: 24),
-            _buildField("Default Section", _sectionCtrl, Ionicons.people),
-          ],
-        ),
+          if (!_isInitialized) {
+            _nameCtrl.text = user.fullName;
+            _sectionCtrl.text = user.defaultSection;
+            _selectedUniId = user.universityId;
+            _selectedHostelId = user.homeHostelId;
+            // Set defaults if null to match mock behavior if desired, or leave null
+            if (_selectedUniId == null) {
+               _selectedUniId = 'u1'; // Default to MIT ADT for demo
+               _selectedHostelId = 'h1';
+            }
+            _updateDisplayNames();
+            _isInitialized = true;
+          }
+          
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Center(
+                  child: Stack(
+                    children: [
+                       Container(
+                         padding: const EdgeInsets.all(8),
+                         decoration: BoxDecoration(
+                             color: Colors.white, 
+                             shape: BoxShape.circle, 
+                             border: Border.all(color: Colors.grey.shade100, width: 2),
+                             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 24, offset: const Offset(0, 8))]
+                         ),
+                         child: CircleAvatar(
+                             radius: 64, 
+                             backgroundColor: AppColors.primary, 
+                             child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : "A", style: GoogleFonts.outfit(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold))
+                         ),
+                       ),
+                      Positioned(
+                        bottom: 0, right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              color: Colors.black, 
+                              shape: BoxShape.circle, 
+                              border: Border.all(color: Colors.white, width: 4),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))]
+                          ),
+                          child: const Icon(Ionicons.camera, color: Colors.white, size: 20),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 48),
+                
+                _buildField("Full Name", _nameCtrl, Ionicons.person),
+                const SizedBox(height: 24),
+                
+                // University Selector
+                _buildSelector("University", _uniName, Ionicons.school, () => _showPicker(
+                    title: "Select University",
+                    items: _universities,
+                    onSelected: (id) {
+                        setState(() {
+                            _selectedUniId = id;
+                            _selectedHostelId = null; // Reset Hostel on Uni Change
+                            _updateDisplayNames();
+                        });
+                    }
+                )),
+                
+                const SizedBox(height: 24),
+                
+                // Hostel Selector (Dependent)
+                _buildSelector("Hostel / Residence", _hostelName, Ionicons.home, () {
+                    if (_selectedUniId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a university first")));
+                        return;
+                    }
+                    final filteredHostels = _hostels.where((h) => h['uni_id'] == _selectedUniId).toList();
+                    _showPicker(
+                        title: "Select Hostel",
+                        items: filteredHostels,
+                        onSelected: (id) {
+                             setState(() {
+                                 _selectedHostelId = id;
+                                 _updateDisplayNames();
+                             });
+                        }
+                    );
+                }),
+
+                const SizedBox(height: 24),
+                _buildField("Default Section", _sectionCtrl, Ionicons.people),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -199,6 +265,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             ),
             child: TextField(
             controller: ctrl,
+            onChanged: (_) => setState(() {}), // Rebuild for avatar update
             style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textMain),
             decoration: InputDecoration(
                 prefixIcon: Padding(

@@ -22,15 +22,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   final _formKey = GlobalKey<FormState>();
   
   // Form State
-  String _selectedUniversity = 'IIT Delhi';
-  String _selectedHostel = 'Hostel Udaigiri';
+  String? _selectedUniversityId;
+  String? _selectedHostelId;
   final _sectionController = TextEditingController();
   final _nameController = TextEditingController();
   
   bool _isLoading = false;
-
-  final List<String> _universities = ['IIT Delhi', 'IIT Bombay', 'IIT Madras', 'BITS Pilani'];
-  final List<String> _hostels = ['Hostel Udaigiri', 'Hostel Aravali', 'Hostel Nilgiri', 'Hostel Kumaon'];
 
   @override
   void dispose() {
@@ -48,11 +45,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       // 1. Create User Model
       final user = UserProfile(
         userId: 'user_${DateTime.now().millisecondsSinceEpoch}', 
-        universityId: '2023CS10SM',
+        universityId: _selectedUniversityId!,
         fullName: _nameController.text.isEmpty ? 'Student' : _nameController.text,
         email: 'student@university.edu',
-        defaultSection: _sectionController.text.toUpperCase(),
-        homeHostelId: _selectedHostel,
+        defaultSection: _sectionController.text.isEmpty ? 'A' : _sectionController.text.toUpperCase(),
+        homeHostelId: _selectedHostelId, // Optional
         settings: const UserSettings(notificationsEnabled: true),
       );
 
@@ -77,12 +74,18 @@ class _AuthPageState extends ConsumerState<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final universitiesAsync = ref.watch(universitiesProvider);
+    
+    // We can only fetch hostels if a university is selected (and we have its ID)
+    // But since _selectedUniversityId is initialized to null or we need to wait for universities,
+    // let's handle the user flow: Select Uni -> Then Select Hostel
+    
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             // Header
-            Padding(
+             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,15 +138,61 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                          crossAxisAlignment: CrossAxisAlignment.start,
                          children: [
                            _buildInputLabel('University'),
-                           _buildDropdownField('Select University', _selectedUniversity, _universities, (val) {
-                             setState(() => _selectedUniversity = val!);
-                           }),
+                           
+                           universitiesAsync.when(
+                             loading: () => const LinearProgressIndicator(),
+                             error: (err, _) => Text('Error: $err', style: const TextStyle(color: Colors.red)),
+                             data: (universities) {
+                               return _buildDropdownField(
+                                 'Select University',
+                                 _selectedUniversityId, 
+                                 universities.map((u) => DropdownMenuItem(value: u.id, child: Text(u.name))).toList(),
+                                 (val) {
+                                   setState(() {
+                                     _selectedUniversityId = val as String?;
+                                     _selectedHostelId = null; // Reset hostel when uni changes
+                                   });
+                                 },
+                                 validator: (val) => val == null ? 'Required' : null,
+                                 key: const Key('dropdown_university'),
+                               );
+                             }
+                           ),
+
                            const SizedBox(height: 16),
                            
                            _buildInputLabel('Hostel'),
-                           _buildDropdownField('Select Hostel', _selectedHostel, _hostels, (val) {
-                             setState(() => _selectedHostel = val!);
-                           }),
+                           
+                           if (_selectedUniversityId == null)
+                             Container(
+                               padding: const EdgeInsets.all(16),
+                               decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
+                               width: double.infinity,
+                               child: Text("Select University first", style: GoogleFonts.dmSans(color: Colors.grey)),
+                             )
+                           else
+                             Consumer(
+                               builder: (context, ref, child) {
+                                  final hostelsAsync = ref.watch(hostelsProvider(_selectedUniversityId!));
+                                  return hostelsAsync.when(
+                                    loading: () => const LinearProgressIndicator(),
+                                    error: (err, _) => Text('Error loading hostels', style: const TextStyle(color: Colors.red)),
+                                    data: (hostels) {
+                                      return _buildDropdownField(
+                                         'Select Hostel',
+                                         _selectedHostelId,
+                                         hostels.map((h) => DropdownMenuItem(value: h.id, child: Text(h.name))).toList(),
+                                         (val) {
+                                           setState(() => _selectedHostelId = val as String?);
+                                         },
+                                         // No validator => Optional
+                                         key: const Key('dropdown_hostel'),
+                                      );
+                                    }
+                                  );
+                               }
+                             ),
+                           
                            const SizedBox(height: 16),
                            
                            Row(
@@ -157,7 +206,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                      _buildTextField(
                                        'Ex: A', 
                                        _sectionController,
-                                       validator: (val) => val == null || val.isEmpty ? 'Required' : null
+                                       // No validation needed as we default to 'A'
+                                       key: const Key('input_section'),
                                      ),
                                    ],
                                  ),
@@ -187,6 +237,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                       const Center(child: CircularProgressIndicator())
                    else ...[
                      PastelCard(
+                       key: const Key('card_student'),
                        backgroundColor: AppColors.pastelYellow,
                        onTap: _registerUser,
                        child: Column(
@@ -267,8 +318,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     );
   }
 
-  Widget _buildDropdownField(String hint, String value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(String hint, String? value, List<DropdownMenuItem<String>> items, ValueChanged<Object?> onChanged, {String? Function(String?)? validator, Key? key}) {
     return Container(
+      key: key,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.bgApp,
@@ -277,20 +329,24 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       ),
       child: DropdownButtonFormField<String>(
         value: value,
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        items: items,
         onChanged: onChanged,
         style: GoogleFonts.dmSans(fontSize: 15, color: AppColors.textMain),
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          hintText: hint,
+          hintStyle: GoogleFonts.dmSans(color: Colors.grey),
         ),
         icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+        validator: validator,
       ),
     );
   }
   
-  Widget _buildTextField(String hint, TextEditingController controller, {String? Function(String?)? validator}) {
+  Widget _buildTextField(String hint, TextEditingController controller, {String? Function(String?)? validator, Key? key}) {
     return Container(
+      key: key,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: AppColors.bgApp,
