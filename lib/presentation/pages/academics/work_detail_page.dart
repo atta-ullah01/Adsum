@@ -18,11 +18,7 @@ class WorkDetailPage extends ConsumerStatefulWidget {
 
 class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
   late Work _work;
-  // Mock comments for now
-  final List<Map<String, dynamic>> _comments = [
-    {"user_id": "prof_alan", "text": "Make sure to double check the determinants.", "created_at": "2h ago", "isMe": false},
-    {"user_id": "current_user", "text": "Thanks professor!", "created_at": "1h ago", "isMe": true},
-  ];
+  // Removed hardcoded _comments
 
   @override
   void initState() {
@@ -42,19 +38,18 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
     }
   }
 
-  void _addComment(String text) {
-    setState(() {
-      _comments.add({
-        "user_id": "current_user",
-        "text": text,
-        "created_at": "Just now",
-        "isMe": true
-      });
-    });
+  Future<void> _addComment(String text) async {
+    // Ideally get current user ID from userProfileProvider
+    const userId = "current_user"; // Still hardcoded user ID until auth is fully linked
+    await ref.read(workServiceProvider).addComment(_work.workId, text, userId);
+    ref.invalidate(workCommentsProvider(_work.workId));
   }
 
   @override
   Widget build(BuildContext context) {
+    // Watch comments
+    final commentsAsync = ref.watch(workCommentsProvider(_work.workId));
+
     // Determine Color & Icon based on work_type
     Color typeColor;
     IconData typeIcon;
@@ -90,10 +85,15 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
             icon: const Icon(Ionicons.ellipsis_vertical, color: Colors.black),
             onSelected: (value) {
               if (value == 'hide') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Hidden from calendar")),
-                );
-                context.pop();
+                // Implement Hide
+                ref.read(workServiceProvider).setHidden(_work.workId, true).then((_) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Hidden from calendar")),
+                    );
+                    context.pop();
+                  }
+                });
               }
             },
             itemBuilder: (context) => [
@@ -186,13 +186,22 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
             ),
             const SizedBox(height: 16),
             
-            // Comment List (from work_comments schema)
-            ..._comments.map((c) => _buildComment(
-              (c['user_id'] as String?) ?? 'Anonymous',
-              (c['text'] as String?) ?? '',
-              (c['created_at'] as String?) ?? '',
-              isMe: (c['isMe'] as bool?) ?? false
-            )),
+            // Comment List
+            commentsAsync.when(
+              data: (comments) {
+                if (comments.isEmpty) return const Text("No comments yet.");
+                return Column(
+                  children: comments.map((c) => _buildComment(
+                    c.userId, // Display raw user ID for now, or fetch name
+                    c.text,
+                    "${c.createdAt.day}/${c.createdAt.month} ${c.createdAt.hour}:${c.createdAt.minute}", // Simple format
+                    isMe: c.userId == "current_user"
+                  )).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Text("Error loading comments: $e"),
+            ),
             
             const SizedBox(height: 100), // Space for FAB
           ],
@@ -207,8 +216,9 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
              // Connect to real service
              await ref.read(workServiceProvider).markSubmitted(_work.workId);
              
-             // Refresh list
+             // Refresh lists
              ref.invalidate(pendingWorkProvider);
+             ref.invalidate(completedWorkProvider);
 
              if (context.mounted) {
                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Marked as Completed! 🎉")));

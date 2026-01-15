@@ -18,7 +18,7 @@ class MessMenuPage extends ConsumerStatefulWidget {
 }
 
 class _MessMenuPageState extends ConsumerState<MessMenuPage> {
-  String _selectedHostel = "Hostel H1"; // Defaults to H1, sync with service if needed
+  String _selectedHostel = "Kumaon Hostel"; // Default to Kumaon (matches test data)
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -31,18 +31,22 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
   }
 
   String _mapIdToName(String id) {
-     // Mock mapping or just use ID for now
-     if (id == 'h1') return "Hostel H1";
-     if (id == 'h2') return "Hostel H2";
-     if (id == 'gh_a') return "Girls Hostel A";
-     return id; 
+     // Map hostel IDs to display names
+     switch (id) {
+       case 'h_kumaon': return "Kumaon Hostel";
+       case 'h_aravali': return "Aravali Hostel";
+       case 'h_girnar': return "Girnar Hostel";
+       default: return id;
+     }
   }
   
   String _mapNameToId(String name) {
-     if (name == "Hostel H1") return 'h1';
-     if (name == "Hostel H2") return 'h2';
-     if (name == "Girls Hostel A") return 'gh_a';
-     return name.toLowerCase();
+     switch (name) {
+       case "Kumaon Hostel": return 'h_kumaon';
+       case "Aravali Hostel": return 'h_aravali';
+       case "Girnar Hostel": return 'h_girnar';
+       default: return name.toLowerCase().replaceAll(' ', '_');
+     }
   }
 
   @override
@@ -219,9 +223,9 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
          ref.read(messServiceProvider).setCurrentHostelId(_mapNameToId(value));
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(value: "Hostel H1", child: Text("Hostel H1")),
-        const PopupMenuItem(value: "Hostel H2", child: Text("Hostel H2")),
-        const PopupMenuItem(value: "Girls Hostel A", child: Text("Girls Hostel A")),
+        const PopupMenuItem(value: "Kumaon Hostel", child: Text("Kumaon Hostel")),
+        const PopupMenuItem(value: "Aravali Hostel", child: Text("Aravali Hostel")),
+        const PopupMenuItem(value: "Girnar Hostel", child: Text("Girnar Hostel")),
       ],
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

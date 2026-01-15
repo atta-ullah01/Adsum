@@ -35,6 +35,22 @@ class WorkService {
       });
   }
 
+  /// Get completed work items (submitted or graded)
+  Future<List<Work>> getCompleted() async {
+    final all = await _repository.getAll();
+    final states = await _repository.getAllStates();
+    final stateMap = {for (var s in states) s.workId: s};
+
+    return all.where((w) {
+      final state = stateMap[w.workId];
+      if (state != null && (state.status == WorkStatus.submitted || state.status == WorkStatus.graded)) {
+        return true;
+      }
+      return false;
+    }).toList()
+      ..sort((a, b) => b.dueAt?.compareTo(a.dueAt ?? DateTime.now()) ?? 0); // Newest completed first
+  }
+
   /// Get count of pending work items
   Future<int> getPendingCount() async {
     final pending = await getPending();
@@ -62,5 +78,35 @@ class WorkService {
         grade: grade,
       ),
     );
+  }
+
+
+  /// Toggle visibility in calendar
+  Future<void> setHidden(String workId, bool hidden) async {
+    final existing = await _repository.getState(workId);
+    await _repository.updateState(
+      (existing ?? WorkState(workId: workId)).copyWith(
+        isHiddenFromCalendar: hidden,
+      ),
+    );
+  }
+
+  // ============ Comments ============
+
+  /// Get comments for a work item
+  Future<List<WorkComment>> getComments(String workId) async {
+    return _repository.getComments(workId);
+  }
+
+  /// Add a comment
+  Future<void> addComment(String workId, String text, String userId) async {
+    final comment = WorkComment(
+      commentId: DateTime.now().millisecondsSinceEpoch.toString(), // Simple ID
+      workId: workId,
+      userId: userId,
+      text: text,
+      createdAt: DateTime.now(),
+    );
+    await _repository.addComment(comment);
   }
 }

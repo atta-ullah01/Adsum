@@ -1,0 +1,40 @@
+[
+  {
+    "patch_id": "patch_swap_001",
+    "target_rule_id": "r_col106_1",
+    "course_code": "COL106",
+    "section": "A",
+    "affected_date": "2026-01-19",
+    "action": "SWAP_ROOM",
+    "new_location": "LH-318",
+    "note": "Room changed due to AC maintenance",
+    "cr_user_id": "cr_user_123",
+    "created_at": "2026-01-14T10:00:00"
+  },
+  {
+    "patch_id": "patch_cancel_002",
+    "target_rule_id": "r_col331_1",
+    "course_code": "COL331",
+    "section": "B",
+    "affected_date": "2026-01-19",
+    "action": "CANCEL",
+    "note": "Professor on leave",
+    "cr_user_id": "cr_user_456",
+    "created_at": "2026-01-15T08:00:00"
+  },
+  {
+    "patch_id": "patch_resched_003",
+    "target_rule_id": "r_col362_1",
+    "course_code": "COL362",
+    "section": "A",
+    "affected_date": "2026-01-20",
+    "action": "RESCHEDULE",
+    "new_date": "2026-01-20",
+    "new_start_time": "15:00",
+    "new_end_time": "16:00",
+    "new_location": "LH-221",
+    "note": "Rescheduled to afternoon slot",
+    "cr_user_id": "cr_user_789",
+    "created_at": "2026-01-14T15:00:00"
+  }
+]

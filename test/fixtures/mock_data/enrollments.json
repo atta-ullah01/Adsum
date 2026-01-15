@@ -1,0 +1,108 @@
+[
+  {
+    "enrollment_id": "enroll_dsa_001",
+    "course_code": "COL106",
+    "catalog_instructor": "Prof. Amitabha Bagchi",
+    "section": "A",
+    "target_attendance": 75.0,
+    "color_theme": "#D1FAE5",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 20,
+      "attended": 18,
+      "safe_bunks": 4
+    }
+  },
+  {
+    "enrollment_id": "enroll_ml_002",
+    "course_code": "COL774",
+    "catalog_instructor": "Prof. Parag Singla",
+    "section": "A",
+    "target_attendance": 80.0,
+    "color_theme": "#FFF2E3",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 15,
+      "attended": 11,
+      "safe_bunks": 0
+    }
+  },
+  {
+    "enrollment_id": "enroll_os_003",
+    "course_code": "COL331",
+    "catalog_instructor": "Prof. Sorav Bansal",
+    "section": "B",
+    "target_attendance": 75.0,
+    "color_theme": "#FCE7F3",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 18,
+      "attended": 12,
+      "safe_bunks": -2
+    }
+  },
+  {
+    "enrollment_id": "enroll_dbms_004",
+    "course_code": "COL362",
+    "catalog_instructor": "Prof. Maya Ramanath",
+    "section": "A",
+    "target_attendance": 75.0,
+    "color_theme": "#DBEAFE",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 12,
+      "attended": 12,
+      "safe_bunks": 6
+    }
+  },
+  {
+    "enrollment_id": "enroll_cn_005",
+    "course_code": "COL334",
+    "catalog_instructor": "Prof. Vinay Ribeiro",
+    "section": "A",
+    "target_attendance": 75.0,
+    "color_theme": "#EDE9FE",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 3,
+      "attended": 3,
+      "safe_bunks": 1
+    }
+  },
+  {
+    "enrollment_id": "enroll_gym_006",
+    "custom_course": {
+      "code": "GYM001",
+      "name": "Gym Session",
+      "instructor": "Self",
+      "total_expected": 60
+    },
+    "section": "A",
+    "target_attendance": 50.0,
+    "color_theme": "#FEF3C7",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 10,
+      "attended": 8,
+      "safe_bunks": 6
+    }
+  },
+  {
+    "enrollment_id": "enroll_music_007",
+    "custom_course": {
+      "code": "MUS101",
+      "name": "Guitar Lessons",
+      "instructor": "Rahul Sharma",
+      "total_expected": 24
+    },
+    "section": "A",
+    "target_attendance": 80.0,
+    "color_theme": "#DBEAFE",
+    "start_date": "2026-01-06T00:00:00.000Z",
+    "stats": {
+      "total_classes": 4,
+      "attended": 4,
+      "safe_bunks": 2
+    }
+  }
+]

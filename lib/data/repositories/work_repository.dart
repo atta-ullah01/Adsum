@@ -9,7 +9,7 @@ import 'package:adsum/domain/models/work.dart';
 /// - `work.json` - The actual work items
 /// - `work_states.json` - Local state tracking (submitted, grade, hidden)
 class WorkRepository {
-  static const String _workFile = 'work.json';
+  static const String _workFile = 'course_work.json';
   static const String _statesFile = 'work_states.json';
   static const _uuid = Uuid();
 
@@ -138,5 +138,23 @@ class WorkRepository {
     } else {
       await _jsonService.appendToJsonArray(_statesFile, state.toJson());
     }
+  }
+  // ============ Comments ============
+
+  /// Get comments for a work item
+  Future<List<WorkComment>> getComments(String workId) async {
+    final data = await _jsonService.readJsonArray('work_comments.json');
+    if (data == null) return [];
+    return data
+        .cast<Map<String, dynamic>>()
+        .map((json) => WorkComment.fromJson(json))
+        .where((c) => c.workId == workId)
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Newest first
+  }
+
+  /// Add a comment
+  Future<void> addComment(WorkComment comment) async {
+    await _jsonService.appendToJsonArray('work_comments.json', comment.toJson());
   }
 }

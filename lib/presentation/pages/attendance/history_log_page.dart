@@ -125,33 +125,56 @@ class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
     );
   }
 
-  // Helper to get entry for a specific day
+  // Helper to get ALL logs for a specific day (supports multi-slot)
+  List<AttendanceLog> _getLogsForDay(int day, List<AttendanceLog> logs) {
+    final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+    return logs.where((l) => isSameDay(l.date, date)).toList()
+      ..sort((a, b) => (a.startTime ?? '').compareTo(b.startTime ?? ''));
+  }
+
+  // Helper to get entry for a specific day (for calendar cell coloring)
+  // Uses "worst" status if multiple slots: any absent = mixed, all present = present
   CalendarEntry _getEntryForDay(int day, List<AttendanceLog> logs, List<CalendarEvent> events) {
     final date = DateTime(_currentMonth.year, _currentMonth.month, day);
     
-    // Check for Holiday
+    // Check for Holiday first
     final holiday = events.firstWhere(
       (e) => isSameDay(e.date, date) && e.type == CalendarEventType.holiday,
-      orElse: () => CalendarEvent(eventId: '', title: '', date: date, type: CalendarEventType.personal), // Dummy
+      orElse: () => CalendarEvent(eventId: '', title: '', date: date, type: CalendarEventType.personal),
     );
     if (holiday.eventId.isNotEmpty) {
       return CalendarEntry(type: DayType.holiday, description: holiday.title);
     }
 
-    // Check for Log
-    try {
-        final log = logs.firstWhere((l) => isSameDay(l.date, date));
-        // Map Log Status to UI Type/Status
-        return CalendarEntry(
-          type: DayType.classDay,
-          status: log.status,
-          description: log.source.name, // e.g. "WIFI"
-          log: log,
-        );
-    } catch (_) {
-        // No log found
-        return const CalendarEntry(type: DayType.noClass);
+    // Get all logs for this day
+    final dayLogs = _getLogsForDay(day, logs);
+    
+    if (dayLogs.isEmpty) {
+      return const CalendarEntry(type: DayType.noClass);
     }
+    
+    // Determine aggregate status
+    // Priority: If any ABSENT → show mixed (orange). All PRESENT → green. Any PENDING → orange.
+    final hasAbsent = dayLogs.any((l) => l.status == AttendanceStatus.absent);
+    final hasPending = dayLogs.any((l) => l.status == AttendanceStatus.pending);
+    final allPresent = dayLogs.every((l) => l.status == AttendanceStatus.present);
+    
+    AttendanceStatus aggregateStatus;
+    if (allPresent) {
+      aggregateStatus = AttendanceStatus.present;
+    } else if (hasAbsent || hasPending) {
+      aggregateStatus = hasPending ? AttendanceStatus.pending : AttendanceStatus.absent;
+    } else {
+      aggregateStatus = AttendanceStatus.pending;
+    }
+    
+    final slotCount = dayLogs.length;
+    return CalendarEntry(
+      type: DayType.classDay,
+      status: aggregateStatus,
+      description: slotCount > 1 ? "$slotCount slots" : dayLogs.first.source.name,
+      log: dayLogs.first,
+    );
   }
 
   bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
@@ -243,6 +266,18 @@ class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
   Widget _buildDayDetails(int day, List<AttendanceLog> logs, List<CalendarEvent> events) {
     final entry = _getEntryForDay(day, logs, events);
     
+    // Holiday case
+    if (entry.type == DayType.holiday) {
+      return _buildDetailCard(
+        statusText: "Holiday",
+        statusColor: AppColors.primary,
+        icon: Ionicons.calendar,
+        time: "All Day",
+        description: entry.description ?? "University Holiday",
+      );
+    }
+    
+    // No class case
     if (entry.type == DayType.noClass) {
       return Center(
         child: Padding(
@@ -252,60 +287,72 @@ class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
       );
     }
 
-    String statusText = "";
-    Color statusColor = AppColors.black;
-    IconData icon = Ionicons.help_outline;
-    String time = "10:00 AM - 11:00 AM";
-    String description = entry.description ?? "Regular Session";
-    bool fillIcon = true;
-
-    // Logic Tree: Type -> Status
-    if (entry.type == DayType.holiday) {
-       statusText = "Holiday";
-       statusColor = AppColors.primary;
-       icon = Ionicons.calendar;
-       description = entry.description ?? "University Holiday";
+    // Class day: Show ALL slots
+    final dayLogs = _getLogsForDay(day, logs);
     
-    } else if (entry.type == DayType.cancelled) {
-       statusText = "Cancelled";
-       statusColor = AppColors.textMuted;
-       icon = Ionicons.ban;
-       description = entry.description ?? "Class cancelled";
-       
-    } else if (entry.type == DayType.classDay) {
-       // Check Status
-       switch (entry.status!) {
-         case AttendanceStatus.present:
-           statusText = "Present";
-           statusColor = Colors.green[800]!;
-           icon = Ionicons.checkmark_circle;
-           break;
-         case AttendanceStatus.absent:
-           statusText = "Absent";
-           statusColor = AppColors.danger;
-           icon = Ionicons.close_circle;
-           break;
-         case AttendanceStatus.pending:
-           statusText = "Pending";
-           statusColor = Colors.orange[800]!;
-           icon = Ionicons.help_circle;
-           break;
-       }
-    }
-
+    return Column(
+      children: dayLogs.map((log) {
+        String statusText;
+        Color statusColor;
+        IconData icon;
+        
+        switch (log.status) {
+          case AttendanceStatus.present:
+            statusText = "Present";
+            statusColor = Colors.green[800]!;
+            icon = Ionicons.checkmark_circle;
+            break;
+          case AttendanceStatus.absent:
+            statusText = "Absent";
+            statusColor = AppColors.danger;
+            icon = Ionicons.close_circle;
+            break;
+          case AttendanceStatus.pending:
+            statusText = "Pending";
+            statusColor = Colors.orange[800]!;
+            icon = Ionicons.help_circle;
+            break;
+        }
+        
+        final timeDisplay = log.startTime != null ? "${log.startTime}" : "—";
+        final sourceText = log.source.name.toUpperCase();
+        
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _buildDetailCard(
+            statusText: statusText,
+            statusColor: statusColor,
+            icon: icon,
+            time: timeDisplay,
+            description: "Source: $sourceText${log.slotId != null ? ' • ${log.slotId}' : ''}",
+            showReportButton: true,
+          ),
+        );
+      }).toList(),
+    );
+  }
+  
+  Widget _buildDetailCard({
+    required String statusText,
+    required Color statusColor,
+    required IconData icon,
+    required String time,
+    required String description,
+    bool showReportButton = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-         boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: Column(
         children: [
@@ -314,9 +361,8 @@ class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: fillIcon ? statusColor.withOpacity(0.1) : Colors.transparent,
+                  color: statusColor.withOpacity(0.1),
                   shape: BoxShape.circle,
-                  border: fillIcon ? null : Border.all(color: statusColor, width: 2),
                 ),
                 child: Icon(icon, color: statusColor, size: 24),
               ),
@@ -333,25 +379,20 @@ class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
               ),
             ],
           ),
-          
-          if (entry.type == DayType.classDay) ...[
-            const SizedBox(height: 16),
+          if (showReportButton) ...[
+            const SizedBox(height: 12),
             const Divider(),
-            const SizedBox(height: 8),
-            // Placeholder: In a real app, logic to mark attendance goes here
-             SizedBox(
-                width: double.infinity,
-                child: TextButton.icon(
-                  onPressed: () {
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Attendance override coming soon in Phase 3")));
-                  },
-                  icon: const Icon(Ionicons.flag_outline),
-                  label: const Text("Report Issue"),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey,
-                  ),
-                ),
-              )
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Attendance override coming soon in Phase 3")));
+                },
+                icon: const Icon(Ionicons.flag_outline, size: 16),
+                label: const Text("Report Issue"),
+                style: TextButton.styleFrom(foregroundColor: Colors.grey),
+              ),
+            )
           ]
         ],
       ),

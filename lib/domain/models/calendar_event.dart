@@ -1,13 +1,14 @@
 import 'package:equatable/equatable.dart';
 
 /// Calendar event type enumeration
+/// Calendar event type enumeration
 enum CalendarEventType {
   personal,
   holiday,
   exam,
   daySwap,
-  assignment,
-  quiz;
+  quiz,
+  assignment;
 
   String toJson() => name.toUpperCase();
 
@@ -28,10 +29,10 @@ enum CalendarEventType {
         return 'Exam';
       case CalendarEventType.daySwap:
         return 'Day Swap';
-      case CalendarEventType.assignment:
-        return 'Assignment';
       case CalendarEventType.quiz:
         return 'Quiz';
+      case CalendarEventType.assignment:
+        return 'Assignment';
     }
   }
 }
@@ -47,6 +48,8 @@ class CalendarEvent extends Equatable {
   final CalendarEventType type;
   final String? description;
   final bool isActive;
+  /// For DAY_SWAP events only: which day's schedule to follow (e.g., "MON", "TUE")
+  final String? dayOrderOverride;
 
   const CalendarEvent({
     required this.eventId,
@@ -57,6 +60,7 @@ class CalendarEvent extends Equatable {
     this.type = CalendarEventType.personal,
     this.description,
     this.isActive = true,
+    this.dayOrderOverride,
   });
 
   @override
@@ -69,6 +73,7 @@ class CalendarEvent extends Equatable {
         type,
         description,
         isActive,
+        dayOrderOverride,
       ];
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) {
@@ -81,6 +86,7 @@ class CalendarEvent extends Equatable {
       type: CalendarEventType.fromJson(json['type'] as String? ?? 'PERSONAL'),
       description: json['description'] as String?,
       isActive: json['is_active'] as bool? ?? true,
+      dayOrderOverride: json['day_order_override'] as String?,
     );
   }
 
@@ -94,6 +100,7 @@ class CalendarEvent extends Equatable {
       'type': type.toJson(),
       'description': description,
       'is_active': isActive,
+      if (dayOrderOverride != null) 'day_order_override': dayOrderOverride,
     };
   }
 
@@ -106,6 +113,7 @@ class CalendarEvent extends Equatable {
     CalendarEventType? type,
     String? description,
     bool? isActive,
+    String? dayOrderOverride,
   }) {
     return CalendarEvent(
       eventId: eventId ?? this.eventId,
@@ -116,6 +124,7 @@ class CalendarEvent extends Equatable {
       type: type ?? this.type,
       description: description ?? this.description,
       isActive: isActive ?? this.isActive,
+      dayOrderOverride: dayOrderOverride ?? this.dayOrderOverride,
     );
   }
 

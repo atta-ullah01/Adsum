@@ -1,0 +1,66 @@
+[
+  {
+    "event_id": "event_jog_001",
+    "title": "Morning Jog",
+    "date": "2026-01-15",
+    "start_time": "06:00",
+    "end_time": "06:45",
+    "type": "PERSONAL",
+    "is_active": true
+  },
+  {
+    "event_id": "event_gym_conf_001",
+    "title": "Gym Session",
+    "date": "2026-01-15",
+    "start_time": "14:00",
+    "end_time": "15:00",
+    "type": "PERSONAL",
+    "description": "Leg Day",
+    "is_active": true
+  },
+  {
+    "event_id": "event_proj_002",
+    "title": "Project Discussion",
+    "date": "2026-01-15",
+    "start_time": "16:00",
+    "end_time": "17:00",
+    "type": "PERSONAL",
+    "description": "Meet with team at library",
+    "is_active": true
+  },
+  {
+    "event_id": "event_doc_003",
+    "title": "Doctor Appointment",
+    "date": "2026-01-16",
+    "start_time": "11:00",
+    "end_time": "12:00",
+    "type": "PERSONAL",
+    "is_active": true
+  },
+  {
+    "event_id": "event_club_005",
+    "title": "Club Meeting",
+    "date": "2026-01-14",
+    "start_time": "18:00",
+    "end_time": "19:00",
+    "type": "PERSONAL",
+    "is_active": true
+  },
+  {
+    "event_id": "event_holiday_006",
+    "title": "Republic Day",
+    "date": "2026-01-26",
+    "type": "HOLIDAY",
+    "description": "National holiday - University closed",
+    "is_active": true
+  },
+  {
+    "event_id": "event_dayswap_007",
+    "title": "Follow Monday Schedule",
+    "date": "2026-01-18",
+    "type": "DAY_SWAP",
+    "description": "Makeup classes for Jan 14 holiday",
+    "day_order_override": "MON",
+    "is_active": true
+  }
+]

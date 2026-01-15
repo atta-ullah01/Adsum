@@ -15,7 +15,7 @@ class ActionCenterNotifier extends AsyncNotifier<List<ActionItem>> {
   Future<List<ActionItem>> _loadActionItems() async {
     try {
       final repo = ref.watch(actionItemRepositoryProvider);
-      return repo.getPending();
+      return repo.getAll();
     } catch (e) {
       debugPrint("Error loading action items: $e");
       return [];

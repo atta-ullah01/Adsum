@@ -30,6 +30,7 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
   Widget build(BuildContext context) {
     // Watch real data
     final pendingAsync = ref.watch(pendingWorkProvider);
+    final completedAsync = ref.watch(completedWorkProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[50], // Light background
@@ -68,8 +69,15 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
             error: (err, stack) => Center(child: Text("Error: $err")),
           ),
           
-          // Completed Tab (Placeholder for now)
-          _buildEmptyState("No completed tasks yet!"),
+          // Completed Tab
+          completedAsync.when(
+            data: (workItems) {
+              if (workItems.isEmpty) return _buildEmptyState("No completed tasks yet!");
+              return _buildAssignmentList(workItems, isCompleted: true);
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text("Error: $err")),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -83,7 +91,9 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
            
            if (result != null) {
               // Refresh provider after adding (if CreateAssignmentSheet saves it)
+              // Refresh provider after adding (if CreateAssignmentSheet saves it)
               ref.invalidate(pendingWorkProvider);
+              ref.invalidate(completedWorkProvider);
               
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                 content: Text("Signing & Broadcasting to Class..."),
@@ -99,7 +109,7 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
     );
   }
 
-  Widget _buildAssignmentList(List<Work> tasks) {
+  Widget _buildAssignmentList(List<Work> tasks, {bool isCompleted = false}) {
     return ListView.builder(
       padding: const EdgeInsets.all(20),
       itemCount: tasks.length,
@@ -107,13 +117,13 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
         final task = tasks[index];
         return FadeSlideTransition(
           index: index,
-          child: _buildTaskCard(context, task),
+          child: _buildTaskCard(context, task, isCompleted: isCompleted),
         );
       },
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, Work task) {
+  Widget _buildTaskCard(BuildContext context, Work task, {bool isCompleted = false}) {
     // Determine urgency: Due within 24 hours
     final isUrgent = task.dueAt != null && 
                      task.dueAt!.difference(DateTime.now()).inHours < 24 &&
@@ -198,6 +208,8 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
                         // Title
                         Text(
                           task.title, 
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain)
                         ),
                         const SizedBox(height: 4),
@@ -211,11 +223,15 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
                           children: [
                             Icon(Ionicons.time_outline, size: 16, color: Colors.grey[400]),
                             const SizedBox(width: 8),
-                            Text(
-                              "Due $deadlineText", 
-                              style: GoogleFonts.dmSans(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)
+                            Expanded(
+                              child: Text(
+                                "Due $deadlineText", 
+                                style: GoogleFonts.dmSans(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            const Spacer(),
+                            // const Spacer(), // Spacer removed as Expanded takes space
+                            const SizedBox(width: 8),
                             // Circular Checkbox (Custom)
                             Container(
                               width: 28, height: 28,
@@ -224,7 +240,11 @@ class _AssignmentsPageState extends ConsumerState<AssignmentsPage> with SingleTi
                                 border: Border.all(color: Colors.grey[300]!, width: 2),
                               ),
                               child: Center(
-                                child: Icon(Ionicons.checkmark, size: 16, color: Colors.grey[300]),
+                                child: Icon(
+                                  Ionicons.checkmark, 
+                                  size: 16, 
+                                  color: isCompleted ? Colors.green : Colors.grey[300]
+                                ),
                               ),
                             )
                           ],

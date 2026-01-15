@@ -63,11 +63,7 @@ class AcademicsPage extends ConsumerWidget {
                          child: const Icon(Ionicons.list, color: Colors.blue, size: 22),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=adsum"),
-                      radius: 20,
-                    )
+
                   ],
                 ),
               ),
@@ -241,6 +237,7 @@ class AcademicsPage extends ConsumerWidget {
         context.push('/subject-detail', extra: {
           'title': enrollment.courseName,
           'code': enrollment.effectiveCourseCode,
+          'enrollmentId': enrollment.enrollmentId,
           'isCustomCourse': enrollment.isCustom,
         });
       },

@@ -2,6 +2,74 @@
 
 This document describes how data flows between schema files and UI components.
 
+## Development vs Production Data Flow
+
+This section details how data handling differs between the current development environment (using mock data) and the future production environment.
+
+### 1. Development Flow (Current)
+
+In development, we use local mock data fixtures to simulate checking and syncing data. This allows for rapid UI testing without a live backend.
+
+```mermaid
+graph TD
+    subgraph Assets
+        Fixtures["test/fixtures/mock_data/*.json"]
+    end
+
+    subgraph App_Initialization
+        Splash["SplashPage"] -- "1. Checks" --> Seeder["MockDataSeeder"]
+        Seeder -- "2. Seeds if missing" --> LocalStorage["app_data_dir/"]
+    end
+
+    subgraph Runtime
+        Repo["Repositories"] -- "3. Read/Write" --> LocalStorage
+        UI["Dashboard / Widgets"] -- "4. Watch" --> Repo
+    end
+
+    Fixtures -. "Bundled as Assets" .-> Seeder
+```
+
+**Key Characteristics:**
+- **Source of Truth:** Static JSON files in `test/fixtures/mock_data/`.
+- **Initialization:** `SplashPage` triggers `MockDataSeeder` on startup.
+- **Persistence:** Data is written to the device's application documents directory.
+- **Reset:** Uninstalling the app or clearing data resets state to the fixtures.
+
+### 2. Production Flow (Future)
+
+In production, the `MockDataSeeder` is removed. Data is sourced from the Supabase cloud backend and synced to local storage for offline access.
+
+```mermaid
+graph TD
+    subgraph Cloud
+        Supabase["Supabase DB"]
+    end
+
+    subgraph App_Initialization
+        Splash["SplashPage"] -- "1. Check Auth" --> Auth["Auth Service"]
+        Auth -- "2. Fetch Token" --> Supabase
+    end
+
+    subgraph Sync_Engine
+        Sync["DataSyncService"] -- "3. Pull Updates" --> Supabase
+        Sync -- "4. Upsert" --> LocalStorage["app_data_dir/"]
+    end
+
+    subgraph Runtime
+        Repo["Repositories"] -- "5. Read/Write" --> LocalStorage
+        Repo -- "6. Push Changes (Background)" --> Sync
+        UI["Dashboard / Widgets"] -- "7. Watch" --> Repo
+    end
+```
+
+**Key Characteristics:**
+- **Source of Truth:** Supabase Database (Cloud).
+- **Initialization:** `SplashPage` checks authentication; `DataSyncService` runs in background.
+- **Persistence:** Local JSON files serve as an "Offline Cache".
+- **Synchronization:** 
+    - **Pull:** On startup/refresh, fetch changes since `last_synced_at`.
+    - **Push:** User actions (attendance, edits) write locally first, then push to cloud (Optimistic UI).
+
 ### Import Feature
 User can restore data from `adsum_backup.json`.
 
@@ -175,13 +243,15 @@ User can restore data from `adsum_backup.json`.
 |------------|---------|
 | `course_work` | Assignment/quiz/exam definitions |
 | `work_states.json` | User's completion status + grade |
+| `work_comments.json` | Local cache of discussion threads |
 
 **Data Retrieval Logic:**
 ```
 1. Load work: SELECT * FROM course_work WHERE course_code = ?
 2. Load states: work_states.json[work_id]
-3. Merge: For each work item, attach status from states (PENDING/SUBMITTED/GRADED)
-4. Filter: Optionally hide items where is_hidden_from_calendar = true
+3. Load comments: work_comments.json[work_id] (or fetch from `work_comments` table)
+4. Merge: For each work item, attach status from states (PENDING/SUBMITTED/GRADED) and comments
+5. Filter: Optionally hide items where is_hidden_from_calendar = true
 ```
 
 **UI Element Mapping:**
@@ -209,7 +279,7 @@ User can restore data from `adsum_backup.json`.
 |--------|--------|-----------|
 | Mark Done | `work_states.json` | Set `status = "SUBMITTED"` |
 | Hide | `work_states.json` | Set `is_hidden_from_calendar = true` |
-| Post Comment | `work_comments` | INSERT row |
+| Post Comment | `work_comments.json` | Append locally + Sync to `work_comments` table |
 
 ### Info Tab
 *Read-only overview of course details and settings.*
@@ -284,58 +354,273 @@ User can restore data from `adsum_backup.json`.
 
 ---
 
+---
+
+## Unified Assignments Page
+
+**Context:** Centralized list of all assignments, quizzes, and exams across all enrolled courses.
+
+**Sources:**
+| File/Table | Purpose |
+|------------|---------|
+| `course_work` | Master list of all tasks |
+| `work_states.json` | Completion status and hidden flags |
+| `enrollments.json` | Course colors and names (for context) |
+
+**Data Retrieval Logic:**
+```
+1. Fetch ALL work: SELECT * FROM course_work (No course filter)
+2. Join States: Attach status from work_states.json
+3. Partition:
+   ├─ Pending: status != SUBMITTED && status != GRADED && !is_hidden_from_calendar
+   └─ Completed: status == SUBMITTED || status == GRADED
+4. Sort:
+   ├─ Pending: Ascending by due_at (Urgent first)
+   └─ Completed: Descending by due_at (Recent first)
+```
+
+**UI Element Mapping:**
+| UI Element | Source | Rendering |
+|------------|--------|-----------|
+| Course Color Strip | `enrollments.json` | Left border color matching course theme |
+| Urgency Badge | `due_at` | "Flame" icon if due < 24h |
+| Completed Check | `work_states.status` | Green circle check in Completed tab |
+
+**Navigation Flow:**
+*   **Tap Task** -> Navigate to `/academics/detail` (Work Detail Page).
+
+---
+
 ## Academics Page
+
+**Context:** The "Shared Brain" of the class. Provides an aggregated view of all courses, their attendance status, and quick access to details.
 
 **Source:** `enrollments.json`
 
-| UI Element | Query |
-|------------|-------|
-| Course List | All entries in `enrollments.json` |
-| Smart Summary (Safe/Risk) | Count courses where `stats.attended / stats.total_classes < target_attendance` |
-| Course Card Stats | `stats.attended`, `stats.total_classes`, `stats.safe_bunks` |
+| UI Element | Query/Logic |
+|------------|-------------|
+| **Course Feed** | List all `enrollments.json` entries. |
+| **Smart Summary Card** | Calculate `risk_count`: Count courses where `stats.attended / stats.total_classes < target_attendance`. |
+| **Attendance %** | `stats.attended / stats.total_classes * 100` |
+| **Safe Bunks** | Show `stats.safe_bunks`. |
+| **Status Bar** | Visual progress bar of attendance %. |
+
+**Navigation Flow:**
+*   **Tap Course Card** -> Navigate to `/subject-detail`.
+    *   **Payload:** Pass `enrollment.enrollmentId` (and derived `course_code` for catalog courses).
+    *   **Purpose:** The Subject Detail page uses this ID to fetch specific `attendance.json` logs and `course_work` items.
+
+**Write Actions:**
+*   **Add Course (FAB)** -> Navigate to `/manage-courses` (Standalone Mode) to create custom or enroll in global courses.
 
 ---
 
 ## Action Center
 
-**Source:** `action_items.json`
+**Context:** Unified inbox for all pending actions and decisions requiring user attention.
 
-| Tab | Query |
-|-----|-------|
-| Pending | Filter by `status = "PENDING"` |
-| History | Filter by `status = "RESOLVED"` |
+**Sources:**
+| File | Purpose |
+|------|---------|
+| `action_items.json` | All action items (pending + resolved) |
+| `attendance.json` | Updated by VERIFY actions |
+| `work_states.json` | Updated by ASSIGNMENT_DUE actions |
 
-**UI Rendering:**
-- Card color: `bg_color`, `accent_color`
-- Content: `type`-specific payload fields
+### Data Retrieval Logic
+
+```
+1. Fetch all items: ActionItemRepository.getAll() → action_items.json
+2. Partition in UI:
+   ├─ Pending: items.where(i => i.status == PENDING)
+   └─ History: items.where(i => i.status == RESOLVED)
+3. Sort:
+   ├─ Pending: By createdAt (oldest first for urgency)
+   └─ History: By createdAt descending (newest first)
+```
+
+### UI Element Mapping
+
+| Tab | Query | Displayed Fields |
+|-----|-------|------------------|
+| **Pending** | `status = "PENDING"` | Type-specific card content |
+| **History** | `status = "RESOLVED"` | Title, body, resolution status, date |
+
+### Type-Specific Card Rendering
+
+| Type | Display Fields | Payload Fields Used |
+|------|----------------|---------------------|
+| **CONFLICT** | Split comparison view, "Schedule Clash" title | `sourceA`, `sourceB`, `conflict_category` |
+| **VERIFY** | Message, Course name | `message`, `course` |
+| **SCHEDULE_CHANGE** | Message from CR | `message`, `course` |
+| **ASSIGNMENT_DUE** | Work title, Course, Due countdown | `work`, `course`, `due_text` |
+| **ATTENDANCE_RISK** | Course, Recovery message, Current % | `course`, `message`, `current_per` |
+
+### Write Actions
+
+| Action | Trigger | Target File | Operation |
+|--------|---------|-------------|-----------|
+| **Accept Update** | CONFLICT | `action_items.json` | Set `status = RESOLVED`, `resolution = ACCEPT_UPDATE` |
+| **Keep Mine** | CONFLICT | `action_items.json` | Set `status = RESOLVED`, `resolution = KEEP_MINE` |
+| **Yes, Present** | VERIFY | `action_items.json`, `attendance.json` | Resolve item + Update attendance log |
+| **No, Absent** | VERIFY | `action_items.json`, `attendance.json` | Resolve item + Mark absent in attendance |
+| **Mark Done** | ASSIGNMENT_DUE | `action_items.json`, `work_states.json` | Resolve item + Set work status to SUBMITTED |
+| **Snooze** | ASSIGNMENT_DUE | `action_items.json` | Set `status = RESOLVED`, `resolution = SNOOZE` |
+| **Acknowledge** | SCHEDULE_CHANGE | `action_items.json` | Set `status = RESOLVED`, `resolution = ACKNOWLEDGED` |
+| **Details** | ATTENDANCE_RISK | `action_items.json` | Resolve item, navigate to Subject Detail |
+
+### Resolution Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ActionCenterPage
+    participant ActionCenterProvider
+    participant ActionItemRepository
+    participant JsonFileService
+
+    User->>ActionCenterPage: Tap action button
+    ActionCenterPage->>ActionCenterProvider: resolveItem(itemId, action)
+    ActionCenterProvider->>ActionItemRepository: resolve(itemId, resolution)
+    ActionItemRepository->>JsonFileService: updateInJsonArray(action_items.json)
+    JsonFileService-->>ActionItemRepository: Success
+    ActionItemRepository-->>ActionCenterProvider: Item updated
+    ActionCenterProvider-->>ActionCenterPage: State refreshed (optimistic)
+    ActionCenterPage-->>User: Item moves to History tab
+```
 
 ---
 
 ## Dashboard
 
-### Priority Alert Carousel
+The main dashboard displays a date-sensitive timeline with alerts, scheduled events, and mess menus.
 
-**Sources:** `action_items.json`, `enrollments.json`, `events.json`
+### Date Strip
+*Horizontal 7-day date picker at the top of the dashboard.*
 
-| Alert Type | Source | Condition |
-|------------|--------|-----------|
-| Assignment Due | `action_items.json` | `type = "ASSIGNMENT_DUE"` |
-| Attendance Risk | `action_items.json` | `type = "ATTENDANCE_RISK"` |
-| Conflict | `action_items.json` | `type = "CONFLICT"` |
-| Upcoming Exam | `events.json` | `type = "EXAM"` within 48h |
+**Sources:** `DateTime.now()`, `events.json`
 
-### Timeline
+| Element | Source | Description |
+|---------|--------|-------------|
+| Day Capsules (7) | Computed | 3 past, today, 3 future |
+| Today Capsule | Computed | Shows "Today" label + primary color ring |
+| Selected Day | UI State | Dark fill with shadow highlight |
+| Past Days | Computed | Dimmed grey styling |
+| Future Days | Computed | White background |
+| Event Dot | `events.json` | Yellow dot if any event on that date |
 
-**Sources:** `enrollments.json` → schedule, `schedule_modifications` table, `events.json`
-
-| Card Type | Source |
-|-----------|--------|
-| Course (Normal) | Base schedule from enrollment |
-| Course (Cancelled/Rescheduled) | `schedule_modifications` table |
-| Personal Event | `events.json` |
-| Mess | `mess_menu.json` |
+**Tap Action:** Selects day → Refreshes timeline and alerts below.
 
 ---
+
+### Priority Alert Carousel
+*Top section showing critical, time-sensitive items. Hidden if empty or on past dates.*
+
+**Sources:** `action_items.json`, `events.json`, `enrollments.json`
+
+| Alert Type | Source | Trigger Condition |
+|------------|--------|-------------------|
+| Assignment Due | `action_items.json` | `type = ASSIGNMENT_DUE` AND due within 24-48h |
+| Urgent Broadcast | `action_items.json` | `type = SCHEDULE_CHANGE` (from CR) |
+| Attendance Risk | `action_items.json` | `type = ATTENDANCE_RISK` |
+| Pending Conflict | `action_items.json` | `type = CONFLICT` AND `status = PENDING` |
+| Upcoming Exam | `events.json` | `type = EXAM` AND starts within 48h |
+
+#### Visibility Rules
+
+| Selected Date | Carousel Behavior |
+|---------------|-------------------|
+| **Today** | ✅ Show all relevant alerts |
+| **Past Date** | ❌ Hide carousel entirely |
+| **Future Date** | ⚠️ Show only date-specific alerts (exam/assignment on that day) |
+| **No Active Alerts** | ❌ Hide carousel (don't show empty) |
+
+#### Alert Card UI
+
+| Alert Type | Display Fields | Tap Action | Color |
+|------------|----------------|------------|-------|
+| Assignment | Title, Due Time, "Due Soon" | Assignment Detail | 🔵 Blue |
+| Attendance Risk | Course, Current %, Target %, "Risk" | Subject Detail | 🟠 Orange |
+| Exam | Title, Starts In, "Super Event" | Exam Command Center | 🔴 Red |
+| Conflict | Source A vs Source B, "Resolve" | Conflict Modal | 🟡 Yellow |
+
+---
+
+### Timeline
+*Chronological list of events for the selected date.*
+
+**Sources:** 
+- `enrollments.json` + `global_schedules` / `custom_schedules.json` → Course slots
+- `schedule_modifications` table → Cancellations, reschedules, extra classes
+- `events.json` → Personal events, exams, holidays
+- `course_work` table + `work_states.json` → Assignments (due date markers)
+- `menu_cache.json` → Mess menus
+
+> [!IMPORTANT]
+> **Assignments come from `course_work` (Supabase), NOT `events.json`.**
+> They appear on the calendar/timeline via derivation from `course_work.due_at`.
+
+#### Card Types
+
+| Card Type | Source | Display Fields | Tap Action |
+|-----------|--------|----------------|------------|
+| Course (Normal) | `global_schedules` / `custom_schedules` | Title, Time, Location, Prof | Subject Detail |
+| Course (Cancelled) | `schedule_modifications` | Title, *Original Time*, "Cancelled" Badge | Subject Detail |
+| Course (Rescheduled) | `schedule_modifications` | Title, *New Time*, "Rescheduled" Badge | Subject Detail |
+| Course (Extra) | `schedule_modifications` | Title, Time, Location, "Extra Class" Badge | Subject Detail |
+| Course (Room Swap) | `schedule_modifications` | Title, Time, *New Location*, "Room Changed" Badge | Subject Detail |
+| Assignment | `course_work` (derived) | Title, Due Time, Course | Work Detail |
+| Mess | `menu_cache.json` | Meal Type, Time, Hostel, Menu Items | Mess Menu |
+| Exam/Quiz | `course_work` (is_super_event=true) | Title, Time, Venue, Duration, "Blocking" | Subject Detail |
+| Personal | `events.json` (type=PERSONAL) | Title, Time, Note | Edit Event |
+| Holiday | `events.json` (type=HOLIDAY) | Title, "No Classes" | - |
+
+#### Source Provenance Indicators
+*Visual indication of where each schedule item originates.*
+
+| Source | Color | Icon | Example |
+|--------|-------|------|---------|
+| Admin (Official) | Grey/Neutral | Shield | Base university schedule |
+| CR (Update) | 🔵 Blue | Pencil | Class moved by CR |
+| User (Personal) | 🟣 Purple | Person | Gym session, personal event |
+
+**Derivation Logic:**
+```
+For each timeline slot:
+├─ From global_schedules → Source = ADMIN (Grey)
+├─ Has schedule_modifications entry → Source = CR (Blue)
+└─ From events.json OR custom_schedules → Source = USER (Purple)
+```
+
+---
+
+### Conflict Detection & Display
+
+**Sources:** Layer merge algorithm + `action_items.json`
+
+#### Layer Priority (Schedule Merge)
+
+```
+L0: Academic Calendar (Holiday, Day Swap, Exam Block)  ← HIGHEST
+L1: Global Schedules (Base timetable)
+L2: CR Modifications (Cancel, Reschedule, Extra, Room Swap)
+L3: User Events (Personal, Custom courses)             ← LOWEST
+```
+
+#### Conflict Resolution Data Flow
+
+| Conflict Type | Detection | Output |
+|---------------|-----------|--------|
+| L0 vs L1 | Holiday/Exam on class day | Auto-hide L1 |
+| L2 vs L1 | `schedule_modifications` entry exists | Apply patch to L1 |
+| L3 vs L1/L2 | Time overlap | Generate `CONFLICT` action_item |
+| L3 vs L3 | Time overlap | Generate `CONFLICT` action_item |
+
+**Writes:**
+- Unresolved conflicts → `action_items.json` with `type = CONFLICT`
+- Resolution → Updates `action_items.json` status + may update `attendance.json`
+
+> [!NOTE]
+> See `FEATURES.md` → "Conflict Card Display" for UI specification.
 
 ## Global Search
 
@@ -352,7 +637,7 @@ User can restore data from `adsum_backup.json`.
 
 ## Mess Menu
 
-**Source:** `mess_menu.json`
+**Source:** `menu_cache.json`
 
 | UI Element | Query |
 |------------|-------|
@@ -361,19 +646,86 @@ User can restore data from `adsum_backup.json`.
 
 ---
 
-## Calendar
+## Academic Calendar
 
-**Sources:** `events.json`, `academic_calendar.json`, `schedule_modifications` table
+**Route:** `/calendar`
 
-| Event Type | Source | Color |
-|------------|--------|-------|
-| Holiday | `academic_calendar.json` | 🔴 Pink |
-| Day Swap | `academic_calendar.json` | 🔵 Blue |
-| Major Exam | `academic_calendar.json` | 🟡 Yellow |
-| CR Change | `schedule_modifications` | 🔵 Blue |
-| Personal | `events.json` | 🟣 Purple |
+**Context:** Full-month calendar view with event markers and agenda list for managing academic and personal events.
 
----
+### Sources
+
+| File | Purpose |
+|------|---------|
+| `events.json` | All calendar events (user-created + imported) |
+| `course_work` (Supabase) | Assignments/exams with `due_at` dates |
+
+### Data Retrieval Logic
+
+```
+1. Fetch events: CalendarRepository.getAll() → events.json
+2. Optional: Merge course_work due dates as calendar events (derived)
+3. Filter by month: events.where(e => e.date.month == focusedMonth)
+4. Group by date: Map<DateTime, List<CalendarEvent>>
+5. UI renders:
+   ├─ Calendar Grid: Colored dots for each date with events
+   └─ Agenda View: Full cards for selected date
+```
+
+### Event Type Mapping
+
+| Type | Source | Storage | Marker Color | Card Background |
+|------|--------|---------|--------------|-----------------|
+| **Holiday** | Imported | `events.json` | 🔴 Red | Pastel Pink |
+| **Day Swap** | Imported | `events.json` | 🔵 Blue | Pastel Blue |
+| **Personal** | User Created | `events.json` | 🟣 Purple | Pastel Purple |
+| **Exam** | Official | `course_work` (Derived) | 🟡 Yellow | Pastel Yellow |
+| **Quiz** | Official | `course_work` (Derived) | 🟡 Yellow | Pastel Yellow |
+| **Assignment** | Official | `course_work` (Derived) | 🟠 Orange | Pastel Orange |
+
+*Note: `events.json` strictly stores PERSONAL, HOLIDAY, and DAY_SWAP types. EXAM, QUIZ, and ASSIGNMENT are always derived from `course_work`.*
+
+### UI Element Mapping
+
+| UI Element | Data Source | Rendering Logic |
+|------------|-------------|-----------------|
+| **Month Header** | `_focusedMonth` state | Format as "January 2026" |
+| **Day Cell** | `events.json` | Show day number + up to 3 colored dots |
+| **Selected Day Ring** | `_selectedDay` state | Black fill if selected |
+| **Agenda Header** | `_selectedDay` | Format as "Tuesday, 15 January" |
+| **Event Card** | `CalendarEvent` | Type badge, Title, Description, Date, Time |
+| **Empty State** | No events for day | "Nothing scheduled for today" |
+
+### Write Actions
+
+| Action | Entry Point | Target File | Operation |
+|--------|-------------|-------------|-----------|
+| **Add Event** | FAB → AddEventPage | `events.json` | Append new event |
+| **Import Holidays** | App bar → /calendar/inject | `events.json` | Bulk append |
+| **Edit Event** | Tap card → Options sheet → Edit | `events.json` | Update by event_id |
+| **Delete Event** | Tap card → Options sheet → Delete | `events.json` | Remove by event_id |
+
+### Add Event Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant AcademicCalendarPage
+    participant AddEventPage
+    participant CalendarService
+    participant CalendarRepository
+    participant JsonFileService
+
+    User->>AcademicCalendarPage: Tap FAB
+    AcademicCalendarPage->>AddEventPage: Navigator.push()
+    User->>AddEventPage: Fill form, tap Save
+    AddEventPage-->>AcademicCalendarPage: Return {title, date, type, ...}
+    AcademicCalendarPage->>CalendarService: addEvent(...)
+    CalendarService->>CalendarRepository: add(event)
+    CalendarRepository->>JsonFileService: appendToJsonArray(events.json)
+    JsonFileService-->>CalendarRepository: Success
+    AcademicCalendarPage->>AcademicCalendarPage: invalidate(calendarEventsProvider)
+    Note over AcademicCalendarPage: UI refreshes with new event
+```
 
 ---
  
@@ -497,7 +849,8 @@ User can restore data from `adsum_backup.json`.
 | UI Element | Source |
 |------------|--------|
 | Name | `users.full_name` (Cloud) |
-| Size | `universities.name` (via `users.university_id`) |
+| Avatar | First letter of `full_name` (no profile picture storage) |
+| University | `universities.name` (via `users.university_id`) |
 | Hostel | `hostels.name` (via `users.hostel_id`) *Filtered by Uni* |
 | Dark Mode Toggle | `prefs.darkMode` (Local Boolean) |
 | Notifications Toggle | `prefs.notificationsEnabled` (Local Boolean) |
@@ -511,6 +864,62 @@ User can restore data from `adsum_backup.json`.
 | Toggle Notifications | Local Prefs | `prefs.setBool('notificationsEnabled', val)` |
 | Toggle Privacy | Local Prefs | `prefs.setBool('privateMode', val)` (Stops Sync) |
 | Nuke Data | Cloud + Local | `DELETE FROM users ...` AND Clear Local Storage |
+
+---
+
+## Live Presence Voting
+
+*Ephemeral, real-time voting displayed on Live class cards. See FEATURES.md Section 10.*
+
+### Sources
+
+| Data | Source | Direction |
+|------|--------|-----------|
+| Presence Count | `presence_confirmations` (Supabase Realtime) | Cloud → App (Stream) |
+
+### Data Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant ScheduleCard
+    participant PresenceProvider
+    participant Supabase Realtime
+    participant presence_confirmations
+
+    Note over ScheduleCard: Class is Live (isCurrent = true)
+    ScheduleCard->>PresenceProvider: Subscribe(rule_id, date)
+    PresenceProvider->>Supabase Realtime: Listen INSERT/DELETE
+    Supabase Realtime-->>PresenceProvider: Stream confirmation changes
+    PresenceProvider-->>ScheduleCard: {confirmedCount}
+    
+    User->>ScheduleCard: Tap "Mark Present"
+    ScheduleCard->>PresenceProvider: confirmPresence()
+    PresenceProvider->>presence_confirmations: INSERT (rule_id, date, user_id)
+    presence_confirmations-->>Supabase Realtime: Broadcast
+    Supabase Realtime-->>PresenceProvider: Update all subscribers
+```
+
+### UI Rendering
+
+| Condition | UI State |
+|-----------|----------|
+| `isLive && type.isAcademic` | Show presence count tile |
+| `!isLive` | Hide presence count entirely |
+
+### Write Actions
+
+| Action | Target | Operation |
+|--------|--------|-----------|
+| Mark Present | `presence_confirmations` | `INSERT (rule_id, date, user_id)` |
+
+### Aggregation (Client-Side)
+
+```dart
+final confirmedCount = confirmations.length;
+```
+
+*No "not voted" count stored. Absence of vote = not voted.*
 
 ---
 

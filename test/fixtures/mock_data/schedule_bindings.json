@@ -1,0 +1,31 @@
+[
+  {
+    "binding_id": "bind_gym_001",
+    "user_id": "user_001",
+    "rule_id": "custom_gym_mon",
+    "schedule_type": "CUSTOM",
+    "location_name": "Campus Gym",
+    "location_lat": 28.5460,
+    "location_long": 77.1245,
+    "wifi_ssid": "IITD_GYM_WIFI"
+  },
+  {
+    "binding_id": "bind_dsa_001",
+    "user_id": "user_001",
+    "rule_id": "r_col106_1",
+    "schedule_type": "GLOBAL",
+    "location_name": "LH-101 - My Seat Row 5",
+    "location_lat": 28.5455,
+    "location_long": 77.1238,
+    "wifi_ssid": "IITD_LH_WIFI"
+  },
+  {
+    "binding_id": "bind_ml_001",
+    "user_id": "user_001",
+    "rule_id": "r_col774_1",
+    "schedule_type": "GLOBAL",
+    "location_name": "LH-310",
+    "location_lat": 28.5452,
+    "location_long": 77.1930
+  }
+]

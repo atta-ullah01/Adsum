@@ -17,33 +17,6 @@ class ActionCenterPage extends ConsumerStatefulWidget {
 class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
   int _selectedTab = 0; 
 
-  final List<Map<String, dynamic>> _historyLog = [
-    {
-      'type': 'CONFLICT',
-      'title': 'Conflict Resolved',
-      'desc': 'Kept Gym over Math',
-      'timestamp': 'Yesterday',
-      'status': 'KEPT B',
-      'icon': Ionicons.person
-    },
-    {
-      'type': 'VERIFY',
-      'title': 'Verified Present',
-      'desc': 'Mobile App Design',
-      'timestamp': 'Oct 20',
-      'status': 'YES',
-      'icon': Ionicons.checkmark_circle
-    },
-    {
-      'type': 'CHANGE',
-      'title': 'Change Seen',
-      'desc': 'CS101 Rescheduled',
-      'timestamp': 'Oct 19',
-      'status': 'SEEN',
-      'icon': Ionicons.eye
-    }
-  ];
-
   @override
   Widget build(BuildContext context) {
     final asyncActionItems = ref.watch(actionCenterProvider);
@@ -56,7 +29,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
             _buildMinimalHeader(context),
             // Pass asyncActionItems to build title to show count correctly
             asyncActionItems.when(
-              data: (items) => _buildPageTitle(items.length),
+              data: (items) => _buildPageTitle(items.where((i) => i.isPending).length),
               loading: () => _buildPageTitle(0),
               error: (_,__) => _buildPageTitle(0),
             ),
@@ -66,13 +39,17 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: _selectedTab == 0 
-                  ? asyncActionItems.when(
-                      data: (items) => _buildActiveList(items),
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Center(child: Text('Error: $err')),
-                    )
-                  : _buildHistoryList(),
+                child: asyncActionItems.when(
+                  data: (items) {
+                    final pending = items.where((i) => i.isPending).toList();
+                    final history = items.where((i) => !i.isPending).toList();
+                    
+                    if (_selectedTab == 0) return _buildActiveList(pending);
+                    return _buildHistoryList(history);
+                  },
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                ),
               ),
             ),
           ],
@@ -92,14 +69,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
             onPressed: () => context.pop(),
             style: IconButton.styleFrom(padding: EdgeInsets.zero, alignment: Alignment.centerLeft),
           ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)),
-            child: const CircleAvatar(
-              radius: 16,
-              backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=attaullah"),
-            ),
-          ),
+
         ],
       ),
     );
@@ -205,7 +175,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
     
     return Container(
       padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(40)),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(40), border: Border.all(color: Colors.black, width: 1.5)),
       child: Column(
         children: [
           // Header
@@ -299,8 +269,8 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(32)),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.black, width: 1.5)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -384,73 +354,70 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
 
   Widget _buildActionButton(String label, Color bg, Color textColor, VoidCallback onTap) {
     return SizedBox(
-      height: 48,
+      height: 40,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           foregroundColor: textColor,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        child: Text(label, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 13)),
+        child: Text(label, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 12), textScaler: TextScaler.noScaling, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
     );
   }
 
   void _handleAction(ActionItem item, String action) {
     ref.read(actionCenterProvider.notifier).resolveItem(item.itemId, action);
-    
-    setState(() {
-      _historyLog.insert(0, {
-        'type': item.type.toString(), // or map to icon
-        'title': item.title,
-        'desc': "Action taken: $action",
-        'timestamp': "Just now",
-        'status': action.toUpperCase().replaceAll('_', ' '),
-        'icon': Ionicons.checkmark_circle
-      });
-    });
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$action processed"), behavior: SnackBarBehavior.floating));
   }
   
-  Widget _buildHistoryList() {
-    if (_historyLog.isEmpty) {
+  Widget _buildHistoryList(List<ActionItem> items) {
+    if (items.isEmpty) {
       return Center(child: Text("No history yet", style: GoogleFonts.dmSans(color: Colors.grey)));
     }
+    
+    // Sort by resolution time (using createdAt as proxy for now or updated field if available)
+    final sorted = List<ActionItem>.from(items)..sort((a,b) => b.createdAt.compareTo(a.createdAt));
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      itemCount: _historyLog.length,
+      itemCount: sorted.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (ctx, i) {
-        final item = _historyLog[i];
+        final item = sorted[i];
+        final statusStr = item.status.toString().split('.').last.toUpperCase().replaceAll('_', ' ');
+        final dateStr = DateFormat('MMM d, h:mm a').format(item.createdAt);
+
         return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.grey.shade100)),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.black, width: 1.5)),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), shape: BoxShape.circle),
-                child: Icon(item['icon'], size: 18, color: Colors.black54),
+                child: const Icon(Ionicons.checkmark_circle, size: 16, color: Colors.black54),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item['title'], style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                    Text(item.title, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
                     const SizedBox(height: 2),
-                    Text(item['desc'] ?? '', style: GoogleFonts.dmSans(fontSize: 12, color: Colors.black54)),
+                    Text(item.body, style: GoogleFonts.dmSans(fontSize: 12, color: Colors.black54), maxLines: 2, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-                    Text(item['timestamp'] ?? '', style: GoogleFonts.dmSans(fontSize: 11, color: Colors.grey)),
+                    Text(dateStr, style: GoogleFonts.dmSans(fontSize: 10, color: Colors.grey)),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: Text(item['status'] ?? '', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green)),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                child: Text(statusStr, style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green)),
               ),
             ],
           ),

@@ -4,6 +4,8 @@ import 'package:adsum/data/sources/local/app_database.dart' hide Enrollment;
 import 'package:adsum/data/sources/local/json_file_service.dart';
 import 'package:adsum/data/repositories/repositories.dart';
 import 'package:adsum/data/repositories/shared_data_repository.dart';
+import 'package:adsum/data/repositories/schedule_modification_repository.dart';
+import 'package:adsum/data/services/mock_data_seeder.dart';
 import 'package:adsum/data/validation/data_validation.dart';
 import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/domain/services/services.dart';
@@ -60,6 +62,11 @@ final workRepositoryProvider = Provider<WorkRepository>((ref) {
   return WorkRepository(ref.watch(jsonFileServiceProvider));
 });
 
+/// Schedule modification repository (CR updates)
+final modificationRepositoryProvider = Provider<ScheduleModificationRepository>((ref) {
+  return ScheduleModificationRepository(ref.watch(jsonFileServiceProvider));
+});
+
 /// Syllabus repository
 final syllabusRepositoryProvider = Provider<SyllabusRepository>((ref) {
   return SyllabusRepository(ref.watch(jsonFileServiceProvider));
@@ -80,6 +87,11 @@ final sharedDataRepositoryProvider = Provider<SharedDataRepository>((ref) {
   return SharedDataRepository();
 });
 
+/// Mock Data Seeder (for testing)
+final mockDataSeederProvider = Provider<MockDataSeeder>((ref) {
+  return MockDataSeeder(ref.watch(jsonFileServiceProvider));
+});
+
 /// Permission service (for Sensor Hub)
 final permissionServiceProvider = Provider<PermissionService>((ref) {
   return PermissionService();
@@ -92,6 +104,9 @@ final scheduleServiceProvider = Provider<ScheduleService>((ref) {
   return ScheduleService(
     ref.watch(enrollmentRepositoryProvider),
     ref.watch(scheduleRepositoryProvider),
+    ref.watch(workRepositoryProvider),
+    ref.watch(calendarRepositoryProvider),
+    ref.watch(modificationRepositoryProvider),
   );
 });
 
@@ -112,7 +127,10 @@ final messServiceProvider = Provider<MessService>((ref) {
 
 /// Calendar service
 final calendarServiceProvider = Provider<CalendarService>((ref) {
-  return CalendarService(ref.watch(calendarRepositoryProvider));
+  return CalendarService(
+    ref.watch(calendarRepositoryProvider),
+    ref.watch(workRepositoryProvider),
+  );
 });
 
 // ============ Data Providers ============
@@ -177,11 +195,25 @@ final pendingWorkProvider = FutureProvider<List<Work>>((ref) async {
   return service.getPending();
 });
 
+/// Completed work items (submitted/graded)
+final completedWorkProvider = FutureProvider<List<Work>>((ref) async {
+  final service = ref.watch(workServiceProvider);
+  return service.getCompleted();
+});
+
 /// Work items for a specific course
 final courseWorkProvider = FutureProvider.family<List<Work>, String>(
   (ref, courseCode) async {
     final service = ref.watch(workServiceProvider);
     return service.getForCourse(courseCode);
+  },
+);
+
+/// Comments for a work item
+final workCommentsProvider = FutureProvider.family<List<WorkComment>, String>(
+  (ref, workId) async {
+    final service = ref.watch(workServiceProvider);
+    return service.getComments(workId);
   },
 );
 

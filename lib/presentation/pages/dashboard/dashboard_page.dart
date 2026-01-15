@@ -161,26 +161,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           child: const Icon(Ionicons.search_outline, size: 20, color: Colors.black87),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      // Avatar
-                      GestureDetector(
-                        onTap: () {
-                          context.push('/settings/profile');
-                        },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                            image: const DecorationImage(
-                              image: NetworkImage("https://i.pravatar.cc/150?u=attaullah"),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
+
                     ],
                   ),
                 ],
@@ -275,9 +256,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                             title: event.title,
                             subtitle: event.subtitle,
                             leftBorderColor: mainColor,
-                            avatars: const [], // TODO: Add avatars based on course
                             isLive: event.isCurrent && !isMess,
                             isExam: event.type == ScheduleEventType.exam,
+                            
+                            // Voting / Social Proof (Academic Only)
+                            showVoting: event.type.isAcademic && !event.isCancelled,
+                            voteCount: (event.isCurrent || event.isPast) ? (event.id.hashCode % 30 + 10) : 0, // Mock count
+
+                            
                             onPulseTap: (event.isCurrent && !isMess) 
                                 ? () => showLiveDiagnostics(context) 
                                 : null,
@@ -293,16 +279,27 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                             card = GestureDetector(
                               onTap: () => context.push('/subject-detail', extra: {
                                 'title': event.title,
-                                'code': 'View Details', // Fetched by ID
+                                'code': event.metadata['course_code'] ?? 'N/A', 
                                 'enrollmentId': event.enrollmentId,
                               }),
                               child: card,
                             );
+                          } else if (event.type == ScheduleEventType.conflict) {
+                             card = GestureDetector(
+                               onTap: () => context.push('/action-center'),
+                               child: card,
+                             );
                           } else if (isMess) {
                             card = GestureDetector(
                               onTap: () => context.push('/mess'),
                               child: card,
                             );
+                          } else if (event.type == ScheduleEventType.personal || event.type == ScheduleEventType.holiday || event.type == ScheduleEventType.exam) {
+                             // Link exams and personal events (that aren't academic sessions) to calendar
+                             card = GestureDetector(
+                               onTap: () => context.push('/calendar'),
+                               child: card,
+                             );
                           }
 
                           return TimelineItem(

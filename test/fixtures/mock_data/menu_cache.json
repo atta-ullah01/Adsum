@@ -1,0 +1,286 @@
+{
+  "last_synced_at": "2026-01-15T08:00:00.000Z",
+  "current_hostel_id": "h_kumaon",
+  "menus": [
+    {
+      "menu_id": "menu_mon_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "MON",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Idli, Sambar, Chutney, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_mon_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "MON",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Rice, Dal Tadka, Roti, Aloo Gobi, Raita",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_mon_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "MON",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Samosa, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_mon_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "MON",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Roti, Rice, Dal Fry, Aloo Matar, Kheer",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_tue_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "TUE",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Aloo Paratha, Curd, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_tue_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "TUE",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Rice, Rajma, Roti, Mix Veg, Salad",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_tue_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "TUE",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Bread Pakora, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_tue_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "TUE",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Roti, Rice, Moong Dal, Gobi Masala, Salad",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_wed_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "WED",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Poha, Jalebi, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_wed_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "WED",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Rice, Chole, Roti, Paneer Bhurji, Pickle",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_wed_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "WED",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Veg Cutlet, Coffee",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_wed_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "WED",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Roti, Rice, Arhar Dal, Shahi Paneer, Raita",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_thu_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "THU",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Bread, Butter, Omelet, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_thu_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "THU",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Rice, Kadhi, Roti, Bhindi Fry, Papad",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_thu_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "THU",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Kachori, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_thu_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "THU",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Roti, Rice, Mixed Dal, Palak, Custard",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_fri_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "FRI",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Upma, Vada, Sambhar, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_fri_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "FRI",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Veg Biryani, Raita, Roti, Dal",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_fri_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "FRI",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Mathri, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_fri_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "FRI",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Roti, Pulao, Dal Tadka, Chana Masala, Ice Cream",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sat_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SAT",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Chole Bhature, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sat_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SAT",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Rice, Sambar, Roti, Veg Korma, Sweet",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sat_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SAT",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Cake, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sat_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SAT",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Roti, Rice, Toor Dal, Methi Aloo, Halwa",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sun_b",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SUN",
+      "meal_type": "BREAKFAST",
+      "start_time": "07:30",
+      "end_time": "09:30",
+      "items": "Dosa, Chutney, Sambar, Coffee",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sun_l",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SUN",
+      "meal_type": "LUNCH",
+      "start_time": "12:30",
+      "end_time": "14:30",
+      "items": "Jeera Rice, Dal Makhani, Naan, Paneer, Gulab Jamun",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sun_s",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SUN",
+      "meal_type": "SNACKS",
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "items": "Biscuits, Tea",
+      "is_modified": false
+    },
+    {
+      "menu_id": "menu_sun_d",
+      "hostel_id": "h_kumaon",
+      "day_of_week": "SUN",
+      "meal_type": "DINNER",
+      "start_time": "19:30",
+      "end_time": "21:30",
+      "items": "Naan, Biryani, Paneer Butter Masala, Dal, Sewai",
+      "is_modified": false
+    }
+  ]
+}

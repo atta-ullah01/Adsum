@@ -1,4 +1,5 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:intl/intl.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
@@ -126,8 +127,7 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
     setState(() => _selectedIndex = index);
   }
 
-  // Placeholder for assignments
-  final List<Map<String, dynamic>> _assignments = [];
+
 
   @override
   Widget build(BuildContext context) {
@@ -136,10 +136,7 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
     final enrollment = _enrollment;
 
     // Use derived data if available, else defaults
-    final attendancePct = enrollment?.stats.attendancePercent ?? 0.0;
-    final totalClasses = enrollment?.stats.totalClasses ?? 0;
-    final attendedClasses = enrollment?.stats.attended ?? 0;
-    final bunks = enrollment?.stats.safeBunks ?? 0;
+
 
     return Scaffold(
       backgroundColor: Colors.white, 
@@ -169,9 +166,9 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
                 children: [
-                  _buildStatsView(attendancePct, totalClasses, attendedClasses, bunks),
+                  if (enrollment != null) _buildStatsView(enrollment) else const Center(child: CircularProgressIndicator()),
                   _buildSyllabusView(),
-                  _buildAssignmentsView(),
+                  if (enrollment != null) _buildAssignmentsView(enrollment) else const Center(child: CircularProgressIndicator()),
                   _buildInfoView(),
                 ],
               ),
@@ -226,7 +223,15 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
   }
 
   // --- STATS VIEW (Pastel Bento) ---
-  Widget _buildStatsView(double attendancePct, int total, int attended, int bunks) {
+  Widget _buildStatsView(Enrollment enrollment) {
+    // Watch real logs
+    final logsAsync = ref.watch(attendanceLogsProvider(enrollment.enrollmentId));
+    
+    final attendancePct = enrollment.stats.attendancePercent;
+    final total = enrollment.stats.totalClasses;
+    final attended = enrollment.stats.attended;
+    final bunks = enrollment.stats.safeBunks;
+
     return ListView(
       padding: const EdgeInsets.all(24), 
       children: [
@@ -350,26 +355,45 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
                ),
                const SizedBox(height: 16),
                
-               // TODO: Fetch real history from AttendanceRepository
-               Container(
-                 padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                 decoration: BoxDecoration(
-                   color: AppColors.bgApp, 
-                   borderRadius: BorderRadius.circular(24),
+               logsAsync.when(
+                 loading: () => Container(
+                   height: 100,
+                   alignment: Alignment.center,
+                   child: const CircularProgressIndicator(),
                  ),
-                 child: Row(
-                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                   children: [
-                      // Placeholder for now
-                      _buildDayStatusIcon("M", AttendanceStatus.present),
-                      _buildDayStatusIcon("T", AttendanceStatus.present),
-                      _buildDayStatusIcon("W", AttendanceStatus.absent), 
-                      _buildDayStatusIcon("T", AttendanceStatus.present),
-                      _buildDayStatusIcon("F", AttendanceStatus.present),
-                      _buildDayStatusIcon("S", null), // No class
-                      _buildDayStatusIcon("S", null),
-                   ],
-                 ),
+                 error: (err, _) => Text("Could not load history: $err"),
+                 data: (logs) {
+                   // Generate last 7 days buckets
+                   // Note: This logic is simplified. A robust one would check logs for specific dates.
+                   // Here we just take last 7 logs or fewer.
+                   
+                   final recentLogs = logs.take(7).toList(); // Assuming logs are sorted desciending in repo
+                   // If not sorted, we should sort. Assuming repo returns correct order.
+                   
+                   if (recentLogs.isEmpty) {
+                     return Container(
+                       padding: const EdgeInsets.all(24),
+                       decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(16)),
+                       child: const Text("No recent attendance data."),
+                     );
+                   }
+
+                   return Container(
+                     padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                     decoration: BoxDecoration(
+                       color: AppColors.bgApp, 
+                       borderRadius: BorderRadius.circular(24),
+                     ),
+                     child: Row(
+                       mainAxisAlignment: MainAxisAlignment.spaceAround,
+                       children: recentLogs.map((log) {
+                         final date = log.date;
+                         final dayLetter = DateFormat('E').format(date).substring(0, 1);
+                         return _buildDayStatusIcon(dayLetter, log.status);
+                       }).toList(),
+                     ),
+                   );
+                 }
                ),
             ],
           ),
@@ -659,7 +683,10 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
                          // Schedule (Placeholder)
                          Text("Class Schedule", style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textMain)),
                          const SizedBox(height: 8),
-                         Text("View your full schedule on the Dashboard tab.", style: GoogleFonts.dmSans(color: Colors.grey)),
+                         InkWell(
+                            onTap: () => context.go('/dashboard'), // Or specific index if using indexed stack logic
+                            child: Text("View your full schedule on the Dashboard tab.", style: GoogleFonts.dmSans(color: Colors.blue, decoration: TextDecoration.underline)),
+                         ),
                    ],
                  ),
                )
@@ -832,138 +859,150 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
   }
   
   // --- ASSIGNMENTS VIEW (New Tab) ---
-  Widget _buildAssignmentsView() {
-    if (_assignments.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Ionicons.checkmark_done_circle_outline, size: 64, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text("No pending tasks!", style: GoogleFonts.dmSans(color: Colors.grey)),
-          ],
-        ),
-      );
-    }
-    
-    return ListView.builder(
-      padding: const EdgeInsets.all(24),
-      itemCount: _assignments.length,
-      itemBuilder: (context, index) {
-        final task = _assignments[index];
-        final String workType = (task['work_type'] as String?) ?? 'ASSIGNMENT';
-        
-        // Color Logic based on work_type
-        Color accentColor;
-        IconData typeIcon;
-        if (workType == 'EXAM') {
-          accentColor = Colors.red;
-          typeIcon = Ionicons.alert_circle;
-        } else if (workType == 'QUIZ') {
-          accentColor = Colors.purple;
-          typeIcon = Ionicons.timer;
-        } else if (workType == 'PROJECT') {
-          accentColor = Colors.green; // Distinct for Projects
-          typeIcon = Ionicons.cube;
-        } else {
-          accentColor = Colors.blue; // Default for Assignment/Homework
-          typeIcon = Ionicons.document_text;
-        }
-        
-        return FadeSlideTransition(
-          index: index,
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4)),
+  Widget _buildAssignmentsView(Enrollment enrollment) {
+    final workAsync = ref.watch(courseWorkProvider(enrollment.effectiveCourseCode));
+
+    return workAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text("Error fetching tasks: $err")),
+      data: (works) {
+        if (works.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Ionicons.checkmark_done_circle_outline, size: 64, color: Colors.grey[300]),
+                const SizedBox(height: 16),
+                Text("No pending tasks!", style: GoogleFonts.dmSans(color: Colors.grey)),
               ],
             ),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
-              child: InkWell(
-                onTap: () {
-                   context.push('/academics/detail', extra: task);
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      // 1. Color Strip
-                      Container(
-                         width: 6,
-                         decoration: BoxDecoration(
-                           color: accentColor,
-                           borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20)),
-                         ),
-                      ),
-                      // 2. Content
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Header
-                              Row(
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(24),
+          itemCount: works.length,
+          itemBuilder: (context, index) {
+            final task = works[index];
+            final WorkType workType = task.workType;
+            final isAssignment = workType == WorkType.assignment;
+            final isQuiz = workType == WorkType.quiz;
+            final isExam = workType == WorkType.exam;
+            
+            // Color Logic based on work_type
+            Color accentColor;
+            IconData typeIcon;
+            if (isExam) {
+              accentColor = Colors.red;
+              typeIcon = Ionicons.alert_circle;
+            } else if (isQuiz) {
+              accentColor = Colors.purple;
+              typeIcon = Ionicons.timer;
+            } else if (workType == WorkType.project) {
+              accentColor = Colors.green; // Distinct for Projects
+              typeIcon = Ionicons.cube;
+            } else {
+              accentColor = Colors.blue; // Default for Assignment/Homework
+              typeIcon = Ionicons.document_text;
+            }
+            
+            return FadeSlideTransition(
+              index: index,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    onTap: () {
+                       context.push('/academics/detail', extra: task.toJson()); // Pass generic map or model? Using model toJson for compatibility
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          // 1. Color Strip
+                          Container(
+                             width: 6,
+                             decoration: BoxDecoration(
+                               color: accentColor,
+                               borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20)),
+                             ),
+                          ),
+                          // 2. Content
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                    child: Row(
+                                  // Header
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                        child: Row(
+                                          children: [
+                                            Icon(typeIcon, size: 12, color: accentColor),
+                                            const SizedBox(width: 4),
+                                            Text(workType.name.toUpperCase(), style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: accentColor, letterSpacing: 0.5)),
+                                          ],
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Title
+                                  Text(task.title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain)),
+                                  const SizedBox(height: 12),
+                                  
+                                  // Footer: Unique Elements based on work_type
+                                  if (isAssignment)
+                                    _buildIconText(Ionicons.time_outline, "Due ${task.dueAt != null ? DateFormat('MMM d, h:mm a').format(task.dueAt!) : 'TBD'}"),
+                                    
+                                  if (isQuiz)
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Icon(typeIcon, size: 12, color: accentColor),
-                                        const SizedBox(width: 4),
-                                        Text(workType, style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: accentColor, letterSpacing: 0.5)),
+                                        _buildIconText(Ionicons.calendar_outline, "${task.startAt != null ? DateFormat('MMM d').format(task.startAt!) : 'TBD'}"),
+                                        const SizedBox(height: 4),
+                                        if (task.durationMinutes != null)
+                                          _buildIconText(Ionicons.hourglass_outline, "Duration: ${task.durationMinutes} mins"),
                                       ],
                                     ),
-                                  ),
-                                  const Spacer(),
+                                    
+                                  if (isExam)
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildIconText(Ionicons.calendar, task.startAt != null ? DateFormat('MMM d, h:mm a').format(task.startAt!) : 'TBD'),
+                                        const SizedBox(height: 4),
+                                        _buildIconText(Ionicons.location_outline, "Venue: ${task.venue ?? 'TBD'}"),
+                                      ],
+                                    ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-                              // Title
-                              Text((task['title'] as String?) ?? 'Untitled', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-                              const SizedBox(height: 12),
-                              
-                              // Footer: Unique Elements based on work_type
-                              if (workType == 'ASSIGNMENT')
-                                _buildIconText(Ionicons.time_outline, "Due ${(task['due_at'] as String?) ?? 'TBD'}"),
-                                
-                              if (workType == 'QUIZ')
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildIconText(Ionicons.calendar_outline, "${(task['start_at'] as String?) ?? 'TBD'} - ${(task['due_at'] as String?) ?? 'TBD'}"),
-                                    const SizedBox(height: 4),
-                                    _buildIconText(Ionicons.hourglass_outline, "Duration: ${task['duration_minutes']} mins"),
-                                  ],
-                                ),
-                                
-                              if (workType == 'EXAM')
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildIconText(Ionicons.calendar, (task['start_at'] as String?) ?? 'TBD'),
-                                    const SizedBox(height: 4),
-                                    _buildIconText(Ionicons.location_outline, "Venue: ${(task['venue'] as String?) ?? 'TBD'}"),
-                                  ],
-                                ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
-      },
+      }
     );
   }
   

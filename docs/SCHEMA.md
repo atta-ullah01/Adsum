@@ -23,6 +23,8 @@
 | `default_section` | String | | Default "A" |
 | `created_at` | Timestamp | | |
 
+*Note: No `profile_picture_url` column. Avatars display user initials only (design decision).*
+
 #### `universities`
 | Column | Type | Key | Description |
 |--------|------|-----|-------------|
@@ -195,18 +197,20 @@
 
 *Note: CR scope is strictly **per-section**. A user can be CR for "CS101-A" but not "CS101-B". Admin approval grants authority only for that specific `course_code` + `section` combination.*
 
-#### `verification_votes`
-*Crowd-sourced class status voting (see Section 10: Student Collaboration in FEATURES.md).*
+#### `presence_confirmations`
+*Ephemeral live presence confirmations. See Section 10 in FEATURES.md.*
+
+> **TTL: 24 hours.** A scheduled job deletes all confirmations older than 1 day. No historical storage.
 
 | Column | Type | Key | Description |
 |--------|------|-----|-------------|
-| `vote_id` | UUID | **PK** | |
-| `rule_id` | UUID | **FK** | Schedule slot |
-| `section` | String | | Voter's section |
-| `user_id` | UUID | **FK** | Voter |
-| `date` | Date | | |
-| `status` | Enum | | `PROF_PRESENT`, `PROF_MISSING` |
-| `voted_at` | Timestamp | | |
+| `confirmation_id` | UUID | **PK** | |
+| `rule_id` | UUID | **FK** | Schedule slot (→ `global_schedules.rule_id`) |
+| `user_id` | UUID | **FK** | Confirming user |
+| `date` | Date | Index | Today's date |
+| `confirmed_at` | Timestamp | | For TTL cleanup |
+
+*Note: Simple presence count. No voting on professor status.*
 
 ---
 
@@ -312,12 +316,16 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
 ```
 
 ### `/data/attendance.json`
+*Attendance logs per course slot. Multiple entries per day supported for courses with multiple slots.*
+
 ```json
 [
   {
     "log_id": "uuid",
     "enrollment_id": "uuid",
     "date": "2026-01-13",
+    "slot_id": "rule_cs101_mon_10",        // References base_timetable_rules or custom_schedule_slots
+    "start_time": "10:00",                 // For display (e.g., "10:00 AM")
     "status": "PRESENT",
     "source": "GEOFENCE",
     "confidence_score": 95,
@@ -333,19 +341,63 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
 ]
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `log_id` | UUID | ✅ | Unique log identifier |
+| `enrollment_id` | UUID | ✅ | References enrollments |
+| `date` | Date | ✅ | Class date (YYYY-MM-DD) |
+| `slot_id` | String | ❌ | References schedule slot for multi-slot days |
+| `start_time` | Time | ❌ | Slot start time (HH:mm) for display |
+| `status` | Enum | ✅ | `PRESENT`, `ABSENT`, `PENDING` |
+| `source` | Enum | ✅ | `GEOFENCE`, `WIFI`, `MANUAL`, `CROWD_VERIFIED` |
+| `confidence_score` | Int | ✅ | 0-100 detection confidence |
+| `verification_state` | Enum | ✅ | `AUTO_CONFIRMED`, `MANUAL_OVERRIDE`, `PENDING` |
+| `evidence` | Object | ❌ | GPS, WiFi, activity data |
+| `synced` | Boolean | ✅ | Uploaded to server |
+
 
 ### `/data/events.json`
+*User's personal calendar events. Displayed on dashboard timeline and calendar.*
+
+> [!NOTE]
+> **Assignments are NOT stored here.** They come from `course_work` (Supabase) and appear on calendar via derivation. This file is for user-created personal events only.
+
 ```json
 [
   {
     "event_id": "uuid",
-    "title": "Gym",
+    "title": "Gym Session",
     "date": "2026-01-15",
-    "start_time": "07:00",
-    "end_time": "08:00"
+    "start_time": "07:00",        // Optional (all-day events have no time)
+    "end_time": "08:00",          // Optional
+    "type": "PERSONAL",           // Enum: PERSONAL, HOLIDAY, DAY_SWAP
+    "description": "Leg day",     // Optional notes
+    "is_active": true,            // False = soft-deleted / hidden
+    "day_order_override": null    // Only for DAY_SWAP: "MON", "TUE", etc.
   }
 ]
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `event_id` | UUID | ✅ | Unique identifier |
+| `title` | String | ✅ | Display title |
+| `date` | Date | ✅ | Event date (YYYY-MM-DD) |
+| `start_time` | Time | ❌ | Start time (HH:mm), null for all-day |
+| `end_time` | Time | ❌ | End time (HH:mm) |
+| `type` | Enum | ✅ | `PERSONAL`, `HOLIDAY`, `DAY_SWAP` |
+| `description` | String | ❌ | Optional notes or venue |
+| `is_active` | Boolean | ✅ | If false, event is hidden from views |
+| `day_order_override` | Enum | ❌ | Only for `DAY_SWAP`: `MON`, `TUE`, `WED`, `THU`, `FRI`, `SAT`, `SUN` |
+
+> [!IMPORTANT]
+> **Strict Type Separation:**
+> - `events.json` stores **Personal** (User) and **Imported** (Holiday, Day Swap) events.
+> - **Exams, Quizzes, and Assignments** are stored in `course_work` (Supabase) and derived at runtime for the calendar. They are NOT stored here.
+
+> [!TIP]
+> **Day Swap Behavior:**
+> When a `DAY_SWAP` event exists on a date with `day_order_override: "MON"`, the Schedule Engine will fetch Monday's schedule instead of the actual day's schedule. This is used for makeup classes.
 
 ### `/data/calendar_overrides.json`
 *User's local overrides to hide specific calendar events.*
@@ -475,6 +527,21 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
     "status": "SUBMITTED",
     "grade": "A",
     "is_hidden_from_calendar": false
+  }
+]
+```
+
+
+### `/data/work_comments.json`
+*Local cache of discussion threads for offline access. Synced with `work_comments` table.*
+```json
+[
+  {
+    "comment_id": "uuid",
+    "work_id": "uuid",
+    "user_id": "uuid",
+    "text": "Is this due at midnight?",
+    "created_at": "2026-01-14T10:00:00Z"
   }
 ]
 ```

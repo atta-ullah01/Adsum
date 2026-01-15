@@ -50,77 +50,85 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
     List<Map<String, dynamic>> alerts = [];
 
     if (_isToday(date)) {
-      // TODAY: Show Mock Exam + Action Items
-      
-      // 1. Mock Exam (Calendar Event)
-      alerts.add({
-        'title': 'Mid-Term Exam: DAA',
-        'subtitle': 'Lecture Hall Complex • Room 405',
-        'time': 'Starts in 45m',
-        'color': AppColors.danger,
-        'label': 'URGENT',
-        'icon': Ionicons.alert_circle,
-      });
-
-      // 2. Action Items from Provider
+      // TODAY: Show Action Items from Repository
       for (final item in actionItems) {
-        // Cast check (dynamic list to support legacy calls if any, though provider gives ActionItem)
         if (item is! ActionItem) continue;
 
         if (item.type == ActionItemType.attendanceRisk) {
           alerts.add({
             'title': item.title,
-            'subtitle': item.body ?? 'Attendance critical',
-            'time': 'Risk Level: High',
-            'color': Colors.orange,
+            'subtitle': item.body,
+            'time': item.payload['current_per'] ?? 'Risk Level: High',
+            'color': item.accentColor,
             'label': 'ATTENDANCE',
             'icon': Ionicons.warning,
+            'payload': item.payload,
           });
         } else if (item.type == ActionItemType.assignmentDue) {
           alerts.add({
             'title': item.title,
-            'subtitle': item.body ?? 'Submission pending',
-            'time': 'Due soon',
-            'color': Colors.blue,
+            'subtitle': item.payload['course'] ?? 'Course',
+            'time': item.payload['due_text'] ?? 'Due soon',
+            'color': item.accentColor,
             'label': 'ASSIGNMENT',
             'icon': Ionicons.document_text,
+            'payload': item.payload,
           });
         } else if (item.type == ActionItemType.conflict) {
-           alerts.add({
+          final sourceA = item.payload['sourceA'] as Map<String, dynamic>?;
+          final sourceB = item.payload['sourceB'] as Map<String, dynamic>?;
+          alerts.add({
             'title': item.title,
-            'subtitle': 'Schedule Conflict Detected',
+            'subtitle': '${sourceA?['title'] ?? 'Event A'} vs ${sourceB?['title'] ?? 'Event B'}',
             'time': 'Action Required',
-            'color': AppColors.danger,
+            'color': item.accentColor,
             'label': 'CONFLICT',
-            'icon': Ionicons.git_merge, // or alert
+            'icon': Ionicons.git_merge,
+            'payload': item.payload,
+          });
+        } else if (item.type == ActionItemType.verify) {
+          alerts.add({
+            'title': item.title,
+            'subtitle': item.payload['course'] ?? 'Course',
+            'time': 'Verification Needed',
+            'color': item.accentColor,
+            'label': 'VERIFY',
+            'icon': Ionicons.help_circle,
+            'payload': item.payload,
+          });
+        } else if (item.type == ActionItemType.scheduleChange) {
+          alerts.add({
+            'title': item.title,
+            'subtitle': item.body,
+            'time': 'Schedule Update',
+            'color': item.accentColor,
+            'label': 'CHANGE',
+            'icon': Ionicons.information_circle,
+            'payload': item.payload,
           });
         }
       }
-
-    } else if (dayOffset == 1) {
-      // TOMORROW: Show upcoming items
-      alerts.add({
-        'title': 'Study Group Session',
-        'subtitle': 'Library Room 201',
-        'time': 'Tomorrow 3 PM',
-        'color': Colors.purple,
-        'label': 'REMINDER',
-        'icon': Ionicons.people,
-      });
-    } else if (dayOffset == 2) {
-      // DAY +2: Exam day
-      alerts.add({
-        'title': 'Mid-Term: Data Structures',
-        'subtitle': 'Exam Hall • 3 Hour Duration',
-        'time': 'In 2 days',
-        'color': AppColors.danger,
-        'label': 'EXAM',
-        'icon': Ionicons.school,
-      });
+    } else if (dayOffset > 0 && dayOffset <= 3) {
+      // FUTURE (1-3 days): Show assignment and conflict items that are still pending
+      for (final item in actionItems) {
+        if (item is! ActionItem) continue;
+        if (item.type == ActionItemType.assignmentDue || item.type == ActionItemType.conflict) {
+          alerts.add({
+            'title': item.title,
+            'subtitle': item.body,
+            'time': 'In $dayOffset day${dayOffset > 1 ? 's' : ''}',
+            'color': item.accentColor,
+            'label': item.type == ActionItemType.assignmentDue ? 'UPCOMING' : 'CONFLICT',
+            'icon': item.type == ActionItemType.assignmentDue ? Ionicons.document_text : Ionicons.git_merge,
+            'payload': item.payload,
+          });
+        }
+      }
     }
 
     return alerts;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -151,24 +159,24 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
               final alert = alerts[index];
               return GestureDetector(
                 onTap: () {
-                    if (alert['label'] == 'ASSIGNMENT') {
+                    if (alert['label'] == 'ASSIGNMENT' || alert['label'] == 'UPCOMING') {
                         context.push('/assignments');
-                    } else if (alert['label'] == 'ATTENDANCE' || alert['label'] == 'EXAM') {
+                    } else if (alert['label'] == 'ATTENDANCE') {
                         context.push('/subject-detail', extra: {
-                            'title': 'Course Name', // Mock fallback
-                            'code': 'CS-XXX'
+                            'title': alert['payload']?['course'] ?? 'Course',
+                            'code': 'N/A'
                         });
-                    } else if (alert['label'] == 'CONFLICT') {
+                    } else if (alert['label'] == 'CONFLICT' || alert['label'] == 'VERIFY' || alert['label'] == 'CHANGE') {
                         context.push('/action-center');
                     }
                 },
                 child: EmergencyPinner(
-                  title: alert['title']!,
-                  subtitle: alert['subtitle']!,
-                  time: alert['time']!,
-                  color: alert['color'],
-                  label: alert['label'],
-                  icon: alert['icon'],
+                  title: alert['title'] as String,
+                  subtitle: alert['subtitle'] as String,
+                  time: alert['time'] as String,
+                  color: alert['color'] as Color,
+                  label: alert['label'] as String,
+                  icon: alert['icon'] as IconData,
                 ),
               );
             },
@@ -179,6 +187,7 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(alerts.length, (index) {
+              final alertColor = alerts[_currentPage]['color'] as Color;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -186,8 +195,8 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
                 width: _currentPage == index ? 24 : 6,
                 decoration: BoxDecoration(
                   color: _currentPage == index 
-                      ? alerts[_currentPage]['color'] 
-                      : (alerts[_currentPage]['color'] as Color).withValues(alpha: 0.2),
+                      ? alertColor 
+                      : alertColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(3),
                 ),
               );

@@ -52,7 +52,26 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
         actions: [
           IconButton(
             icon: const Icon(Ionicons.cloud_upload_outline, color: Colors.black),
-            onPressed: () => context.push('/calendar/inject'),
+            onPressed: () {
+               ScaffoldMessenger.of(context).clearSnackBars();
+               ScaffoldMessenger.of(context).showSnackBar(
+                 SnackBar(
+                   content: Row(
+                     children: [
+                       const Icon(Ionicons.alert_circle, color: Colors.white, size: 20),
+                       const SizedBox(width: 12),
+                       Expanded(child: Text("Not implemented, too poor to buy API keys 🥲", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14))),
+                     ],
+                   ),
+                   backgroundColor: const Color(0xFF1F2937),
+                   behavior: SnackBarBehavior.floating,
+                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                   margin: const EdgeInsets.all(24),
+                   elevation: 0,
+                 )
+               );
+            },
             tooltip: "Import Holidays",
           )
         ],
@@ -83,9 +102,18 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
                             icon: const Icon(Ionicons.chevron_back, color: Colors.grey),
                             onPressed: () => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1)),
                           ),
-                          Text(
-                            DateFormat("MMMM yyyy").format(_focusedMonth),
-                            style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                          GestureDetector(
+                            onTap: () {
+                              final now = DateTime.now();
+                              setState(() {
+                                _focusedMonth = DateTime(now.year, now.month);
+                                _selectedDay = DateTime(now.year, now.month, now.day);
+                              });
+                            },
+                            child: Text(
+                              DateFormat("MMMM yyyy").format(_focusedMonth),
+                              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                            ),
                           ),
                           IconButton(
                             icon: const Icon(Ionicons.chevron_forward, color: Colors.grey),
@@ -188,9 +216,9 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
         case CalendarEventType.holiday: return AppColors.danger;
         case CalendarEventType.exam:
         case CalendarEventType.quiz: return AppColors.accent;
+        case CalendarEventType.assignment: return Colors.orange;
         case CalendarEventType.daySwap: return AppColors.primary;
         case CalendarEventType.personal: return AppColors.secondary;
-        case CalendarEventType.assignment: return Colors.orange;
         default: return Colors.grey;
       }
     }).toSet().toList();
@@ -298,6 +326,10 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
         bgDate = AppColors.pastelYellow;
         textDate = const Color(0xFFB45309);
         break;
+      case CalendarEventType.assignment:
+        bgDate = AppColors.pastelOrange;
+        textDate = Colors.deepOrange;
+        break;
       case CalendarEventType.daySwap:
         bgDate = AppColors.pastelBlue;
         textDate = AppColors.primary;
@@ -305,10 +337,6 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
       case CalendarEventType.personal:
         bgDate = AppColors.pastelPurple;
         textDate = AppColors.secondary;
-        break;
-      case CalendarEventType.assignment:
-        bgDate = Colors.orange.shade50;
-        textDate = Colors.orange;
         break;
       default:
         bgDate = Colors.grey.shade100;
@@ -318,7 +346,7 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
     return FadeSlideTransition(
       index: 0,
       child: InkWell(
-        onTap: () => _showDayOrderSheet(event),
+        onTap: () => _showEventOptionsSheet(event),
         borderRadius: BorderRadius.circular(24),
         child: Container(
           width: double.infinity,
@@ -361,6 +389,9 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
                     if (event.startTime != null) ...[
                        const SizedBox(width: 24),
                        _buildMetaItem(Ionicons.time_outline, event.startTime!),
+                    ] else ...[
+                       const SizedBox(width: 24),
+                       _buildMetaItem(Ionicons.time_outline, "All Day"),
                     ]
                  ],
                )
@@ -397,9 +428,139 @@ class _AcademicCalendarPageState extends ConsumerState<AcademicCalendarPage> {
   
   bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
-  // Placeholder for edit (view-only or toggle visibility in future)
-  void _showDayOrderSheet(CalendarEvent event) {
-     // TODO: Implement Edit Event logic
-     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Editing event is coming in Phase 3")));
+  /// Show event options bottom sheet (Edit, Delete, Hide)
+  void _showEventOptionsSheet(CalendarEvent event) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    event.title,
+                    style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Ionicons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Edit Option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Ionicons.pencil, color: Colors.blue, size: 20),
+              ),
+              title: Text("Edit Event", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+              subtitle: Text("Modify title, date, or time", style: GoogleFonts.dmSans(color: Colors.grey)),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => AddEventPage(
+                      initialDate: event.date,
+                      editEvent: event,
+                    ),
+                  ),
+                );
+                
+                if (result != null && result is Map) {
+                  final typeStr = result['type'] as String? ?? 'Personal';
+                  final type = CalendarEventType.values.firstWhere(
+                    (e) => e.name.toLowerCase() == typeStr.toLowerCase(),
+                    orElse: () => CalendarEventType.personal,
+                  );
+                  
+                  final updated = CalendarEvent(
+                    eventId: event.eventId, // Keep same ID
+                    title: result['title'],
+                    date: result['date'],
+                    type: type,
+                    startTime: result['startTime'],
+                    endTime: result['endTime'],
+                    description: result['description'],
+                  );
+                  
+                  await ref.read(calendarServiceProvider).updateEvent(updated);
+                  ref.invalidate(calendarEventsProvider);
+                }
+              },
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // Delete Option
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Ionicons.trash, color: Colors.red, size: 20),
+              ),
+              title: Text("Delete Event", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.red)),
+              subtitle: Text("Remove from calendar", style: GoogleFonts.dmSans(color: Colors.grey)),
+              onTap: () async {
+                Navigator.pop(ctx);
+                
+                // Confirm deletion
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (c) => AlertDialog(
+                    title: Text("Delete Event?", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                    content: Text("Are you sure you want to delete \"${event.title}\"?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(c, false),
+                        child: const Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(c, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text("Delete"),
+                      ),
+                    ],
+                  ),
+                );
+                
+                if (confirm == true) {
+                  await ref.read(calendarServiceProvider).deleteEvent(event.eventId);
+                  ref.invalidate(calendarEventsProvider);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("\"${event.title}\" deleted"), behavior: SnackBarBehavior.floating),
+                    );
+                  }
+                }
+              },
+            ),
+            
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 }

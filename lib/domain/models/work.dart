@@ -202,3 +202,44 @@ class WorkState extends Equatable {
     );
   }
 }
+
+/// Represents a comment on a work item
+/// Maps to `work_comments` table in SCHEMA.md
+class WorkComment extends Equatable {
+  final String commentId;
+  final String workId;
+  final String userId;
+  final String text;
+  final DateTime createdAt;
+
+  const WorkComment({
+    required this.commentId,
+    required this.workId,
+    required this.userId,
+    required this.text,
+    required this.createdAt,
+  });
+
+  @override
+  List<Object?> get props => [commentId, workId, userId, text, createdAt];
+
+  factory WorkComment.fromJson(Map<String, dynamic> json) {
+    return WorkComment(
+      commentId: json['comment_id'] as String,
+      workId: json['work_id'] as String,
+      userId: json['user_id'] as String,
+      text: json['text'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'comment_id': commentId,
+      'work_id': workId,
+      'user_id': userId,
+      'text': text,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
+}

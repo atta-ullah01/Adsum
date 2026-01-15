@@ -289,6 +289,15 @@ The demo at `lib/presentation/` contains **24 pages** across 12 feature director
 - **Persistence**: Conflict remains until slot is changed or user explicitly dismisses.
 - **No Blocking**: Enrollment/course creation is NOT blocked by conflicts.
 
+### 3.4 Live Presence Voting (Crowdsourcing)
+*See FEATURES.md Section 10, SCHEMA.md `verification_votes`, DATA_FLOW.md*
+
+- [ ] **Model**: Create `VerificationVote` domain model
+- [ ] **Provider**: `liveVotesProvider(ruleId, date)` using Supabase Realtime streams
+- [ ] **Repository**: `VoteRepository.castVote(ruleId, date, status)` → upsert
+- [ ] **UI Widget**: `LiveVotingStrip` in `ScheduleCard` (only when `isLive && isAcademic`)
+- [ ] **Cleanup Job**: Supabase Edge Function to delete votes older than 24h
+
 ---
 
 ## ⏳ Phase 4: Domain Logic
@@ -368,3 +377,4 @@ lib/
 | 2026-01-14 | Updated Phase 2 with complete page inventory (24 pages across 12 directories) |
 | 2026-01-14 | Updated to reflect actual implementation, marked Phase 0/1 complete |
 | 2026-01-14 | Enhanced plan with robustness focus, failure modes, verification gates |
+| 2026-01-15 | Added Live Presence Voting (Crowdsourcing) feature spec to Phase 3 |

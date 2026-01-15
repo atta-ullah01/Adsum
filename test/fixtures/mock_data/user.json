@@ -1,0 +1,18 @@
+{
+  "user_id": "user_001",
+  "email": "student@iitd.ac.in",
+  "full_name": "Attaullah",
+  "university_id": "iit_delhi",
+  "home_hostel_id": "h_kumaon",
+  "default_section": "A",
+  "settings": {
+    "theme_mode": "SYSTEM",
+    "notifications_enabled": true,
+    "is_private_mode": false,
+    "google_sync_enabled": false,
+    "last_sync_at": "2026-01-15T08:00:00.000Z",
+    "sensor_geofence_enabled": true,
+    "sensor_motion_enabled": true,
+    "sensor_battery_optimization_disabled": false
+  }
+}

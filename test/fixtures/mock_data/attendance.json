@@ -1,0 +1,164 @@
+[
+  {
+    "log_id": "att_001",
+    "enrollment_id": "enroll_dsa_001",
+    "date": "2026-01-14",
+    "slot_id": "rule_dsa_mon_10",
+    "start_time": "10:00",
+    "status": "PRESENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  },
+  {
+    "log_id": "att_001b",
+    "enrollment_id": "enroll_dsa_001",
+    "date": "2026-01-14",
+    "slot_id": "rule_dsa_mon_14",
+    "start_time": "14:00",
+    "status": "ABSENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  },
+  {
+    "log_id": "att_002",
+    "enrollment_id": "enroll_dsa_001",
+    "date": "2026-01-13",
+    "slot_id": "rule_dsa_tue_10",
+    "start_time": "10:00",
+    "status": "PRESENT",
+    "source": "GEOFENCE",
+    "confidence_score": 95,
+    "verification_state": "AUTO_CONFIRMED",
+    "evidence": {
+      "gps_lat": 28.5456,
+      "gps_long": 77.1235,
+      "wifi_bssid": "AA:BB:CC:DD:EE:F1",
+      "activity": "STILL"
+    },
+    "synced": true
+  },
+  {
+    "log_id": "att_003",
+    "enrollment_id": "enroll_dsa_001",
+    "date": "2026-01-12",
+    "slot_id": "rule_dsa_wed_10",
+    "start_time": "10:00",
+    "status": "ABSENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  },
+  {
+    "log_id": "att_004",
+    "enrollment_id": "enroll_dsa_001",
+    "date": "2026-01-10",
+    "slot_id": "rule_dsa_fri_10",
+    "start_time": "10:00",
+    "status": "PRESENT",
+    "source": "WIFI",
+    "confidence_score": 92,
+    "verification_state": "AUTO_CONFIRMED",
+    "evidence": {
+      "wifi_bssid": "AA:BB:CC:DD:EE:F3",
+      "activity": "STILL"
+    },
+    "synced": true
+  },
+  {
+    "log_id": "att_005",
+    "enrollment_id": "enroll_dsa_001",
+    "date": "2026-01-09",
+    "slot_id": "rule_dsa_thu_10",
+    "start_time": "10:00",
+    "status": "PRESENT",
+    "source": "GEOFENCE",
+    "confidence_score": 88,
+    "verification_state": "AUTO_CONFIRMED",
+    "evidence": {
+      "gps_lat": 28.5458,
+      "gps_long": 77.1238,
+      "activity": "WALKING"
+    },
+    "synced": true
+  },
+  {
+    "log_id": "att_006",
+    "enrollment_id": "enroll_os_003",
+    "date": "2026-01-14",
+    "status": "PRESENT",
+    "source": "WIFI",
+    "confidence_score": 88,
+    "verification_state": "AUTO_CONFIRMED",
+    "synced": true
+  },
+  {
+    "log_id": "att_007",
+    "enrollment_id": "enroll_os_003",
+    "date": "2026-01-12",
+    "status": "ABSENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  },
+  {
+    "log_id": "att_008",
+    "enrollment_id": "enroll_os_003",
+    "date": "2026-01-10",
+    "status": "PRESENT",
+    "source": "WIFI",
+    "confidence_score": 85,
+    "verification_state": "AUTO_CONFIRMED",
+    "synced": true
+  },
+  {
+    "log_id": "att_009",
+    "enrollment_id": "enroll_os_003",
+    "date": "2026-01-08",
+    "status": "ABSENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  },
+  {
+    "log_id": "att_010",
+    "enrollment_id": "enroll_ml_002",
+    "date": "2026-01-15",
+    "status": "PENDING",
+    "source": "GEOFENCE",
+    "confidence_score": 62,
+    "verification_state": "PENDING",
+    "evidence": {
+      "gps_lat": 28.5450,
+      "gps_long": 77.1230,
+      "activity": "WALKING"
+    },
+    "synced": false
+  },
+  {
+    "log_id": "att_011",
+    "enrollment_id": "enroll_gym_006",
+    "date": "2026-01-15",
+    "status": "PRESENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  },
+  {
+    "log_id": "att_012",
+    "enrollment_id": "enroll_gym_006",
+    "date": "2026-01-13",
+    "status": "PRESENT",
+    "source": "MANUAL",
+    "confidence_score": 100,
+    "verification_state": "MANUAL_OVERRIDE",
+    "synced": true
+  }
+]

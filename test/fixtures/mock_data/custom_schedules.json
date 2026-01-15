@@ -1,0 +1,37 @@
+[
+  {
+    "rule_id": "custom_gym_mon",
+    "enrollment_id": "enroll_gym_006",
+    "day_of_week": "MON",
+    "start_time": "07:00",
+    "end_time": "08:00"
+  },
+  {
+    "rule_id": "custom_gym_wed",
+    "enrollment_id": "enroll_gym_006",
+    "day_of_week": "WED",
+    "start_time": "07:00",
+    "end_time": "08:00"
+  },
+  {
+    "rule_id": "custom_gym_fri",
+    "enrollment_id": "enroll_gym_006",
+    "day_of_week": "FRI",
+    "start_time": "07:00",
+    "end_time": "08:00"
+  },
+  {
+    "rule_id": "custom_music_sat",
+    "enrollment_id": "enroll_music_007",
+    "day_of_week": "SAT",
+    "start_time": "16:00",
+    "end_time": "17:30"
+  },
+  {
+    "rule_id": "custom_music_sun",
+    "enrollment_id": "enroll_music_007",
+    "day_of_week": "SUN",
+    "start_time": "16:00",
+    "end_time": "17:30"
+  }
+]

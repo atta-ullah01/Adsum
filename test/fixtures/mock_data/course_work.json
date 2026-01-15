@@ -1,0 +1,36 @@
+[
+  {
+    "work_id": "work_assign_001",
+    "course_code": "COL774",
+    "work_type": "ASSIGNMENT",
+    "title": "ML Assignment 1: Regression",
+    "due_at": "2026-01-17T23:59:00",
+    "description": "Implement Linear and Logistic Regression from scratch.",
+    "is_super_event": false,
+    "created_at": "2026-01-01T10:00:00"
+  },
+  {
+    "work_id": "work_exam_002",
+    "course_code": "COL106",
+    "work_type": "EXAM",
+    "title": "DSA Mid-Sem Exam",
+    "due_at": "2026-01-18T11:00:00",
+    "start_at": "2026-01-18T09:00:00",
+    "duration_minutes": 120,
+    "venue": "LH-101",
+    "is_super_event": true,
+    "created_at": "2026-01-05T09:00:00"
+  },
+  {
+    "work_id": "work_quiz_003",
+    "course_code": "COL334",
+    "work_type": "QUIZ",
+    "title": "Networks Quiz 1",
+    "due_at": "2026-01-20T14:30:00",
+    "start_at": "2026-01-20T14:00:00",
+    "duration_minutes": 30,
+    "venue": "LH-120",
+    "is_super_event": false,
+    "created_at": "2026-01-10T11:00:00"
+  }
+]

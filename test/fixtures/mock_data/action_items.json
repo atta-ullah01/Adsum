@@ -1,0 +1,244 @@
+[
+  {
+    "item_id": "action_conflict_001",
+    "type": "CONFLICT",
+    "status": "PENDING",
+    "title": "Schedule Clash",
+    "body": "Machine Learning lecture conflicts with your Gym session",
+    "created_at": "2026-01-15T06:00:00.000Z",
+    "bg_color": "0xFFFEF3C7",
+    "accent_color": "0xFFF59E0B",
+    "payload": {
+      "conflict_category": "OFFICIAL_VS_PERSONAL",
+      "sourceA": {
+        "label": "Official",
+        "title": "Machine Learning",
+        "subtitle": "2:00 PM - 3:30 PM",
+        "layer": "L1"
+      },
+      "sourceB": {
+        "label": "Your Event",
+        "title": "Gym Session",
+        "subtitle": "2:00 PM - 3:00 PM",
+        "layer": "L3"
+      }
+    }
+  },
+  {
+    "item_id": "action_conflict_008",
+    "type": "CONFLICT",
+    "status": "PENDING",
+    "title": "CR Update Conflict",
+    "body": "DSA rescheduled by CR clashes with your Study Group",
+    "created_at": "2026-01-15T05:30:00.000Z",
+    "bg_color": "0xFFFEF3C7",
+    "accent_color": "0xFFF59E0B",
+    "payload": {
+      "conflict_category": "CR_VS_PERSONAL",
+      "sourceA": {
+        "label": "CR Update",
+        "title": "DSA (Rescheduled)",
+        "subtitle": "4:00 PM - 5:00 PM",
+        "layer": "L2"
+      },
+      "sourceB": {
+        "label": "Your Event",
+        "title": "Study Group",
+        "subtitle": "4:00 PM - 5:30 PM",
+        "layer": "L3"
+      }
+    }
+  },
+  {
+    "item_id": "action_verify_002",
+    "type": "VERIFY",
+    "status": "PENDING",
+    "title": "Verify Attendance",
+    "body": "We detected you near LH-102. Were you present for Operating Systems?",
+    "created_at": "2026-01-15T07:00:00.000Z",
+    "bg_color": "0xFFDDEAFE",
+    "accent_color": "0xFF3B82F6",
+    "payload": {
+      "course": "Operating Systems",
+      "message": "We detected you near LH-102. Were you present?"
+    }
+  },
+  {
+    "item_id": "action_verify_009",
+    "type": "VERIFY",
+    "status": "PENDING",
+    "title": "Confirm Presence",
+    "body": "WiFi fingerprint matched for Database Systems class. Were you there?",
+    "created_at": "2026-01-15T08:00:00.000Z",
+    "bg_color": "0xFFDDEAFE",
+    "accent_color": "0xFF3B82F6",
+    "payload": {
+      "course": "Database Systems",
+      "message": "WiFi fingerprint matched. Confirm your attendance."
+    }
+  },
+  {
+    "item_id": "action_change_003",
+    "type": "SCHEDULE_CHANGE",
+    "status": "PENDING",
+    "title": "Class Cancelled",
+    "body": "Database Systems class on Friday is cancelled by Prof. Maya",
+    "created_at": "2026-01-15T04:00:00.000Z",
+    "bg_color": "0xFFE0E7FF",
+    "accent_color": "0xFF6366F1",
+    "payload": {
+      "course": "Database Systems",
+      "message": "Prof. Maya cancelled class due to conference travel."
+    }
+  },
+  {
+    "item_id": "action_change_010",
+    "type": "SCHEDULE_CHANGE",
+    "status": "PENDING",
+    "title": "Room Changed",
+    "body": "Machine Learning moved to LH-301 for today",
+    "created_at": "2026-01-15T03:00:00.000Z",
+    "bg_color": "0xFFE0E7FF",
+    "accent_color": "0xFF6366F1",
+    "payload": {
+      "course": "Machine Learning",
+      "message": "Class moved to LH-301 due to renovation in LH-102."
+    }
+  },
+  {
+    "item_id": "action_assign_004",
+    "type": "ASSIGNMENT_DUE",
+    "status": "PENDING",
+    "title": "Assignment Due Soon",
+    "body": "OS Lab Assignment 3 is due in 28 hours",
+    "created_at": "2026-01-15T07:30:00.000Z",
+    "bg_color": "0xFFF3E8FF",
+    "accent_color": "0xFF8B5CF6",
+    "payload": {
+      "work": "Lab Assignment 3",
+      "course": "Operating Systems",
+      "due_text": "Due in 28 hours"
+    }
+  },
+  {
+    "item_id": "action_assign_011",
+    "type": "ASSIGNMENT_DUE",
+    "status": "PENDING",
+    "title": "Project Deadline",
+    "body": "ML Project Phase 1 submission deadline approaching",
+    "created_at": "2026-01-15T06:30:00.000Z",
+    "bg_color": "0xFFF3E8FF",
+    "accent_color": "0xFF8B5CF6",
+    "payload": {
+      "work": "Project Phase 1",
+      "course": "Machine Learning",
+      "due_text": "Due tomorrow 11:59 PM"
+    }
+  },
+  {
+    "item_id": "action_risk_005",
+    "type": "ATTENDANCE_RISK",
+    "status": "PENDING",
+    "title": "Attendance Risk",
+    "body": "Operating Systems attendance is at 66.7%. You need 3 consecutive classes to recover.",
+    "created_at": "2026-01-14T08:00:00.000Z",
+    "bg_color": "0xFFFEE2E2",
+    "accent_color": "0xFFEF4444",
+    "payload": {
+      "course": "Operating Systems",
+      "current_per": "66.7%",
+      "message": "You need to attend next 3 classes to be safe."
+    }
+  },
+  {
+    "item_id": "action_risk_012",
+    "type": "ATTENDANCE_RISK",
+    "status": "PENDING",
+    "title": "Critical Attendance",
+    "body": "Database Systems attendance at 58%. At risk of debarment.",
+    "created_at": "2026-01-14T07:00:00.000Z",
+    "bg_color": "0xFFFEE2E2",
+    "accent_color": "0xFFEF4444",
+    "payload": {
+      "course": "Database Systems",
+      "current_per": "58%",
+      "message": "CRITICAL: Must attend all remaining classes."
+    }
+  },
+  {
+    "item_id": "action_done_006",
+    "type": "ASSIGNMENT_DUE",
+    "status": "RESOLVED",
+    "title": "ML Quiz Completed",
+    "body": "Machine Learning Quiz 1 submitted on time",
+    "created_at": "2026-01-13T08:00:00.000Z",
+    "resolved_at": "2026-01-14T08:00:00.000Z",
+    "resolution": "MARK_DONE",
+    "bg_color": "0xFFD1FAE5",
+    "accent_color": "0xFF10B981",
+    "payload": {
+      "work": "Quiz 1",
+      "course": "Machine Learning",
+      "due_text": "Completed"
+    }
+  },
+  {
+    "item_id": "action_resolved_007",
+    "type": "CONFLICT",
+    "status": "RESOLVED",
+    "title": "Resolved: DSA vs Gym",
+    "body": "You kept Gym over DSA Tutorial",
+    "created_at": "2026-01-12T08:00:00.000Z",
+    "resolved_at": "2026-01-12T08:30:00.000Z",
+    "resolution": "KEEP_MINE",
+    "bg_color": "0xFFD1FAE5",
+    "accent_color": "0xFF10B981",
+    "payload": {
+      "conflict_category": "OFFICIAL_VS_PERSONAL",
+      "sourceA": {
+        "label": "Tutorial",
+        "title": "DSA Tutorial",
+        "subtitle": "Skipped",
+        "layer": "L1"
+      },
+      "sourceB": {
+        "label": "Kept",
+        "title": "Gym Session",
+        "subtitle": "7:00 AM",
+        "layer": "L3"
+      }
+    }
+  },
+  {
+    "item_id": "action_ack_013",
+    "type": "SCHEDULE_CHANGE",
+    "status": "RESOLVED",
+    "title": "Acknowledged: Extra Class",
+    "body": "Extra OS class on Saturday acknowledged",
+    "created_at": "2026-01-11T08:00:00.000Z",
+    "resolved_at": "2026-01-11T09:00:00.000Z",
+    "resolution": "ACKNOWLEDGED",
+    "bg_color": "0xFFD1FAE5",
+    "accent_color": "0xFF10B981",
+    "payload": {
+      "course": "Operating Systems",
+      "message": "Extra class scheduled for OS doubt clearing."
+    }
+  },
+  {
+    "item_id": "action_verify_014",
+    "type": "VERIFY",
+    "status": "RESOLVED",
+    "title": "Attendance Confirmed",
+    "body": "Manually confirmed presence for ML lecture",
+    "created_at": "2026-01-10T08:00:00.000Z",
+    "resolved_at": "2026-01-10T08:15:00.000Z",
+    "resolution": "YES_PRESENT",
+    "bg_color": "0xFFD1FAE5",
+    "accent_color": "0xFF10B981",
+    "payload": {
+      "course": "Machine Learning",
+      "message": "User confirmed attendance manually."
+    }
+  }
+]

@@ -82,6 +82,8 @@ class AttendanceLog {
   final String logId;
   final String enrollmentId;
   final DateTime date;
+  final String? slotId; // References base_timetable_rules or custom_schedule_slots
+  final String? startTime; // For display: "10:00"
   final AttendanceStatus status;
   final AttendanceSource source;
   final int confidenceScore;
@@ -93,6 +95,8 @@ class AttendanceLog {
     required this.logId,
     required this.enrollmentId,
     required this.date,
+    this.slotId,
+    this.startTime,
     this.status = AttendanceStatus.pending,
     this.source = AttendanceSource.manual,
     this.confidenceScore = 0,
@@ -106,6 +110,8 @@ class AttendanceLog {
       logId: json['log_id'] as String,
       enrollmentId: json['enrollment_id'] as String,
       date: DateTime.parse(json['date'] as String),
+      slotId: json['slot_id'] as String?,
+      startTime: json['start_time'] as String?,
       status: AttendanceStatus.fromString(json['status'] as String?),
       source: AttendanceSource.fromString(json['source'] as String?),
       confidenceScore: json['confidence_score'] as int? ?? 0,
@@ -122,6 +128,8 @@ class AttendanceLog {
         'log_id': logId,
         'enrollment_id': enrollmentId,
         'date': date.toIso8601String().split('T')[0], // Date only
+        if (slotId != null) 'slot_id': slotId,
+        if (startTime != null) 'start_time': startTime,
         'status': status.toJson(),
         'source': source.toJson(),
         'confidence_score': confidenceScore,
@@ -134,6 +142,8 @@ class AttendanceLog {
     String? logId,
     String? enrollmentId,
     DateTime? date,
+    String? slotId,
+    String? startTime,
     AttendanceStatus? status,
     AttendanceSource? source,
     int? confidenceScore,
@@ -145,6 +155,8 @@ class AttendanceLog {
       logId: logId ?? this.logId,
       enrollmentId: enrollmentId ?? this.enrollmentId,
       date: date ?? this.date,
+      slotId: slotId ?? this.slotId,
+      startTime: startTime ?? this.startTime,
       status: status ?? this.status,
       source: source ?? this.source,
       confidenceScore: confidenceScore ?? this.confidenceScore,

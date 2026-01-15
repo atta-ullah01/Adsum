@@ -1,247 +1,31 @@
-Resolving dependencies...
-Downloading packages...
-  _fe_analyzer_shared 91.0.0 (93.0.0 available)
-  analysis_server_plugin 0.3.3 (0.3.6 available)
-  analyzer 8.4.0 (10.0.0 available)
-  analyzer_buffer 0.1.11 (0.3.0 available)
-  analyzer_plugin 0.13.10 (0.14.0 available)
-  app_links 6.4.1 (7.0.0 available)
-  characters 1.4.0 (1.4.1 available)
-  custom_lint_core 0.8.1 (0.8.2 available)
-  custom_lint_visitor 1.0.0+8.4.0 (1.0.0+9.0.0 available)
-  matcher 0.12.17 (0.12.18 available)
-  material_color_utilities 0.11.1 (0.13.0 available)
-  sqlite3 2.9.4 (3.1.3 available)
-  test 1.26.3 (1.29.0 available)
-  test_api 0.7.7 (0.7.9 available)
-  test_core 0.6.12 (0.6.15 available)
-  timezone 0.10.1 (0.11.0 available)
-Got dependencies!
-16 packages have newer versions incompatible with dependency constraints.
-Try `flutter pub outdated` for more information.
-00:00 +0: loading /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart                                                                                                             00:01 +0: loading /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart                                                                                                             00:02 +0: loading /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart                                                                                                             00:02 +0: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases readJsonArray returns null for non-existent file                                        00:02 +0: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases readJsonArray returns null for non-existent file                                        
-🔍 [DEBUG] 2026-01-14T21:59:10.024011 JSON file not found, returning null {filename: does_not_exist.json}
-00:02 +1: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases readJsonArray returns null for non-existent file                                        00:02 +1: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases exists returns false for non-existent file                                              00:02 +2: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases exists returns false for non-existent file                                              00:02 +2: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases listFiles returns all JSON files                                                        00:02 +2: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases listFiles returns all JSON files                                                        
-🔍 [DEBUG] 2026-01-14T21:59:10.054393 Wrote JSON file {filename: file1.json, size: 12}
-🔍 [DEBUG] 2026-01-14T21:59:10.056223 Wrote JSON file {filename: file2.json, size: 17}
-00:02 +3: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases listFiles returns all JSON files                                                        00:02 +3: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases exportAll aggregates all data                                                           00:02 +3: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases exportAll aggregates all data                                                           
-🔍 [DEBUG] 2026-01-14T21:59:10.068681 Wrote JSON file {filename: users.json, size: 20}
-🔍 [DEBUG] 2026-01-14T21:59:10.070637 Wrote JSON file {filename: items.json, size: 17}
-00:02 +4: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases exportAll aggregates all data                                                           00:02 +4: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases handle corrupt file gracefully                                                          00:02 +4: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases handle corrupt file gracefully                                                          
-❌ [ERROR] 2026-01-14T21:59:10.093081 Failed to parse JSON file {filename: corrupt.json}
-  Error: FormatException: Unexpected end of input (at character 17)
-{ "incomplete": 
-                ^
+00:00 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:01 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:02 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:03 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:04 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:05 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:06 +0: loading /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart                                                                                                        00:06 +0: Courses & Sensors Flow: Enroll, Duplicate Check, Sensors                                                                                                                                     00:07 +0: Courses & Sensors Flow: Enroll, Duplicate Check, Sensors                                                                                                                                     00:07 +0: Courses & Sensors Flow: Enroll, Duplicate Check, Sensors                                                                                                                                     
+[SEARCH DEBUG] Query: "COL100", University ID: "iit_delhi"
+[SEARCH DEBUG] Found 1 results
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+The finder "Found 0 widgets with text "Intro to Computer Science": []" (used in a call to "tap()")
+could not find any matching widgets.
 
-⚠️ [WARN] 2026-01-14T21:59:10.095503 No backup available for recovery {filename: corrupt.json}
-00:02 +4 -1: /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart: JsonFileService Edge Cases handle corrupt file gracefully [E]                                                   
-  Expected: <Instance of 'FormatException'>
-    Actual: DataIntegrityException:<DataIntegrityException: JSON parse error: Unexpected end of input>
-     Which: is not an instance of 'FormatException'
-  
-  package:matcher                                     expect
-  package:flutter_test/src/widget_tester.dart 473:18  expect
-  test/core/json_file_service_test.dart 59:9          main.<fn>.<fn>
+When the exception was thrown, this was the stack:
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2013:7)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1865:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1045:7)
+#3      main.<anonymous closure> (file:///mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart:219:18)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Courses & Sensors Flow: Enroll, Duplicate Check, Sensors
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +0 -1: Courses & Sensors Flow: Enroll, Duplicate Check, Sensors [E]                                                                                                                              
+  Test failed. See exception logs above.
+  The test description was: Courses & Sensors Flow: Enroll, Duplicate Check, Sensors
   
 
-To run this test again: dart test /mnt/sda2/code/code1/project/Adsum/test/core/json_file_service_test.dart -p vm --plain-name 'JsonFileService Edge Cases handle corrupt file gracefully'
-00:03 +4 -1: loading /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart                                                                                              00:03 +4 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository addEnrollment with global course code                                          00:03 +4 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository addEnrollment with global course code                                          
-🔍 [DEBUG] 2026-01-14T21:59:10.725216 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.752026 Wrote JSON file {filename: enrollments.json, size: 271}
-00:03 +5 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository addEnrollment with global course code                                          00:03 +5 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository addEnrollment with custom course                                               00:03 +5 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository addEnrollment with custom course                                               
-🔍 [DEBUG] 2026-01-14T21:59:10.788439 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.790888 Wrote JSON file {filename: enrollments.json, size: 385}
-00:03 +6 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository addEnrollment with custom course                                               00:03 +6 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollments returns all enrollments                                         00:03 +6 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollments returns all enrollments                                         
-🔍 [DEBUG] 2026-01-14T21:59:10.800497 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.803216 Wrote JSON file {filename: enrollments.json, size: 273}
-🔍 [DEBUG] 2026-01-14T21:59:10.810371 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.817719 Wrote JSON file {filename: enrollments.json, size: 544}
-🔍 [DEBUG] 2026-01-14T21:59:10.820526 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.822060 Wrote JSON file {filename: enrollments.json, size: 912}
-00:03 +7 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollments returns all enrollments                                         00:03 +7 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollment by ID returns correct enrollment                                 00:03 +7 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollment by ID returns correct enrollment                                 
-🔍 [DEBUG] 2026-01-14T21:59:10.838826 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.841192 Wrote JSON file {filename: enrollments.json, size: 272}
-00:03 +8 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollment by ID returns correct enrollment                                 00:03 +8 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollment returns null for non-existent ID                                 00:03 +8 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollment returns null for non-existent ID                                 
-🔍 [DEBUG] 2026-01-14T21:59:10.850456 JSON file not found, returning null {filename: enrollments.json}
-00:03 +9 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getEnrollment returns null for non-existent ID                                 00:03 +9 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository updateEnrollment modifies existing enrollment                                  00:03 +9 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository updateEnrollment modifies existing enrollment                                  
-🔍 [DEBUG] 2026-01-14T21:59:10.857291 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.858483 Wrote JSON file {filename: enrollments.json, size: 272}
-🔍 [DEBUG] 2026-01-14T21:59:10.861233 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.862454 Wrote JSON file {filename: enrollments.json, size: 272}
-00:03 +10 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository updateEnrollment modifies existing enrollment                                 00:03 +10 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository markAttended increments stats correctly                                       00:03 +10 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository markAttended increments stats correctly                                       
-🔍 [DEBUG] 2026-01-14T21:59:10.871376 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.873085 Wrote JSON file {filename: enrollments.json, size: 273}
-🔍 [DEBUG] 2026-01-14T21:59:10.877128 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.878273 Wrote JSON file {filename: enrollments.json, size: 273}
-🔍 [DEBUG] 2026-01-14T21:59:10.881874 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.883451 Wrote JSON file {filename: enrollments.json, size: 273}
-00:03 +11 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository markAttended increments stats correctly                                       00:03 +11 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository markAbsent increments total only                                              00:03 +11 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository markAbsent increments total only                                              
-🔍 [DEBUG] 2026-01-14T21:59:10.892030 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.893488 Wrote JSON file {filename: enrollments.json, size: 273}
-🔍 [DEBUG] 2026-01-14T21:59:10.897149 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.898804 Wrote JSON file {filename: enrollments.json, size: 273}
-🔍 [DEBUG] 2026-01-14T21:59:10.904123 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.906777 Wrote JSON file {filename: enrollments.json, size: 273}
-00:03 +12 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository markAbsent increments total only                                              00:03 +12 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository deleteEnrollment removes enrollment                                           00:03 +12 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository deleteEnrollment removes enrollment                                           
-🔍 [DEBUG] 2026-01-14T21:59:10.916546 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.919122 Wrote JSON file {filename: enrollments.json, size: 272}
-🔍 [DEBUG] 2026-01-14T21:59:10.924443 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.926137 Wrote JSON file {filename: enrollments.json, size: 2}
-00:03 +13 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository saveUser and getUser work correctly                                                       00:03 +13 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository getCount returns correct count                                                
-🔍 [DEBUG] 2026-01-14T21:59:10.934717 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.936181 Wrote JSON file {filename: enrollments.json, size: 267}
-🔍 [DEBUG] 2026-01-14T21:59:10.938822 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.940629 Wrote JSON file {filename: enrollments.json, size: 532}
-00:03 +14 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository saveUser and getUser work correctly                                                       00:03 +14 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/enrollment_repository_test.dart: EnrollmentRepository update non-existent enrollment does nothing                                   
-🔍 [DEBUG] 2026-01-14T21:59:10.949415 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:10.951341 JSON file not found, returning null {filename: enrollments.json}
-00:03 +15 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository saveUser and getUser work correctly                                                       00:03 +15 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository saveUser and getUser work correctly                                                       
-🔍 [DEBUG] 2026-01-14T21:59:10.989528 Wrote JSON file {filename: user.json, size: 294}
-00:03 +16 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository saveUser and getUser work correctly                                                       00:03 +16 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository updateSettings modifies nested settings object                                            00:03 +16 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository updateSettings modifies nested settings object                                            
-🔍 [DEBUG] 2026-01-14T21:59:11.024734 Wrote JSON file {filename: user.json, size: 251}
-🔍 [DEBUG] 2026-01-14T21:59:11.027544 Created backup {filename: user.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.028581 Wrote JSON file {filename: user.json, size: 253}
-00:03 +17 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository updateSettings modifies nested settings object                                            00:03 +17 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository getUser returns null when no user exists                                                  00:03 +17 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository getUser returns null when no user exists                                                  
-🔍 [DEBUG] 2026-01-14T21:59:11.037029 JSON file not found, returning null {filename: user.json}
-00:03 +18 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/user_repository_test.dart: UserRepository getUser returns null when no user exists                                                  00:03 +18 -1: loading /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart                                                                                            00:03 +18 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository add creates pending action item                                              00:03 +18 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository add creates pending action item                                              
-🔍 [DEBUG] 2026-01-14T21:59:11.236762 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.257431 Wrote JSON file {filename: action_items.json, size: 390}
-00:03 +19 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository add creates pending action item                                              00:03 +19 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository getPending filters resolved items                                            00:03 +19 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository getPending filters resolved items                                            
-🔍 [DEBUG] 2026-01-14T21:59:11.277169 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.278868 Wrote JSON file {filename: action_items.json, size: 311}
-🔍 [DEBUG] 2026-01-14T21:59:11.285129 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.286668 Wrote JSON file {filename: action_items.json, size: 622}
-🔍 [DEBUG] 2026-01-14T21:59:11.312162 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.314825 Wrote JSON file {filename: action_items.json, size: 705}
-00:03 +20 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository getPending filters resolved items                                            00:03 +20 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository getByType filters by action type                                             00:03 +20 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository getByType filters by action type                                             
-🔍 [DEBUG] 2026-01-14T21:59:11.331417 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.334508 Wrote JSON file {filename: action_items.json, size: 299}
-🔍 [DEBUG] 2026-01-14T21:59:11.338087 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.340106 Wrote JSON file {filename: action_items.json, size: 597}
-🔍 [DEBUG] 2026-01-14T21:59:11.343392 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.344679 Wrote JSON file {filename: action_items.json, size: 899}
-00:04 +21 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository getByType filters by action type                                             00:04 +21 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository resolve marks item as resolved with resolution type                          00:04 +21 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository resolve marks item as resolved with resolution type                          
-🔍 [DEBUG] 2026-01-14T21:59:11.362595 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.364456 Wrote JSON file {filename: action_items.json, size: 306}
-🔍 [DEBUG] 2026-01-14T21:59:11.368413 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.369484 Wrote JSON file {filename: action_items.json, size: 387}
-00:04 +22 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository resolve marks item as resolved with resolution type                          00:04 +22 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository delete removes action item                                                   00:04 +22 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository delete removes action item                                                   
-🔍 [DEBUG] 2026-01-14T21:59:11.377418 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.379384 Wrote JSON file {filename: action_items.json, size: 284}
-🔍 [DEBUG] 2026-01-14T21:59:11.384012 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.385328 Wrote JSON file {filename: action_items.json, size: 2}
-00:04 +23 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository delete removes action item                                                   00:04 +23 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository clearResolved keeps only pending items                                       00:04 +23 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository clearResolved keeps only pending items                                       
-🔍 [DEBUG] 2026-01-14T21:59:11.394075 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.395823 Wrote JSON file {filename: action_items.json, size: 278}
-🔍 [DEBUG] 2026-01-14T21:59:11.398213 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.399660 Wrote JSON file {filename: action_items.json, size: 554}
-🔍 [DEBUG] 2026-01-14T21:59:11.404303 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.405806 Wrote JSON file {filename: action_items.json, size: 638}
-🔍 [DEBUG] 2026-01-14T21:59:11.409849 Created backup {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.411409 Wrote JSON file {filename: action_items.json, size: 278}
-00:04 +24 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository clearResolved keeps only pending items                                       00:04 +24 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository delete non-existent item should not throw                                    00:04 +24 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository delete non-existent item should not throw                                    
-🔍 [DEBUG] 2026-01-14T21:59:11.421521 JSON file not found, returning null {filename: action_items.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.422491 JSON file not found, returning null {filename: action_items.json}
-00:04 +25 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/action_item_repository_test.dart: ActionItemRepository delete non-existent item should not throw                                    00:04 +25 -1: loading /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart                                                                                               00:04 +25 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository addCustomSlot creates slot with generated ID                                      00:04 +25 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository addCustomSlot creates slot with generated ID                                      
-🔍 [DEBUG] 2026-01-14T21:59:11.501067 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.527196 Wrote JSON file {filename: custom_schedules.json, size: 178}
-00:04 +26 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository addCustomSlot creates slot with generated ID                                      00:04 +26 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository getSlotsForEnrollment filters correctly                                           00:04 +26 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository getSlotsForEnrollment filters correctly                                           
-🔍 [DEBUG] 2026-01-14T21:59:11.549585 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.551366 Wrote JSON file {filename: custom_schedules.json, size: 169}
-🔍 [DEBUG] 2026-01-14T21:59:11.558233 Created backup {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.560104 Wrote JSON file {filename: custom_schedules.json, size: 336}
-🔍 [DEBUG] 2026-01-14T21:59:11.563606 Created backup {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.566491 Wrote JSON file {filename: custom_schedules.json, size: 503}
-00:04 +27 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository getSlotsForEnrollment filters correctly                                           00:04 +27 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository deleteCustomSlot removes specific slot                                            00:04 +27 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository deleteCustomSlot removes specific slot                                            
-🔍 [DEBUG] 2026-01-14T21:59:11.584032 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.585889 Wrote JSON file {filename: custom_schedules.json, size: 169}
-🔍 [DEBUG] 2026-01-14T21:59:11.591556 Created backup {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.593290 Wrote JSON file {filename: custom_schedules.json, size: 2}
-00:04 +28 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository deleteCustomSlot removes specific slot                                            00:04 +28 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository addBinding creates GPS/WiFi binding                                               00:04 +28 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository addBinding creates GPS/WiFi binding                                               
-🔍 [DEBUG] 2026-01-14T21:59:11.611114 JSON file not found, returning null {filename: schedule_bindings.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.614125 Wrote JSON file {filename: schedule_bindings.json, size: 271}
-00:04 +29 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository addBinding creates GPS/WiFi binding                                               00:04 +29 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository getBindingsForRule filters by rule ID                                             00:04 +29 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository getBindingsForRule filters by rule ID                                             
-🔍 [DEBUG] 2026-01-14T21:59:11.642998 JSON file not found, returning null {filename: schedule_bindings.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.644892 Wrote JSON file {filename: schedule_bindings.json, size: 141}
-🔍 [DEBUG] 2026-01-14T21:59:11.646989 Created backup {filename: schedule_bindings.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.648450 Wrote JSON file {filename: schedule_bindings.json, size: 280}
-🔍 [DEBUG] 2026-01-14T21:59:11.651721 Created backup {filename: schedule_bindings.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.653236 Wrote JSON file {filename: schedule_bindings.json, size: 444}
-00:04 +30 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository getBindingsForRule filters by rule ID                                             00:04 +30 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository overlapping slots allowed in persistence                                          00:04 +30 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository overlapping slots allowed in persistence                                          
-🔍 [DEBUG] 2026-01-14T21:59:11.662456 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.664044 Wrote JSON file {filename: custom_schedules.json, size: 170}
-🔍 [DEBUG] 2026-01-14T21:59:11.666620 Created backup {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.668049 Wrote JSON file {filename: custom_schedules.json, size: 338}
-00:04 +31 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/schedule_repository_test.dart: ScheduleRepository overlapping slots allowed in persistence                                          00:04 +31 -1: loading /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart                                                                                             00:04 +31 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository logAttendance creates attendance record                                       00:04 +31 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository logAttendance creates attendance record                                       
-🔍 [DEBUG] 2026-01-14T21:59:11.799313 JSON file not found, returning null {filename: attendance.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.829286 Wrote JSON file {filename: attendance.json, size: 342}
-00:04 +32 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository logAttendance creates attendance record                                       00:04 +32 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository getLogsForEnrollment filters by enrollment                                    00:04 +32 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository getLogsForEnrollment filters by enrollment                                    
-🔍 [DEBUG] 2026-01-14T21:59:11.853734 JSON file not found, returning null {filename: attendance.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.855421 Wrote JSON file {filename: attendance.json, size: 261}
-🔍 [DEBUG] 2026-01-14T21:59:11.863011 Created backup {filename: attendance.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.864310 Wrote JSON file {filename: attendance.json, size: 519}
-🔍 [DEBUG] 2026-01-14T21:59:11.866463 Created backup {filename: attendance.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.868369 Wrote JSON file {filename: attendance.json, size: 778}
-00:04 +33 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository getLogsForEnrollment filters by enrollment                                    00:04 +33 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository getLogsForDate filters by date                                                00:04 +33 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository getLogsForDate filters by date                                                
-🔍 [DEBUG] 2026-01-14T21:59:11.899443 JSON file not found, returning null {filename: attendance.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.901080 Wrote JSON file {filename: attendance.json, size: 261}
-🔍 [DEBUG] 2026-01-14T21:59:11.903906 Created backup {filename: attendance.json}
-🔍 [DEBUG] 2026-01-14T21:59:11.906830 Wrote JSON file {filename: attendance.json, size: 520}
-00:04 +34 -1: /mnt/sda2/code/code1/project/Adsum/test/repositories/attendance_repository_test.dart: AttendanceRepository getLogsForDate filters by date                                                00:04 +34 -1: loading /mnt/sda2/code/code1/project/Adsum/test/services/calendar_service_test.dart                                                                                                      00:04 +34 -1: /mnt/sda2/code/code1/project/Adsum/test/services/calendar_service_test.dart: CalendarService Integration Event hiding works                                                              00:04 +34 -1: /mnt/sda2/code/code1/project/Adsum/test/services/calendar_service_test.dart: CalendarService Integration Event hiding works                                                              
-🔍 [DEBUG] 2026-01-14T21:59:11.987120 JSON file not found, returning null {filename: events.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.001737 JSON file not found, returning null {filename: events.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.015057 Wrote JSON file {filename: events.json, size: 239}
-🔍 [DEBUG] 2026-01-14T21:59:12.030423 JSON file not found, returning null {filename: calendar_overrides.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.036179 JSON file not found, returning null {filename: calendar_overrides.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.037287 JSON file not found, returning null {filename: calendar_overrides.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.038356 JSON file not found, returning null {filename: calendar_overrides.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.039762 Wrote JSON file {filename: calendar_overrides.json, size: 92}
-🔍 [DEBUG] 2026-01-14T21:59:12.049252 Created backup {filename: calendar_overrides.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.051036 Wrote JSON file {filename: calendar_overrides.json, size: 2}
-00:04 +35 -1: /mnt/sda2/code/code1/project/Adsum/test/services/calendar_service_test.dart: CalendarService Integration Event hiding works                                                              00:04 +35 -1: loading /mnt/sda2/code/code1/project/Adsum/test/services/mess_service_test.dart                                                                                                          00:04 +35 -1: /mnt/sda2/code/code1/project/Adsum/test/services/mess_service_test.dart: MessService Integration local modifications work                                                                00:04 +35 -1: /mnt/sda2/code/code1/project/Adsum/test/services/mess_service_test.dart: MessService Integration local modifications work                                                                
-🔍 [DEBUG] 2026-01-14T21:59:12.241091 Wrote JSON file {filename: menu_cache.json, size: 302}
-🔍 [DEBUG] 2026-01-14T21:59:12.269071 Created backup {filename: menu_cache.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.270239 Wrote JSON file {filename: menu_cache.json, size: 301}
-🔍 [DEBUG] 2026-01-14T21:59:12.274001 Created backup {filename: menu_cache.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.275308 Wrote JSON file {filename: menu_cache.json, size: 302}
-00:04 +36 -1: /mnt/sda2/code/code1/project/Adsum/test/services/mess_service_test.dart: MessService Integration local modifications work                                                                00:05 +36 -1: /mnt/sda2/code/code1/project/Adsum/test/services/mess_service_test.dart: MessService Integration local modifications work                                                                00:05 +36 -1: loading /mnt/sda2/code/code1/project/Adsum/test/services/syllabus_service_test.dart                                                                                                      00:05 +36 -1: /mnt/sda2/code/code1/project/Adsum/test/services/syllabus_service_test.dart: SyllabusService Integration calculateCompletionPercentage works                                             00:05 +36 -1: /mnt/sda2/code/code1/project/Adsum/test/services/syllabus_service_test.dart: SyllabusService Integration calculateCompletionPercentage works                                             
-🔍 [DEBUG] 2026-01-14T21:59:12.459797 JSON file not found, returning null {filename: custom_syllabus.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.467292 JSON file not found, returning null {filename: custom_syllabus.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.484233 Wrote JSON file {filename: custom_syllabus.json, size: 348}
-🔍 [DEBUG] 2026-01-14T21:59:12.489360 JSON file not found, returning null {filename: syllabus_progress.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.494721 JSON file not found, returning null {filename: syllabus_progress.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.495570 JSON file not found, returning null {filename: syllabus_progress.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.496732 Wrote JSON file {filename: syllabus_progress.json, size: 31}
-🔍 [DEBUG] 2026-01-14T21:59:12.502059 Created backup {filename: syllabus_progress.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.503086 Wrote JSON file {filename: syllabus_progress.json, size: 41}
-00:05 +37 -1: /mnt/sda2/code/code1/project/Adsum/test/services/syllabus_service_test.dart: SyllabusService Integration calculateCompletionPercentage works                                             00:05 +37 -1: loading /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart                                                                                                      00:05 +37 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration getEventsForDate returns merged events for custom slots                         00:05 +37 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration getEventsForDate returns merged events for custom slots                         
-🔍 [DEBUG] 2026-01-14T21:59:12.671715 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.688693 Wrote JSON file {filename: enrollments.json, size: 380}
-🔍 [DEBUG] 2026-01-14T21:59:12.689983 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.691439 Wrote JSON file {filename: custom_schedules.json, size: 204}
-00:05 +38 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration getEventsForDate returns merged events for custom slots                         00:05 +38 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration getEventsForDate returns empty list for days with no classes                    00:05 +38 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration getEventsForDate returns empty list for days with no classes                    
-🔍 [DEBUG] 2026-01-14T21:59:12.716360 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.717755 Wrote JSON file {filename: enrollments.json, size: 270}
-🔍 [DEBUG] 2026-01-14T21:59:12.718866 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.720597 Wrote JSON file {filename: custom_schedules.json, size: 204}
-00:05 +39 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration getEventsForDate returns empty list for days with no classes                    00:05 +39 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration multiple slots for same day appear as separate events                           00:05 +39 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration multiple slots for same day appear as separate events                           
-🔍 [DEBUG] 2026-01-14T21:59:12.731085 JSON file not found, returning null {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.732210 Wrote JSON file {filename: enrollments.json, size: 370}
-🔍 [DEBUG] 2026-01-14T21:59:12.734475 Created backup {filename: enrollments.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.735633 Wrote JSON file {filename: enrollments.json, size: 738}
-🔍 [DEBUG] 2026-01-14T21:59:12.736336 JSON file not found, returning null {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.737357 Wrote JSON file {filename: custom_schedules.json, size: 204}
-🔍 [DEBUG] 2026-01-14T21:59:12.738713 Created backup {filename: custom_schedules.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.739691 Wrote JSON file {filename: custom_schedules.json, size: 406}
-00:05 +40 -1: /mnt/sda2/code/code1/project/Adsum/test/services/schedule_service_test.dart: ScheduleService Integration multiple slots for same day appear as separate events                           00:05 +40 -1: loading /mnt/sda2/code/code1/project/Adsum/test/services/work_service_test.dart                                                                                                          00:05 +40 -1: /mnt/sda2/code/code1/project/Adsum/test/services/work_service_test.dart: WorkService Integration getPending returns only valid pending items                                             00:05 +40 -1: /mnt/sda2/code/code1/project/Adsum/test/services/work_service_test.dart: WorkService Integration getPending returns only valid pending items                                             
-🔍 [DEBUG] 2026-01-14T21:59:12.839187 JSON file not found, returning null {filename: work.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.854038 Wrote JSON file {filename: work.json, size: 361}
-🔍 [DEBUG] 2026-01-14T21:59:12.857564 Created backup {filename: work.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.858471 Wrote JSON file {filename: work.json, size: 716}
-🔍 [DEBUG] 2026-01-14T21:59:12.859889 Created backup {filename: work.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.861304 Wrote JSON file {filename: work.json, size: 1074}
-🔍 [DEBUG] 2026-01-14T21:59:12.862682 JSON file not found, returning null {filename: work_states.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.864507 JSON file not found, returning null {filename: work_states.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.865443 JSON file not found, returning null {filename: work_states.json}
-🔍 [DEBUG] 2026-01-14T21:59:12.866941 Wrote JSON file {filename: work_states.json, size: 149}
-00:05 +41 -1: /mnt/sda2/code/code1/project/Adsum/test/services/work_service_test.dart: WorkService Integration getPending returns only valid pending items                                             00:05 +41 -1: Some tests failed.                                                                                                                                                                       
+To run this test again: dart test /mnt/sda2/code/code1/project/Adsum/test/integration/onboarding_flow_test.dart -p vm --plain-name 'Courses & Sensors Flow: Enroll, Duplicate Check, Sensors'
+00:07 +0 -1: Some tests failed.                                                                                                                                                                        

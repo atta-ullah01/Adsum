@@ -36,6 +36,19 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
     await Future.delayed(const Duration(milliseconds: 800));
     
     try {
+      // Auto-seed mock data for development/testing
+      final seeder = ref.read(mockDataSeederProvider);
+      // Force seed action items and events for testing to ensure latest fixtures are used
+      await seeder.seedActionItems();
+      await seeder.seedEvents();
+      await seeder.seedWork();
+      await seeder.seedAttendance(); // Force seed attendance for testing changes
+      
+      if (!await seeder.isSeeded()) {
+        debugPrint('Seeding mock data from fixtures...');
+        await seeder.seedAllData();
+      }
+
       final userRepo = ref.read(userRepositoryProvider);
       final hasUser = await userRepo.hasUser();
       

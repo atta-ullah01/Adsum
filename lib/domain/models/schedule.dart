@@ -203,12 +203,15 @@ class ScheduleBinding {
 }
 
 /// Event type for merged schedule
+/// Event type for merged schedule
 enum ScheduleEventType {
   classSession,
   lab,
   exam,
   event,
-  personal;
+  personal,
+  conflict,
+  holiday; 
 
   bool get isAcademic => this == ScheduleEventType.classSession || this == ScheduleEventType.lab || this == ScheduleEventType.exam;
 }
@@ -227,6 +230,7 @@ class ScheduleEvent {
   final bool isCancelled;
   final String? enrollmentId;
   final Map<String, dynamic> metadata;
+  final List<ScheduleEvent>? conflictingEvents; // List of events involved in this conflict
 
   const ScheduleEvent({
     required this.id,
@@ -240,6 +244,7 @@ class ScheduleEvent {
     this.isCancelled = false,
     this.enrollmentId,
     this.metadata = const {},
+    this.conflictingEvents,
   });
   
   Duration get duration => endTime.difference(startTime);

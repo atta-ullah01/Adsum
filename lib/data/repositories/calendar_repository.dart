@@ -29,6 +29,16 @@ class CalendarRepository {
         .toList();
   }
 
+  /// Get events for a specific date
+  Future<List<CalendarEvent>> getEventsForDate(DateTime date) async {
+    final allEvents = await getAll();
+    return allEvents.where((e) => 
+      e.date.year == date.year && 
+      e.date.month == date.month && 
+      e.date.day == date.day
+    ).toList();
+  }
+
   /// Save a calendar event (create or update)
   Future<void> saveEvent(CalendarEvent event) async {
     final exists = await getAll();

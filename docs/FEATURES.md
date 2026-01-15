@@ -118,15 +118,40 @@
 | **Course (Cancelled)**| Title, *Original Time*, "Cancelled" Badge | **Subject Detail** | *Dimmed Card (Visual Only)* |
 | **Course (Rescheduled)**| Title, *New Time*, "Rescheduled" Badge | **Subject Detail** | *Sorted by New Time* |
 | **Course (Extra)** | Title, Time, Loc, "Extra Class" Badge | **Subject Detail** | - |
+| **Course (Room Swap)** | Title, Time, *New Location*, "Room Changed" Badge | **Subject Detail** | - |
+| **Conflict** | Time, Both event titles side-by-side | **Resolution Modal** | - |
 | **Mess** | Meal Type, Time, Hostel, Menu Items | **Mess Menu** | **Edit Note** |
 | **Exam/Quiz** | Title, Time, Loc, Duration, "Blocking"| **Subject Detail** | - |
 | **Personal** | Title, Time, Note | **Edit Event** | - |
+| **Holiday** | Title, "No Classes" | - | - |
 
 | Alert Type | Display Fields | Tap Action | Color |
 |------------|----------------|------------|-------|
 | **Assignment** | Title, Due Time, "Due Soon" | **Assignment Detail** | 🔵 Blue |
 | **Attendance** | Course, Current %, Target %, "Risk" | **Subject Detail** | 🟠 Orange |
-| **Exam** | Title, Starts In, "Super Event" | **Exam Command Center** | � Red |
+| **Exam** | Title, Starts In, "Super Event" | **Exam Command Center** | 🔴 Red |
+| **Conflict** | Source A vs Source B, "Resolve" | **Conflict Modal** | 🟡 Yellow |
+
+### Conflict Card Display
+*When two events occupy the same time slot and require user resolution.*
+
+**Layout:** Single merged card showing both events compactly:
+```
+┌─────────────────────────────────────────┐
+│ ⚠️ CONFLICT • 9:00 - 10:00              │
+│ ┌─────────────┐  ┌─────────────────────┐│
+│ │ 📚 DSA      │  │ 🏋️ Gym Session      ││
+│ │ LH-101      │  │ Personal            ││
+│ └─────────────┘  └─────────────────────┘│
+│           [Tap to Resolve]               │
+└─────────────────────────────────────────┘
+```
+
+**Styling:**
+- 🟠 Orange border
+- Left mini-card: Official event (Admin/CR source)
+- Right mini-card: User event (Personal)
+- Single tap opens Resolution Modal
 
 ### Source Provenance Colors
 *Visual indication of where each schedule item originates.*
@@ -147,49 +172,184 @@ Single destination for everything requiring user attention, decision, or acknowl
 
 #### UI Structure
 
-| Tab | Content |
-|-----|---------|
-| **Pending** | Items requiring user action |
-| **History** | Resolved/acknowledged items |
+| Tab | Content | Data Source |
+|-----|---------|-------------|
+| **Pending** | Items requiring user action | `action_items.json` (status = PENDING) |
+| **History** | Resolved/acknowledged items | `action_items.json` (status = RESOLVED) |
 
-#### Item Types
+---
 
-| Type | Icon | Trigger | Primary Action | Secondary Action |
-|------|------|---------|----------------|------------------|
-| **CONFLICT** | ⚔️ | Schedule clash (L1/L2/L3 overlap) | Accept Update | Keep Mine |
-| **VERIFY** | ❓ | Class ended with medium confidence | Yes, Present | No, Absent |
-| **SCHEDULE_CHANGE** | ℹ️ | CR modified/cancelled class | Acknowledge | — |
-| **ASSIGNMENT_DUE** | 📝 | Assignment due in 24-48h | Mark Done | Snooze |
-| **ATTENDANCE_RISK** | ⚠️ | Subject below target attendance % | Details | — |
+#### Action Item Types
 
-*Scalable: New types can be added (e.g., `BROADCAST`, `EXAM`) as features mature.*
+##### 1. CONFLICT (Schedule Clash)
+*Displayed when two calendar events overlap.*
 
-#### Conflict Types (Subset)
-When `type = CONFLICT`:
+| Element | Value |
+|---------|-------|
+| **Background** | Light purple (`0xFFF3E8FF`) |
+| **Accent** | Deep purple (`0xFF6B46C1`) |
+| **Icon** | Alert (⚠️) |
+| **Title** | "Schedule Clash" |
+| **Date** | Item creation date |
 
-| Category | Layers | Example |
-|----------|--------|---------|
-| `OFFICIAL_VS_PERSONAL` | L1 ↔ L3 | "Math @ 9AM" vs "Gym @ 9AM" |
-| `CR_VS_PERSONAL` | L2 ↔ L3 | "Math moved to 2PM" vs "Gym" |
-| `PERSONAL_VS_PERSONAL` | L3 ↔ L3 | "Gym @ 7AM" vs "Jog @ 7AM" |
+**Card Content:**
+- **Split View** comparing two conflicting sources:
+  - **Source A** (e.g., CR Update): Label, Title, Subtitle
+  - **Source B** (e.g., Personal Event): Label, Title, Subtitle
 
-#### Resolution Actions
-| Action | Type | Effect |
-|--------|------|--------|
-| **Accept Update** | CONFLICT | Accept CR/Admin change, hide user's conflicting item |
-| **Keep Mine** | CONFLICT | Keep user's item, decline the update |
-| **Yes, Present** | VERIFY | Confirm attendance for the class |
-| **No, Absent** | VERIFY | Mark as absent |
-| **Mark Done** | ASSIGNMENT_DUE | Mark assignment complete, move to history |
-| **Snooze** | ASSIGNMENT_DUE | Dismiss notification temporarily |
-| **Acknowledge** | SCHEDULE_CHANGE | Mark change as seen |
-| **Details** | ATTENDANCE_RISK | Navigate to Subject Detail (Stats Tab) for recovery plan |
+**Actions:**
+| Button | Effect |
+|--------|--------|
+| **Keep Mine** | Retain user's event, dismiss conflict |
+| **Accept Update** | Accept the official/CR change |
+
+**Payload Schema:**
+```json
+{
+  "conflict_category": "CR_VS_PERSONAL",
+  "sourceA": { "label": "CR Update", "title": "Math Lecture", "subtitle": "Moved to 2 PM" },
+  "sourceB": { "label": "Your Event", "title": "Gym Session", "subtitle": "Personal Calendar" }
+}
+```
+
+---
+
+##### 2. VERIFY (Attendance Confirmation)
+*Displayed after a class ends with uncertain presence detection.*
+
+| Element | Value |
+|---------|-------|
+| **Background** | Light blue (`0xFFE0F2FE`) |
+| **Accent** | Blue (`0xFF0284C7`) |
+| **Icon** | Help Circle (❓) |
+| **Title** | "Verify Attendance" |
+
+**Card Content:**
+- **Message**: "We detected you near [Location]. Were you present?"
+- **Course**: The course name for context
+
+**Actions:**
+| Button | Effect |
+|--------|--------|
+| **Yes, Present** | Confirms attendance, updates `attendance.json` |
+| **No, Absent** | Marks as absent |
+
+**Payload Schema:**
+```json
+{
+  "course": "Mobile App Design",
+  "message": "We detected you near LH-102. Were you present?"
+}
+```
+
+---
+
+##### 3. SCHEDULE_CHANGE (CR Announcement)
+*Displayed when a CR modifies or cancels a class.*
+
+| Element | Value |
+|---------|-------|
+| **Background** | Light sky blue (`0xFFE0F7FA`) |
+| **Accent** | Teal (`0xFF0891B2`) |
+| **Icon** | Information Circle (ℹ️) |
+| **Title** | "Schedule Update" |
+
+**Card Content:**
+- **Message**: The CR's note (e.g., "Prof. cancelled class due to emergency.")
+
+**Actions:**
+| Button | Effect |
+|--------|--------|
+| **Acknowledge** | Marks the announcement as seen |
+
+**Payload Schema:**
+```json
+{
+  "course": "Data Structures",
+  "message": "Prof. Rahul cancelled class due to emergency meeting."
+}
+```
+
+---
+
+##### 4. ASSIGNMENT_DUE (Upcoming Deadline)
+*Displayed when an assignment is due within 24-48 hours.*
+
+| Element | Value |
+|---------|-------|
+| **Background** | Light amber (`0xFFFEF3C7`) |
+| **Accent** | Amber (`0xFFD97706`) |
+| **Icon** | Document Text (📝) |
+| **Title** | Assignment title |
+
+**Card Content:**
+- **Course**: The parent course name
+- **Work Title**: The assignment name (large, bold)
+- **Due Text**: Countdown (e.g., "Due in 28 hours")
+
+**Actions:**
+| Button | Effect |
+|--------|--------|
+| **Mark Done** | Updates `work_states.json` to `status = SUBMITTED` |
+| **Snooze** | Dismisses notification temporarily (item moves to history) |
+
+**Payload Schema:**
+```json
+{
+  "work": "Finance Dashboard",
+  "course": "HCI",
+  "due_text": "Due in 28 hours"
+}
+```
+
+---
+
+##### 5. ATTENDANCE_RISK (Low Attendance Warning)
+*Displayed when a subject falls below the target attendance %.*
+
+| Element | Value |
+|---------|-------|
+| **Background** | Light red/rose (`0xFFFFE4E6`) |
+| **Accent** | Rose (`0xFFE11D48`) |
+| **Icon** | Warning (⚠️) |
+| **Title** | "Attendance Risk" |
+
+**Card Content:**
+- **Course**: The at-risk course name
+- **Message**: Recovery guidance (e.g., "You need to attend next 3 classes to be safe.")
+- **Current %**: The student's current attendance percentage
+
+**Actions:**
+| Button | Effect |
+|--------|--------|
+| **Details** | Navigates to Subject Detail (Stats Tab) for a full recovery plan |
+
+**Payload Schema:**
+```json
+{
+  "course": "Linear Algebra",
+  "current_per": "72%",
+  "message": "You need to attend next 3 classes to be safe."
+}
+```
+
+---
+
+#### Resolution Lifecycle
+1.  User taps action button.
+2.  `ActionCenterProvider.resolveItem()` is called.
+3.  `ActionItemRepository.resolve()` updates `action_items.json`:
+    - Sets `status = RESOLVED`
+    - Sets `resolution` to the action taken
+    - Sets `resolved_at` timestamp
+4.  UI refreshes: item moves from **Pending** to **History** tab.
 
 #### History Log
-Audit trail of past decisions:
-- "Kept **Gym** over **Math** • Oct 21"
-- "Verified present for **CS101** • Oct 20"
-- "Acknowledged: CS101 moved to 3 PM • Oct 19"
+Audit trail of past decisions, displayed in the "History" tab:
+- Shows resolved items with their action status (e.g., "ACKNOWLEDGED", "MARK_DONE")
+- Sorted by resolution time (newest first)
+- Persists across app restarts (stored in `action_items.json`)
+
 
 ### Global Search
 *Full-text search across all user-relevant data.*
@@ -354,70 +514,282 @@ Recent searches stored in `/data/search_history.json`.
 
 ---
 
+## Work Detail Page
+*Focused view for a single assignment, quiz, or exam.*
+
+**Route:** `/academics/detail`
+
+### Features
+1.  **Dynamic Meta Header**:
+    *   Visual prominence for Title and Due Date.
+    *   Color-coded badges for Work Type (Assignment, Quiz, Exam) and Course.
+    *   **Urgency Indicators**: "Due Tomorrow", "Urgent" tags.
+2.  **Interactive Actions**:
+    *   **Mark as Completed**: Updates status to `submitted`, moves item to "Completed" lists.
+    *   **Context Menu**: "Hide from Calendar" to declutter views.
+3.  **Discussion Board**:
+    *   **Real-time Comments**: Chat-like interface for Q&A on specific assignments.
+    *   **Ask a Question**: Post inquiries visible to classmates (and potentially CR/Prof).
+4.  **Rich Details**:
+    *   Description/Instructions text.
+    *   Venue and Seat info (for Exams).
+    *   Duration and Window info (for Quizzes).
+
+---
+## Academics Page
+*The hub for tracking attendance, safe bunks, and overall academic health.*
+
+**Route:** `/academics`
+
+### Features
+1.  **Header Navigation**:
+    *   **Unified Assignments**: A list icon that opens the **Unified Assignments Page** containing work details for all courses in one place.
+2.  **Smart Summary Card**:
+    *   **"On Track" (Green):** Displays total safe bunks available across all courses.
+    *   **"Attention Needed" (Orange):** Highlights count of courses falling below target attendance %.
+3.  **Course Feed**:
+    *   **Bento-style Stats Cards:** Displays current attendance %, safe bunks, and a visual progress bar for each course.
+    *   **Status Indicators:** Color-coded (Green/Orange) based on whether the student is above or below their set target.
+4.  **Quick Actions**:
+    *   **Add Course (+):** Direct access to "Manage Courses" for enrolling in new subjects.
+
+---
+## Unified Assignments Page
+*A centralized hub to view and manage work for **all** enrolled courses in one place.*
+
+**Route:** `/assignments`
+
+**Entry Point:** Accessed via the list icon on the **Academics Page**.
+
+### Features
+1.  **Consolidated List**: Aggregates assignments, quizzes, and exams from all subjects.
+2.  **Tabbed View**:
+    *   **Pending**: Upcoming tasks sorted by urgency (e.g., "Due Today", "Due Tomorrow").
+    *   **Completed**: History of submitted or graded work.
+3.  **Quick Actions**:
+    *   **Add Task (+)**: Create a new assignment for any course directly from this hub.
+    *   **Tap to Detail**: Opens the specific **Work Detail Page**.
+4.  **Visual Queues**:
+    *   **Color Strips**: Identifies the course (matches the course card color).
+    *   **Urgency Badges**: "Urgent" flame icon for tasks due within 24h.
+
+---
+
 ## Manage Courses Page
 *Centralized hub for adding, editing, and deleting courses.*
 
 **Route:** `/manage-courses`
 
-### Capabilities
+> **Reference:** This feature is fully documented in **Step 2: Course Selection (Onboarding)**.
+> It shares the exact same UI and capabilities (Edit Details, Schedule Builder, Slot Bindings) as the onboarding wizard.
 
-| Feature | Global Courses | Custom Courses |
-|---------|----------------|----------------|
-| **Edit Details** | Read-only (University managed) | Editable (Name, Code, Prof) |
-| **Edit Schedule** | Read-only | Add/Remove/Edit Slots |
-| **Edit Bindings** | **Set GPS/WiFi per slot** | Set GPS/WiFi per slot |
-| **Enrollment** | **Edit Section & Target %** | Edit Target % |
-| **Settings** | **Edit Card Color** | Edit Card Color |
-| **Actions** | Unenroll | Delete |
-
-**Global Course Bindings:**
-*   Users can override the University's default location for specific slots (e.g., "I attend the lab slot in a different room").
-*   Can bind specifically to a WiFi SSID or GPS Geofence.
-
-### Create Custom Course
-*Interface for manually adding independent subjects not in the university catalog.*
-
-**Route:** `/create-custom-course`
-
-**Purpose:** Add extra electives, personal tuition, or gym schedules that act like courses.
-
-| Section | Fields |
-|---------|--------|
-| **Metadata** | Course Name, **Course Code**, Instructor Name |
-| **Schedule** | Day, Start Time, End Time, Location (with optional Bindings) |
-| **Config** | Target Attendance % (Default 75%), Section (Default 'A') |
-| **Theme** | Card Color Picker (Pastel Palette) |
-
-**System Constraints:**
-1.  **Unique Course Code:** You cannot create a course with a code (e.g., "CS-101") that already exists in your `enrollments.json`. Duplicate codes must be resolved by renaming one.
-2.  **Mandatory Fields:** Name and Code are required.
-3.  **Schedule Conflicts:** System allows overlaps but flags them as `CONFLICT` in the **Action Center** for manual resolution (L3 vs L1/L2).
+**Entry Points:**
+- **Onboarding:** via Wizard Step 2.
+- **Academics Page:** via FAB (+) in Standalone Mode.
+- **Settings:** via "Manage Courses" option.
 
 ---
 
----
 
 ## 3. Academic Calendar
 
+**Route:** `/calendar`
+
+*Full-month calendar view with event markers and agenda list.*
+
+### UI Structure
+
+| Section | Description |
+|---------|-------------|
+| **App Bar** | Title, Back button, "Import Holidays" button |
+| **Month Navigation** | Prev/Next arrows, Month-Year label |
+| **Weekday Headers** | Mon–Sun labels |
+| **Calendar Grid** | Day cells with colored event markers (up to 3 dots) |
+| **Agenda View** | Scrollable list of events for selected day |
+| **FAB** | "Event" button to add new personal event |
+
+---
+
 ### Event Types
 
-| Type | Source | Color | Description |
-|------|--------|-------|-------------|
-| Holiday | `academic_calendar` | 🔴 Red | No classes (Diwali, Republic Day) |
-| Major Exam | `academic_calendar` | 🟡 Yellow | End semester, mid-terms |
-| Day Swap | `academic_calendar` | 🔵 Blue | "Follow Monday schedule on Saturday" |
-| Class Cancel | `schedule_modifications` | 🔵 Blue | Specific class cancelled by CR |
-| Reschedule | `schedule_modifications` | 🔵 Blue | Class moved to new time |
-| Extra Class | `schedule_modifications` | 🔵 Blue | Additional class added |
-| Assignment | `course_work` | 🟠 Orange | Due date markers |
-| Quiz | `course_work` | 🟡 Yellow | Same-day quiz |
-| Personal | `events.json` | 🟣 Purple | User-created events |
+| Type | Source | Marker Color | Card Background | Description |
+|------|--------|--------------|-----------------|-------------|
+| **Holiday** | Imported (`events.json`) | 🔴 Red | Pastel Pink | No classes (Diwali, Republic Day) |
+| **Exam** | Official (`course_work`) | 🟡 Yellow | Pastel Yellow | End semester, mid-terms |
+| **Quiz** | Official (`course_work`) | 🟡 Yellow | Pastel Yellow | Same-day quiz |
+| **Assignment** | Official (`course_work`) | 🟠 Orange | Pastel Orange | Deadlines & Projects |
+| **Day Swap** | Imported (`events.json`) | 🔵 Blue | Pastel Blue | "Follow Monday schedule on Saturday" |
+| **Personal** | User (`events.json`) | 🟣 Purple | Pastel Purple | User-created events |
 
-### Features
-* **Multiple Events Per Day:** Calendar shows up to 3 colored dots per day.
-* **Agenda View:** All events for selected day shown as separate cards.
-* **User Overrides:** Hide events locally via `calendar_overrides.json`.
-* **Holiday Injection:** OCR/PDF parsing to import official holiday lists.
+---
+
+### Day Cell Rendering
+
+Each calendar day cell shows:
+- **Day number** (bold, centered)
+- **Selection ring**: Black fill if selected, grey if today
+- **Event markers**: Up to 3 colored dots below the number
+
+```
+┌─────────┐
+│   15    │  ← Selected (black fill)
+│   ●●    │  ← 2 events (red + blue dots)
+└─────────┘
+```
+
+---
+
+### Agenda View (Selected Day)
+
+Displays all events for the selected date as cards:
+
+| Element | Content |
+|---------|---------|
+| **Date Header** | "Tuesday, 15 January" |
+| **Event Card** | Type badge, Title, Description, Date, Time |
+| **Empty State** | Icon + "Nothing scheduled for today" |
+
+---
+
+### Event Card Examples by Type
+
+#### 🔴 Holiday
+```
+┌──────────────────────────────────────┐
+│ [HOLIDAY]                      🔔    │  ← Red badge, Pink background
+├──────────────────────────────────────┤
+│ Republic Day                         │  ← Title (large, bold)
+│ National holiday - University closed │  ← Description (grey)
+├──────────────────────────────────────┤
+│ 📅 26 Jan    🕐 All Day              │  ← No time = All Day
+└──────────────────────────────────────┘
+```
+**Source:** `events.json` (Imported)
+
+---
+
+#### 🔵 Day Swap
+```
+┌──────────────────────────────────────┐
+│ [DAY SWAP]                     🔔    │  ← Blue badge, Blue background
+├──────────────────────────────────────┤
+│ Follow Monday Schedule               │  
+│ Makeup classes for Jan 14 holiday    │  
+├──────────────────────────────────────┤
+│ 📅 18 Jan    🔄 MON                  │  ← Target day indicator
+└──────────────────────────────────────┘
+```
+**Source:** `events.json` (Imported)  
+**Effect:** Schedule Engine loads Monday's classes instead of Saturday's.
+
+---
+
+#### 🟣 Personal
+```
+┌──────────────────────────────────────┐
+│ [PERSONAL]                     🔔    │  ← Purple badge, Purple BG
+├──────────────────────────────────────┤
+│ Gym Session                          │  
+│ Leg Day                              │  
+├──────────────────────────────────────┤
+│ 📅 15 Jan    🕐 14:00 - 15:00        │
+└──────────────────────────────────────┘
+```
+**Source:** `events.json` (User Created via AddEventPage)
+
+---
+
+#### 🟡 Exam
+```
+┌──────────────────────────────────────┐
+│ [EXAM]                         🔔    │  ← Yellow badge, Yellow BG
+├──────────────────────────────────────┤
+│ DSA Mid-Semester                     │  
+│ COL106 exam                          │  
+├──────────────────────────────────────┤
+│ 📅 20 Jan    🕐 09:00 - 11:00        │
+└──────────────────────────────────────┘
+```
+**Source:** `course_work` (Derived - WorkType.exam)
+
+---
+
+#### 🟡 Quiz
+```
+┌──────────────────────────────────────┐
+│ [QUIZ]                         🔔    │  ← Yellow badge, Yellow BG
+├──────────────────────────────────────┤
+│ DBMS Surprise Quiz                   │  
+│ COL362 quiz                          │  
+├──────────────────────────────────────┤
+│ 📅 15 Jan    🕐 11:30                │
+└──────────────────────────────────────┘
+```
+**Source:** `course_work` (Derived - WorkType.quiz)
+
+---
+
+#### 🟠 Assignment
+```
+┌──────────────────────────────────────┐
+│ [ASSIGNMENT]                   🔔    │  ← Orange badge, Orange BG
+├──────────────────────────────────────┤
+│ OS Lab Report                        │  
+│ COL331 assignment                    │  
+├──────────────────────────────────────┤
+│ 📅 17 Jan    🕐 Due 23:59            │  ← Due time
+└──────────────────────────────────────┘
+```
+**Source:** `course_work` (Derived - WorkType.assignment)
+└──────────────────────────────────────┘
+```
+
+
+### Add Event
+
+**Entry Point:** FAB button ("+ Event")
+
+Opens `AddEventPage` modal with:
+
+| Field | Type | Required |
+|-------|------|----------|
+| Title | Text | ✅ |
+| Date | Date Picker | ✅ (defaults to selected day) |
+| Type | Dropdown (Personal, Holiday, Exam, etc.) | ✅ |
+| Start Time | Time Picker | Optional |
+| End Time | Time Picker | Optional |
+| Description | Multi-line Text | Optional |
+
+**On Save:**
+1. Calls `CalendarService.addEvent()`
+2. Persists to `events.json`
+3. Invalidates `calendarEventsProvider`
+4. Returns to calendar (UI refreshes)
+
+---
+
+### Import Holidays
+
+**Entry Point:** Cloud upload icon in app bar → `/calendar/inject`
+
+Allows bulk import of academic calendar events from:
+- Official university PDFs
+- Manual entry
+
+*Note: OCR parsing planned for Phase 3.*
+
+---
+
+### Missing Features (Planned)
+
+| Feature | Status | Priority |
+|---------|--------|----------|
+| **Edit Event** | ✅ Done | High |
+| **Delete Event** | ✅ Done | High |
+| **Recurring Events** | 🚧 TODO | Medium |
+| **Event Notifications** | 🚧 TODO | Medium |
+| **Sync with Google Calendar** | 🚧 TODO | Low |
+| **Week View** | 🚧 TODO | Low |
 
 ---
 
@@ -515,6 +887,7 @@ The Schedule Patcher page shows **all enrolled global courses** in a horizontal 
 | **Reschedule** 🔵 | Move class to different date/time | Slot → Affected Date → New Date → New Time → (Location) → Reason |
 | **Extra Class** 🟢 | Add additional class not in schedule | Date → Time → Location → Reason |
 | **Swap Room** 🟣 | Change location only, same time | Slot → Affected Date → New Location → Reason |
+| **Day Swap** 🔵 | Makeup day: "Follow Monday schedule on Saturday" | Affected Date → Target Day (MON-SUN) → Reason |
 
 #### Semantic Distinction
 
@@ -566,6 +939,7 @@ The Schedule Patcher page shows **all enrolled global courses** in a horizontal 
 
 ## 8. Privacy & Customization
 
+* **No Profile Pictures:** User avatars display initials only (no image upload/storage).
 * **Private Mode:** Disables all cloud syncing; data stays on device only.
 * **Guest Mode:** Use app without account; migrate data on signup.
 * **Google Drive Backup:** Sync local JSON files to personal Google Drive.
@@ -593,55 +967,91 @@ The Schedule Patcher page shows **all enrolled global courses** in a horizontal 
 
 ---
 
-## 10. Student Collaboration
+## 10. Live Presence Voting (Crowdsourcing)
 
-*Crowd-sourced features to help students share real-time class status.*
+*Ephemeral, real-time crowd-sourced presence indicator displayed directly on Live class cards.*
 
-### Verification Votes
+### Design Philosophy
 
-*Students can vote on whether class is happening, triggering notifications when threshold is reached.*
+| Principle | Description |
+|-----------|-------------|
+| **Ephemeral** | Votes exist only while a class is live. No historical storage. |
+| **Live Display** | Vote count shown directly on the ScheduleCard (not a separate page). |
+| **Simple** | Two buttons: "I'm Here ✓" / "Prof Missing ✗". One vote per user per slot. |
+| **No Backend Threshold Logic** | Frontend aggregates counts via Supabase Realtime; no server-side triggers. |
 
-#### How It Works
+---
 
-| Step | Description |
-|------|-------------|
-| 1. **Trigger** | Student opens a live/upcoming class card |
-| 2. **Vote** | Tap "Prof is here ✓" or "Prof missing ✗" |
-| 3. **Display** | Card shows vote count (e.g., "3 voted missing") |
-| 4. **Threshold** | When 5+ students vote same status → triggers notification |
-| 5. **Notify** | Push sent to all enrolled: "5 students report Prof missing" |
+### UI Integration (ScheduleCard)
 
-#### Vote Button States
+When a class is **currently live** (`event.isCurrent == true`), the card shows a voting strip:
 
-| State | Button Display | Condition |
-|-------|----------------|-----------|
-| **Not Voted** | "Vote Status" | No vote from this user |
-| **Voted Present** | "✓ You voted Present" (green) | User voted prof is here |
-| **Voted Missing** | "✗ You voted Missing" (orange) | User voted prof missing |
-| **Threshold Reached** | "5 confirmed missing" (locked) | Voting closed |
+```
+┌────────────────────────────────────────────────┐
+│  📚 Data Structures • Lecture              ⚡ │
+│  LH-101 • Prof. Sharma                         │
+│                                                │
+│  ┌──────────────────────────────────────────┐  │
+│  │  👥 32 Verified Present                  │◄── Count Only
+│  └──────────────────────────────────────────┘  │
+└────────────────────────────────────────────────┘
+```
 
-#### Notification Threshold
+---
 
-| Section Size | Threshold | Rationale |
-|--------------|-----------|----------|
-| < 20 students | 3 votes | Small class, few votes needed |
-| 20-50 students | 5 votes | Medium class |
-| > 50 students | 10 votes | Large class, avoid false positives |
+### Simplified Presence Count
 
-#### Data Model
+> **Design Decision**: Removed "Prof Present / Prof Missing" voting in favor of a simpler **presence count** that shows how many students have verified their attendance.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `rule_id` | UUID | Schedule slot being voted on |
-| `section` | String | Voter's section |
-| `user_id` | UUID | Voter |
-| `date` | Date | Specific date |
-| `status` | Enum | `PROF_PRESENT`, `PROF_MISSING` |
-| `voted_at` | Timestamp | When vote was cast |
+| Display | Meaning |
+|---------|---------|
+| **32 Verified** | 32 students marked themselves present via the Live Verification popup |
 
-#### Integration with Attendance
+---
 
-| Scenario | Effect |
-|----------|--------|
-| Threshold reached for "Prof Missing" | All enrolled students get `ABSENT` marked with `source = "CROWD_VERIFIED"` |
-| Class confirmed by votes | Students at location get attendance boost in confidence score |
+### Data Flow
+
+1. User taps "Mark Present" → App upserts row to `presence_confirmations`.
+2. Supabase Realtime broadcasts change to all subscribers.
+3. All apps watching that `rule_id + date` update their live count.
+
+---
+
+### Supabase Table (Ephemeral)
+
+> **No historical storage**: A scheduled job deletes all confirmations older than 24 hours.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `confirmation_id` | UUID | PK |
+| `rule_id` | UUID | FK → `global_schedules.rule_id` |
+| `date` | Date | Today's date |
+| `user_id` | UUID | Confirming user |
+| `confirmed_at` | Timestamp | For TTL cleanup |
+
+---
+
+### Visibility Rules
+
+| Condition | Presence Count Visible? |
+|-----------|-------------------------|
+| Class is **currently live** | ✅ Yes |
+| Class is **upcoming/past/cancelled** | ❌ No |
+| Non-academic events (Mess, Personal) | ❌ No |
+
+---
+
+### UI Design Notes
+
+**Schedule Card Styling:**
+- White background for all cards (no color fill).
+- Black border (`2px`) for **Live** cards; subtle grey border for non-live cards.
+- Presence count shown only on **Academic** cards, hidden for Mess/Personal events.
+
+**Live Verification Popup:**
+- 2x2 Grid layout with pastel-colored tiles and **black borders**.
+- All text in tiles uses **black** color for readability.
+- "Present" tile shows live count of verified students.
+- GPS, WiFi, and Activity status displayed in separate tiles with success/loading indicators.
+- Confidence score (%) displayed in header next to "Live Verification" title.
+- "Mark Present" button triggers personal attendance confirmation.
