@@ -6,12 +6,16 @@ class University extends Equatable {
   final String name;
   final String domain; // e.g., 'iitd.ac.in', for email validation
   final String? logoUrl;
+  final DateTime? semesterStart;
+  final DateTime? semesterEnd;
 
   const University({
     required this.id,
     required this.name,
     required this.domain,
     this.logoUrl,
+    this.semesterStart,
+    this.semesterEnd,
   });
 
   factory University.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,12 @@ class University extends Equatable {
       name: json['name'] as String,
       domain: json['domain'] as String,
       logoUrl: json['logo_url'] as String?,
+      semesterStart: json['semester_start'] != null 
+          ? DateTime.parse(json['semester_start'] as String) 
+          : null,
+      semesterEnd: json['semester_end'] != null 
+          ? DateTime.parse(json['semester_end'] as String) 
+          : null,
     );
   }
 
@@ -29,11 +39,13 @@ class University extends Equatable {
       'name': name,
       'domain': domain,
       'logo_url': logoUrl,
+      if (semesterStart != null) 'semester_start': semesterStart!.toIso8601String(),
+      if (semesterEnd != null) 'semester_end': semesterEnd!.toIso8601String(),
     };
   }
 
   @override
-  List<Object?> get props => [id, name, domain, logoUrl];
+  List<Object?> get props => [id, name, domain, logoUrl, semesterStart, semesterEnd];
 }
 
 class Hostel extends Equatable {

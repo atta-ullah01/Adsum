@@ -7,19 +7,23 @@ import 'package:flutter/foundation.dart';
 class Enrollment {
   final String enrollmentId;
   final String? courseCode; // For catalog courses
+  final String? catalogInstructor; // Snapshot of instructor name for catalog courses
   final CustomCourse? customCourse; // For custom courses
   final String section;
   final double targetAttendance;
   final String colorTheme;
+  final DateTime startDate;
   final EnrollmentStats stats;
 
   const Enrollment({
     required this.enrollmentId,
     this.courseCode,
+    this.catalogInstructor,
     this.customCourse,
     this.section = 'A',
     this.targetAttendance = 75.0,
     this.colorTheme = '#6366F1',
+    required this.startDate,
     this.stats = const EnrollmentStats(),
   });
 
@@ -34,16 +38,23 @@ class Enrollment {
   String get courseName =>
       customCourse?.name ?? courseCode ?? 'Unknown Course';
 
+  /// Get instructor name (custom or catalog)
+  String? get instructor => customCourse?.instructor ?? catalogInstructor;
+
   factory Enrollment.fromJson(Map<String, dynamic> json) {
     return Enrollment(
       enrollmentId: json['enrollment_id'] as String,
       courseCode: json['course_code'] as String?,
+      catalogInstructor: json['catalog_instructor'] as String?,
       customCourse: json['custom_course'] != null
           ? CustomCourse.fromJson(json['custom_course'] as Map<String, dynamic>)
           : null,
       section: json['section'] as String? ?? 'A',
       targetAttendance: (json['target_attendance'] as num?)?.toDouble() ?? 75.0,
       colorTheme: json['color_theme'] as String? ?? '#6366F1',
+      startDate: json['start_date'] != null 
+          ? DateTime.parse(json['start_date'] as String) 
+          : DateTime.now(), // Fallback for old data
       stats: json['stats'] != null
           ? EnrollmentStats.fromJson(json['stats'] as Map<String, dynamic>)
           : const EnrollmentStats(),
@@ -53,29 +64,35 @@ class Enrollment {
   Map<String, dynamic> toJson() => {
         'enrollment_id': enrollmentId,
         if (courseCode != null) 'course_code': courseCode,
+        if (catalogInstructor != null) 'catalog_instructor': catalogInstructor,
         if (customCourse != null) 'custom_course': customCourse!.toJson(),
         'section': section,
         'target_attendance': targetAttendance,
         'color_theme': colorTheme,
+        'start_date': startDate.toIso8601String(),
         'stats': stats.toJson(),
       };
 
   Enrollment copyWith({
     String? enrollmentId,
     String? courseCode,
+    String? catalogInstructor,
     CustomCourse? customCourse,
     String? section,
     double? targetAttendance,
     String? colorTheme,
+    DateTime? startDate,
     EnrollmentStats? stats,
   }) {
     return Enrollment(
       enrollmentId: enrollmentId ?? this.enrollmentId,
       courseCode: courseCode ?? this.courseCode,
+      catalogInstructor: catalogInstructor ?? this.catalogInstructor,
       customCourse: customCourse ?? this.customCourse,
       section: section ?? this.section,
       targetAttendance: targetAttendance ?? this.targetAttendance,
       colorTheme: colorTheme ?? this.colorTheme,
+      startDate: startDate ?? this.startDate,
       stats: stats ?? this.stats,
     );
   }

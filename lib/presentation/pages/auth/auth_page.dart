@@ -103,9 +103,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                    Center(
                      child: Image.asset(
                        'assets/auth_hero.png',
-                       height: 120,
+                       height: 80, // Reduced from 120
                        errorBuilder: (context, error, stackTrace) => 
-                           const Icon(Ionicons.shield_checkmark, size: 100, color: AppColors.pastelBlue),
+                           const Icon(Ionicons.shield_checkmark, size: 80, color: AppColors.pastelBlue), // Reduced from 100
                      ),
                    ).animate().scale(delay: 200.ms),
                    
@@ -115,18 +115,18 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                      'University Identity',
                      textAlign: TextAlign.center,
                      style: GoogleFonts.outfit(
-                       fontSize: 24,
+                       fontSize: 20, // Reduced from 24
                        fontWeight: FontWeight.bold,
                      ),
                    ).animate().fadeIn().moveY(begin: 10, end: 0),
 
-                   const SizedBox(height: 30),
+                   const SizedBox(height: 20), // Reduced from 30
 
                    // Vertical Form Stack
                    Form(
                      key: _formKey,
                      child: Container(
-                       padding: const EdgeInsets.all(20),
+                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16), // Reduced vertical padding
                        decoration: BoxDecoration(
                          color: Colors.white,
                          borderRadius: BorderRadius.circular(24),
@@ -159,7 +159,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                              }
                            ),
 
-                           const SizedBox(height: 16),
+                           const SizedBox(height: 12), // Reduced from 16
                            
                            _buildInputLabel('Hostel'),
                            
@@ -178,6 +178,14 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                     loading: () => const LinearProgressIndicator(),
                                     error: (err, _) => Text('Error loading hostels', style: const TextStyle(color: Colors.red)),
                                     data: (hostels) {
+                                      if (hostels.isEmpty) {
+                                        return Container(
+                                          padding: const EdgeInsets.all(12),
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
+                                          child: Text("No hostels found for this university", style: GoogleFonts.dmSans(color: Colors.grey, fontSize: 13)),
+                                        );
+                                      }
                                       return _buildDropdownField(
                                          'Select Hostel',
                                          _selectedHostelId,
@@ -193,7 +201,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                }
                              ),
                            
-                           const SizedBox(height: 16),
+                           const SizedBox(height: 12), // Reduced from 16
                            
                            Row(
                              crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +226,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                  child: Column(
                                    crossAxisAlignment: CrossAxisAlignment.start,
                                    children: [
-                                     _buildInputLabel('Full Name (Optional)'),
+                                     _buildInputLabel('Full Name'), // Removed (Optional)
                                      _buildTextField('Enter Name', _nameController),
                                    ],
                                  ),
@@ -230,7 +238,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                      ).animate().slideY(begin: 0.2, end: 0, delay: 100.ms).fadeIn(),
                    ),
                    
-                   const SizedBox(height: 30),
+                   const SizedBox(height: 20), // Reduced from 30
 
                    // Identity Cards
                    if (_isLoading)
@@ -334,7 +342,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         style: GoogleFonts.dmSans(fontSize: 15, color: AppColors.textMain),
         decoration: InputDecoration(
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10), // Reduced from 14
           hintText: hint,
           hintStyle: GoogleFonts.dmSans(color: Colors.grey),
         ),
@@ -360,7 +368,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           border: InputBorder.none,
           hintText: hint,
           hintStyle: GoogleFonts.dmSans(color: Colors.grey),
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10), // Reduced from 14
         ),
       ),
     );

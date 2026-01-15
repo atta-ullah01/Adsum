@@ -53,6 +53,8 @@ dependencies:
   ionicons: ^0.2.2
   flutter_animate: ^4.5.2
   equatable: ^2.0.8
+  permission_handler: ^11.0.1  # For device permission requests
+  app_settings: ^5.1.1         # For opening system settings pages
 
 dev_dependencies:
   flutter_test:

@@ -12,6 +12,17 @@
 
 ### 🏗️ Module 1: Core Infrastructure
 
+#### `users`
+| Column | Type | Key | Description |
+|--------|------|-----|-------------|
+| `user_id` | UUID | **PK** | Auth User ID |
+| `university_id` | UUID | **FK** | |
+| `email` | String | | |
+| `full_name` | String | | Optional, default "Student" |
+| `home_hostel_id` | UUID | **FK** | Optional (nullable) |
+| `default_section` | String | | Default "A" |
+| `created_at` | Timestamp | | |
+
 #### `universities`
 | Column | Type | Key | Description |
 |--------|------|-----|-------------|
@@ -19,6 +30,8 @@
 | `name` | String | | e.g., "IIT Delhi" |
 | `short_code` | String | Unique | e.g., "IITD" |
 | `timezone` | String | | IANA timezone |
+| `semester_start` | Date | | Current semester start date |
+| `semester_end` | Date | | Current semester end date |
 | `is_active` | Boolean | | Soft delete |
 | `created_at` | Timestamp | | Audit |
 
@@ -208,18 +221,20 @@
 {
   "user_id": "uuid",
   "email": "user@example.com",
-  "full_name": "Attaullah",
-  "profile_image": "path/to/local.jpg",
+  "full_name": "Attaullah", // Optional
   "university_id": "uuid",
-  "home_hostel_id": "uuid",
-  "default_section": "A",
+  "home_hostel_id": "uuid", // Optional (nullable)
+  "default_section": "A", // Default "A"
   
   "settings": {
     "theme_mode": "SYSTEM",
     "notifications_enabled": true,
     "is_private_mode": false,
     "google_sync_enabled": true,
-    "last_sync_at": "2026-01-13T10:00:00Z"
+    "last_sync_at": "2026-01-13T10:00:00Z",
+    "sensor_geofence_enabled": false,
+    "sensor_motion_enabled": false,
+    "sensor_battery_optimization_disabled": false
   }
 }
 ```
@@ -230,10 +245,12 @@
   {
     "enrollment_id": "uuid",
     "course_code": "CS101",
+    "catalog_instructor": "Prof. Alice Smith", // Snapshot for global courses
     "custom_course": null,
     "section": "A",
     "target_attendance": 75.0,
     "color_theme": "#FF5733",
+    "start_date": "2024-01-01T00:00:00.000Z",
     
     "stats": {
       "total_classes": 40,
@@ -527,8 +544,8 @@ User-created schedule slots for custom courses. **Location/WiFi bindings are sto
 
 | Storage | Location | Contents |
 |---------|----------|----------|
-| Profile Images | Google Drive or Supabase Storage | `avatars/{user_id}.jpg` |
 | OCR Scans | Google Drive | Timetable/menu photos |
+
 | Resources | Supabase Storage | Syllabus PDFs, notes |
 
 ---

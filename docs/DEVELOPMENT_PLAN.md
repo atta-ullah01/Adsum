@@ -98,6 +98,10 @@ To ensure absolute reliability, the following strictly enforced checkpoints must
 - [x] **DataValidationService**: `lib/data/validation/data_validation.dart`
   - Sanitizers (trim, normalize)
   - Schema validators (User, Enrollment, Attendance)
+
+### 1.4 Data Constraints
+- [x] **Duplicate Enrollment Prevention**: `EnrollmentRepository.addEnrollment()` returns `null` if course+section already enrolled.
+- [x] **Sensor Defaults**: All sensor settings default to `false` until user grants permission.
   - Business rule validation
 
 ---
@@ -253,26 +257,37 @@ The demo at `lib/presentation/` contains **24 pages** across 12 feature director
 
 ---
 
-## ⏳ Phase 3: Sync Engine
+## ⏳ Phase 3: Backend Integration & Sync
 
-*Goal: Reliable offline-first sync with conflict resolution.*
+*Goal: Full connection to Supabase (Auth, DB, Realtime) with offline-first reliability.*
 
-### 3.1 Offline Queue Processing
+### 3.1 Backend Setup & Auth
+- [ ] Initialize Supabase project & client
+- [ ] **Auth Integration**: Connect generic `AuthProvider` to Supabase Auth (Google/Email)
+- [ ] **Row Level Security (RLS)**: Verify policies for Users, Enrollments, Attendance
+- [ ] **Database Helpers**: RPC functions for complex queries (e.g., stats aggregation)
+
+### 3.2 Offline Queue Processing
 - [ ] `SyncService`: Process `OfflineQueue` table
 - [ ] Retry with exponential backoff (5 attempts)
 - [ ] Dead letter queue for failures
 - [ ] User notification for failed syncs
 
-### 3.2 Supabase Integration
-- [ ] Initialize Supabase client
-- [ ] Read-only sync for shared data (courses, schedules)
-- [ ] Write sync for user actions (attendance)
-- [ ] Realtime subscriptions for updates
+### 3.3 Data Sync Implementation
+- [ ] **Read-Only Sync**: Fetch shared data (Universities, Global Courses) on startup
+- [ ] **Write Sync**: Push local actions (Enrollments, Attendance) to server
+- [ ] **Realtime Subscriptions**: Listen for Schedule changes (`schedule_modifications`)
 
 ### 3.3 Conflict Resolution
-- [ ] Timestamp comparison
+- [ ] Timestamp comparison (Sync Engine)
 - [ ] Create `ActionItem(type=CONFLICT)` on conflict
-- [ ] Resolution UI
+- [ ] Resolution UI in Action Center
+
+#### Course Slot Conflicts (Design Decision: 2026-01-15)
+- **Behavior**: Allow enrollment even when time-slots conflict.
+- **Resolution**: Create `ActionItem(type=CONFLICT)` for user to resolve in Action Center.
+- **Persistence**: Conflict remains until slot is changed or user explicitly dismisses.
+- **No Blocking**: Enrollment/course creation is NOT blocked by conflicts.
 
 ---
 

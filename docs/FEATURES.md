@@ -17,7 +17,61 @@
 *   **Optional Fields**:
     *   **Hostel**: Optional. Not all students live on campus.
     *   **Section**: Optional, defaults to 'A'.
-    *   **Full Name**: Optional, defaults to 'Student' or derived from email.
+    *   **Full Name**: Optional, defaults to 'Student' for guest or derived from google account.
+
+### Step 1: Course Entry Method
+*   **Goal**: Determine how the user wants to populate their schedule.
+*   **Personalized Header**: Greets the user by name (e.g., "Hi Attaullah 👋").
+*   **Options**:
+    1.  **Scan Slip (Disabled)**: (Not implemented).
+    2.  **Manual Entry (Primary)**: Navigates to the Course Selection page.
+*   **Layout**: Vertical stack for accessibility; Clean, text-focused design (No Hero Image).
+
+### Step 2: Course Selection
+*   **Goal**: Populate schedule with courses.
+*   **Features**:
+    *   **Manage Courses**: View active enrollments (split by Global/Custom).
+    *   **Global Search**: Browse university catalog (mocked `SharedDataRepository`).
+    *   **Enrollment Modal**: When selecting a catalog course, a modal appears with:
+        - Section Dropdown (A-E)
+        - Target Attendance % Slider (50-100%)
+        - Card Color Picker
+    *   **Custom Courses (Inline)**: "Create Custom Course" opens an inline form with:
+        - Course Name, Code, Instructor
+        - Section, Target Attendance %, Total Expected Classes
+        - Class Slots (Day, Time, Location)
+        - GPS & WiFi Bindings
+        - Card Color Picker
+    *   **Edit Mode**: Tapping an enrolled course expands an inline edit form.
+    
+#### Edit Mode Field Permissions
+
+| Field | Global Course | Custom Course |
+|-------|:-------------:|:-------------:|
+| Course Name | ❌ Read-only | ✅ Editable |
+| Course Code | ❌ Read-only | ✅ Editable |
+| Instructor | ❌ Read-only | ✅ Editable |
+| Section | ✅ Editable | ✅ Editable |
+| Target Attendance % | ✅ Editable | ✅ Editable |
+| Card Color | ✅ Editable | ✅ Editable |
+| GPS Binding | ✅ Editable | ✅ Editable |
+| WiFi Binding | ✅ Editable | ✅ Editable |
+| Class Slots | ❌ From Schedule | ✅ Editable |
+| Total Expected | ❌ Read-only (Calculated) | ✅ Editable |
+| Start Date | ❌ Read-only (Semester Start) | ✅ Editable |
+
+### Step 3: Sensor Hub
+*   **Goal**: Grant necessary permissions for auto-attendance.
+*   **Toggles** (Initially OFF):
+    *   **Geofence**: Requests "Location Always".
+    *   **Motion**: Requests "Activity Recognition".
+    *   **Battery**: Opens "Battery Optimization" settings.
+*   **Behavior**:
+    *   Toggling ON triggers system permission prompt.
+    *   Denied permission keeps toggle OFF and shows SnackBar.
+    *   Settings are persisted to `user.json` on "Finish".
+*   **Navigation**: "Finish" button completes onboarding and redirects to Dashboard.
+
 
 ---
 
@@ -390,7 +444,7 @@ Recent searches stored in `/data/search_history.json`.
 
 ## 6. Academic Collaboration & Planning
 
-* **Course Injection (OCR):** Scan Course Registration Slip to set up semester.
+* **Course Injection (Manual):** Wizard for quick course selection. (OCR Scanning disabled for cost optimization).
 * **Assignment Priority Heap:** Sorted by deadline (closest = highest priority).
 * **Exam Command Center:** "Super Events" that block all other classes.
 * **Syllabus Tracker:** Mark topics as complete, view progress per course.
@@ -530,7 +584,7 @@ The Schedule Patcher page shows **all enrolled global courses** in a horizontal 
 |-------|---------|---------|
 | **Shared Data** | Supabase PostgreSQL | Universities, courses, schedules, CR patches |
 | **Personal Data** | Local JSON files | Attendance, overrides, events, settings |
-| **File Storage** | Google Drive / Supabase Storage | Profile images, PDFs, notes |
+| **File Storage** | Google Drive / Supabase Storage | PDFs, notes (Profile photos removed) |
 
 ### Sync Strategy
 * Shared data syncs from Supabase → Local on app launch and via realtime.

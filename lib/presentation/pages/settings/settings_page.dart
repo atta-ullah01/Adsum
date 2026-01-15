@@ -90,10 +90,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       child: CircleAvatar(
                       radius: 32,
                       backgroundColor: isGuest ? Colors.grey : AppColors.primary,
-                      backgroundImage: user?.profileImage != null ? NetworkImage(user!.profileImage!) : null,
-                      child: user?.profileImage == null 
-                        ? Text(userName.isNotEmpty ? userName[0] : '?', style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white))
-                        : null,
+                      child: Text(userName.isNotEmpty ? userName[0] : '?', style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                   ),
                   const SizedBox(width: 20),

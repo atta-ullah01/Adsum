@@ -16,7 +16,6 @@ import 'package:go_router/go_router.dart';
 import 'package:adsum/presentation/pages/splash/splash_page.dart';
 import 'package:adsum/presentation/pages/auth/auth_page.dart';
 import 'package:adsum/presentation/pages/courses/courses_page.dart';
-import 'package:adsum/presentation/pages/courses/create_custom_course_page.dart';
 import 'package:adsum/presentation/pages/wizard/wizard_ocr_page.dart';
 import 'package:adsum/presentation/pages/wizard/wizard_sensors_page.dart';
 import 'package:adsum/presentation/pages/dashboard/dashboard_page.dart';
@@ -39,10 +38,6 @@ final router = GoRouter(
     GoRoute(
       path: '/ocr',
       builder: (context, state) => const WizardOcrPage(),
-    ),
-    GoRoute(
-      path: '/create-custom',
-      builder: (context, state) => const CreateCustomCoursePage(),
     ),
     GoRoute(
       path: '/courses',

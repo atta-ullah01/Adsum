@@ -171,37 +171,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               children: [
                 const SizedBox(height: 20),
                 Center(
-                  child: Stack(
-                    children: [
-                       Container(
-                         padding: const EdgeInsets.all(8),
-                         decoration: BoxDecoration(
-                             color: Colors.white, 
-                             shape: BoxShape.circle, 
-                             border: Border.all(color: Colors.grey.shade100, width: 2),
-                             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 24, offset: const Offset(0, 8))]
-                         ),
-                         child: CircleAvatar(
-                             radius: 64, 
-                             backgroundColor: AppColors.primary, 
-                             child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : "A", style: GoogleFonts.outfit(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold))
-                         ),
-                       ),
-                      Positioned(
-                        bottom: 0, right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                              color: Colors.black, 
-                              shape: BoxShape.circle, 
-                              border: Border.all(color: Colors.white, width: 4),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))]
-                          ),
-                          child: const Icon(Ionicons.camera, color: Colors.white, size: 20),
-                        ),
-                      )
-                    ],
-                  ),
+                  child: Container(
+                     padding: const EdgeInsets.all(8),
+                     decoration: BoxDecoration(
+                         color: Colors.white, 
+                         shape: BoxShape.circle, 
+                         border: Border.all(color: Colors.grey.shade100, width: 2),
+                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 24, offset: const Offset(0, 8))]
+                     ),
+                     child: CircleAvatar(
+                         radius: 64, 
+                         backgroundColor: AppColors.primary, 
+                         child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : "A", style: GoogleFonts.outfit(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold))
+                     ),
+                   ),
                 ),
                 const SizedBox(height: 48),
                 

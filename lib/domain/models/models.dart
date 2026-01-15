@@ -1,4 +1,5 @@
 /// Barrel file for domain models
+export 'course.dart';
 export 'user_profile.dart';
 export 'enrollment.dart';
 export 'attendance_log.dart';

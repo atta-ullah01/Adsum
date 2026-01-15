@@ -30,25 +30,43 @@ class EnrollmentRepository {
     }
   }
 
-  /// Add new enrollment
-  Future<Enrollment> addEnrollment({
+  /// Add new enrollment (returns null if duplicate)
+  Future<Enrollment?> addEnrollment({
     String? courseCode,
+    String? catalogInstructor,
     CustomCourse? customCourse,
     String section = 'A',
     double targetAttendance = 75.0,
     String colorTheme = '#6366F1',
+    DateTime? startDate,
   }) async {
+    // Check for duplicate enrollment
+    final effectiveCode = courseCode ?? customCourse?.code;
+    if (effectiveCode != null && await isEnrolled(effectiveCode, section)) {
+      return null; // Already enrolled
+    }
+
     final enrollment = Enrollment(
       enrollmentId: const Uuid().v4(),
       courseCode: courseCode,
+      catalogInstructor: catalogInstructor,
       customCourse: customCourse,
       section: section,
       targetAttendance: targetAttendance,
       colorTheme: colorTheme,
+      startDate: startDate ?? DateTime.now(),
     );
 
     await _jsonService.appendToJsonArray(_filename, enrollment.toJson());
     return enrollment;
+  }
+
+  /// Check if already enrolled in a course (by code and section)
+  Future<bool> isEnrolled(String courseCode, String section) async {
+    final enrollments = await getEnrollments();
+    return enrollments.any((e) => 
+      e.effectiveCourseCode == courseCode && e.section == section
+    );
   }
 
   /// Update enrollment

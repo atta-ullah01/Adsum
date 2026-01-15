@@ -11,7 +11,6 @@ class UserProfile {
   final String userId;
   final String email;
   final String fullName;
-  final String? profileImage;
   final String? universityId;
   final String? homeHostelId;
   final String defaultSection;
@@ -21,7 +20,6 @@ class UserProfile {
     required this.userId,
     required this.email,
     required this.fullName,
-    this.profileImage,
     this.universityId,
     this.homeHostelId,
     this.defaultSection = 'A',
@@ -33,7 +31,6 @@ class UserProfile {
       userId: json['user_id'] as String,
       email: json['email'] as String,
       fullName: json['full_name'] as String,
-      profileImage: json['profile_image'] as String?,
       universityId: json['university_id'] as String?,
       homeHostelId: json['home_hostel_id'] as String?,
       defaultSection: json['default_section'] as String? ?? 'A',
@@ -47,7 +44,6 @@ class UserProfile {
         'user_id': userId,
         'email': email,
         'full_name': fullName,
-        if (profileImage != null) 'profile_image': profileImage,
         if (universityId != null) 'university_id': universityId,
         if (homeHostelId != null) 'home_hostel_id': homeHostelId,
         'default_section': defaultSection,
@@ -58,7 +54,6 @@ class UserProfile {
     String? userId,
     String? email,
     String? fullName,
-    String? profileImage,
     String? universityId,
     String? homeHostelId,
     String? defaultSection,
@@ -68,7 +63,6 @@ class UserProfile {
       userId: userId ?? this.userId,
       email: email ?? this.email,
       fullName: fullName ?? this.fullName,
-      profileImage: profileImage ?? this.profileImage,
       universityId: universityId ?? this.universityId,
       homeHostelId: homeHostelId ?? this.homeHostelId,
       defaultSection: defaultSection ?? this.defaultSection,
@@ -84,6 +78,11 @@ class UserSettings {
   final bool isPrivateMode;
   final bool googleSyncEnabled;
   final DateTime? lastSyncAt;
+  
+  // Sensor Hub Settings
+  final bool sensorGeofenceEnabled;
+  final bool sensorMotionEnabled;
+  final bool sensorBatteryOptimizationDisabled;
 
   const UserSettings({
     this.themeMode = 'SYSTEM',
@@ -91,6 +90,9 @@ class UserSettings {
     this.isPrivateMode = false,
     this.googleSyncEnabled = true,
     this.lastSyncAt,
+    this.sensorGeofenceEnabled = false,
+    this.sensorMotionEnabled = false,
+    this.sensorBatteryOptimizationDisabled = false,
   });
 
   factory UserSettings.fromJson(Map<String, dynamic> json) {
@@ -102,6 +104,9 @@ class UserSettings {
       lastSyncAt: json['last_sync_at'] != null
           ? DateTime.parse(json['last_sync_at'] as String)
           : null,
+      sensorGeofenceEnabled: json['sensor_geofence_enabled'] as bool? ?? false,
+      sensorMotionEnabled: json['sensor_motion_enabled'] as bool? ?? false,
+      sensorBatteryOptimizationDisabled: json['sensor_battery_optimization_disabled'] as bool? ?? false,
     );
   }
 
@@ -111,6 +116,9 @@ class UserSettings {
         'is_private_mode': isPrivateMode,
         'google_sync_enabled': googleSyncEnabled,
         if (lastSyncAt != null) 'last_sync_at': lastSyncAt!.toIso8601String(),
+        'sensor_geofence_enabled': sensorGeofenceEnabled,
+        'sensor_motion_enabled': sensorMotionEnabled,
+        'sensor_battery_optimization_disabled': sensorBatteryOptimizationDisabled,
       };
 
   UserSettings copyWith({
@@ -119,6 +127,9 @@ class UserSettings {
     bool? isPrivateMode,
     bool? googleSyncEnabled,
     DateTime? lastSyncAt,
+    bool? sensorGeofenceEnabled,
+    bool? sensorMotionEnabled,
+    bool? sensorBatteryOptimizationDisabled,
   }) {
     return UserSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -126,6 +137,9 @@ class UserSettings {
       isPrivateMode: isPrivateMode ?? this.isPrivateMode,
       googleSyncEnabled: googleSyncEnabled ?? this.googleSyncEnabled,
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
+      sensorGeofenceEnabled: sensorGeofenceEnabled ?? this.sensorGeofenceEnabled,
+      sensorMotionEnabled: sensorMotionEnabled ?? this.sensorMotionEnabled,
+      sensorBatteryOptimizationDisabled: sensorBatteryOptimizationDisabled ?? this.sensorBatteryOptimizationDisabled,
     );
   }
 }

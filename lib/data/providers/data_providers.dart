@@ -7,6 +7,7 @@ import 'package:adsum/data/repositories/shared_data_repository.dart';
 import 'package:adsum/data/validation/data_validation.dart';
 import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/domain/services/services.dart';
+import 'package:adsum/core/services/permission_service.dart';
 
 // ============ Core Services ============
 
@@ -77,6 +78,11 @@ final calendarRepositoryProvider = Provider<CalendarRepository>((ref) {
 /// Shared Data repository (Universities, Hostels)
 final sharedDataRepositoryProvider = Provider<SharedDataRepository>((ref) {
   return SharedDataRepository();
+});
+
+/// Permission service (for Sensor Hub)
+final permissionServiceProvider = Provider<PermissionService>((ref) {
+  return PermissionService();
 });
 
 // ============ Service Providers ============

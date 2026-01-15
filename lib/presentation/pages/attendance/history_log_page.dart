@@ -56,7 +56,7 @@ class _HistoryLogPageState extends ConsumerState<HistoryLogPage> {
     final enrollmentsAsync = ref.watch(enrollmentsProvider);
     final enrollment = enrollmentsAsync.asData?.value.firstWhere(
       (e) => e.courseCode == widget.courseCode,
-      orElse: () => Enrollment(enrollmentId: 'unknown', courseCode: widget.courseCode ?? ''),
+      orElse: () => Enrollment(enrollmentId: 'unknown', courseCode: widget.courseCode ?? '', startDate: DateTime.now()),
     );
     
     // 2. Fetch Logs if enrollment found

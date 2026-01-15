@@ -99,8 +99,16 @@ void main() {
     expect(fakeUserRepo.savedUser!.homeHostelId, isNull);
     expect(fakeUserRepo.savedUser!.fullName, 'Student'); // Default name
 
-    // 8. Verify Navigation to OCR Page
+    // 8. Verify Navigation to OCR Page (WizardOcrPage)
+    // We need to define the WizardOcrPage in the test routes to verify its content
+    // But currently the route builder just returns a Scaffold
+    // Let's verify we reached the right route path '/ocr' first. 
+    // Since we mocked the route builder as Text('OCR Page'), we verify that text.
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('ocr_page')), findsOneWidget);
+
+    // Ideally, we would test the WizardOcrPage widget itself here.
+    // For now, let's just confirm the flow up to this point is correct.
+    // To rigorously test the new WizardOcrPage, we should replace the mock route builder with the actual widget.
   });
 }

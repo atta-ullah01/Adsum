@@ -7,12 +7,17 @@ class PastelCard extends StatelessWidget {
   final VoidCallback? onTap;
   final double padding;
 
+  final Color? borderColor;
+  final double borderWidth;
+
   const PastelCard({
     super.key,
     required this.child,
     required this.backgroundColor,
     this.onTap,
     this.padding = 24.0,
+    this.borderColor,
+    this.borderWidth = 1.0,
   });
 
   @override
@@ -24,7 +29,7 @@ class PastelCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.black.withOpacity(0.02)),
+          border: Border.all(color: borderColor ?? Colors.black.withOpacity(0.02), width: borderWidth),
           boxShadow: backgroundColor == Colors.white
              ? [
                  BoxShadow(

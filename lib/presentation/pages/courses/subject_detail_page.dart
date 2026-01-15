@@ -77,11 +77,13 @@ class _SubjectDetailPageState extends ConsumerState<SubjectDetailPage> {
            code: widget.courseCode,
            name: widget.courseTitle,
          ),
+         startDate: DateTime.now(),
        );
      } else {
        return Enrollment(
          enrollmentId: 'mock',
          courseCode: widget.courseCode,
+         startDate: DateTime.now(),
        );
      }
   }

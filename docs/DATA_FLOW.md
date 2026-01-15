@@ -12,6 +12,89 @@ User can restore data from `adsum_backup.json`.
     *   **Enrollments:** Upsert based on `enrollment_id`.
     *   **Attendance:** Upsert based on `log_id`.
     *   **Appends:** Add missing events/overrides.
+    *   **Appends:** Add missing events/overrides.
+
+---
+
+## Onboarding & Identity
+
+**Sources:**
+| Table | Purpose |
+|-------|---------|
+| `universities` | Master list of universities (Name + ID) |
+| `hostels` | Filtered list of hostels for selected university |
+
+**Onboarding Data Logic:**
+1.  **Fetch Universities:** `SELECT * FROM universities WHERE is_active = true`
+2.  **User Selection:** User selects `university_id`.
+3.  **Fetch Hostels:** `SELECT * FROM hostels WHERE university_id = ?`
+4.  **User Input:**
+    *   **Hostel:** Optional (nullable `home_hostel_id`).
+    *   **Section:** Defaults to "A" if empty (`default_section`).
+    *   **Name:** Optional (defaults to "Student").
+5.  **Creation:** Instantiate `UserProfile` with defaults.
+
+**Write Actions:**
+| Action | Target | Operation |
+|--------|--------|-----------|
+| **Complete Setup** | `user.json` | Write initial `UserProfile` object |
+| **Sync Profile** | `users` Table | *Future: Upsert to Cloud* |
+
+### Step 1: Course Entry (Wizard)
+
+**Context:** The first step after University selection where users choose how to add courses.
+
+**Sources:**
+| File | Purpose |
+|------|---------|
+| `user.json` | Used for personalized header ("Hi [Name]") |
+
+**UI Element Mapping:**
+| UI Element | Source |
+|------------|--------|
+| **Header** | `UserProfile.fullName` (first name extracted) |
+| **Scan Card** | Static (Disabled feature) |
+| **Manual Entry** | Navigation Action |
+
+**Write Actions:**
+*None.* Read-only view.
+
+### Step 2: Course Selection (Wizard)
+*Also known as Manage Courses Page.*
+
+**Context:** User selects courses via search or creates custom ones. All interactions happen inline on `CoursesPage`.
+
+**Sources:**
+| File | Purpose |
+|------|---------|
+| `enrollments.json` | List of currently enrolled courses |
+| `custom_schedules.json` | Schedule details for custom courses |
+| `schedule_bindings.json` | GPS/WiFi bindings for course slots |
+| `SharedDataRepository` | University course catalog (Mock) |
+
+**UI Element Mapping:**
+| UI Element | Source |
+|------------|--------|
+| **Course List** | `enrollments.json` (split Global/Custom) |
+| **Search Dropdown** | `SharedDataRepository` (Mock Catalog) |
+| **Enrollment Modal** | Collects Section, Target %, Color before saving |
+| **Inline Edit Form (Global)** | Edit Section, Target %, Color, GPS/WiFi bindings (Name/Code/Instructor read-only) |
+| **Inline Edit Form (Custom)** | Full edit of all fields including slots |
+
+**Write Actions:**
+| Action | Target | Operation |
+|--------|--------|-----------|
+| **Enroll (Catalog)** | `enrollments.json` | Add new enrollment with section, target %, color |
+| **Create Custom** | `enrollments.json` | Add new custom enrollment |
+| **Save Schedule** | `custom_schedules.json` | Add slots for custom course |
+| **Save Bindings** | `schedule_bindings.json` | Add GPS/WiFi bindings (works for BOTH Global & Custom) |
+| **Update Course** | `enrollments.json` | Modify existing enrollment |
+| **Delete** | `enrollments.json` | Remove enrollment |
+
+> [!NOTE]
+> **Start Date Logic:**
+> - **Global Courses**: Start Date = `University.semester_start` (Read-only, from university calendar).
+> - **Custom Courses**: Start Date = `Enrollment.start_date` (Editable, user-defined).
 
 ---
 
@@ -413,7 +496,6 @@ User can restore data from `adsum_backup.json`.
 **UI Element Mapping:**
 | UI Element | Source |
 |------------|--------|
-| Avatar | `users.photo_url` (Cloud) / Local Placeholder |
 | Name | `users.full_name` (Cloud) |
 | Size | `universities.name` (via `users.university_id`) |
 | Hostel | `hostels.name` (via `users.hostel_id`) *Filtered by Uni* |
