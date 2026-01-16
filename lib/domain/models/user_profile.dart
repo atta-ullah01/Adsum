@@ -2,19 +2,13 @@
 ///
 /// These models match SCHEMA.md Part 2: Local JSON Files exactly.
 /// Uses immutable classes with copyWith for safety.
+library;
 
 import 'package:flutter/foundation.dart';
 
 /// User profile and settings - matches `/data/user.json`
 @immutable
 class UserProfile {
-  final String userId;
-  final String email;
-  final String fullName;
-  final String? universityId;
-  final String? homeHostelId;
-  final String defaultSection;
-  final UserSettings settings;
 
   const UserProfile({
     required this.userId,
@@ -39,6 +33,13 @@ class UserProfile {
           : const UserSettings(),
     );
   }
+  final String userId;
+  final String email;
+  final String fullName;
+  final String? universityId;
+  final String? homeHostelId;
+  final String defaultSection;
+  final UserSettings settings;
 
   Map<String, dynamic> toJson() => {
         'user_id': userId,
@@ -73,16 +74,6 @@ class UserProfile {
 
 @immutable
 class UserSettings {
-  final String themeMode;
-  final bool notificationsEnabled;
-  final bool isPrivateMode;
-  final bool googleSyncEnabled;
-  final DateTime? lastSyncAt;
-  
-  // Sensor Hub Settings
-  final bool sensorGeofenceEnabled;
-  final bool sensorMotionEnabled;
-  final bool sensorBatteryOptimizationDisabled;
 
   const UserSettings({
     this.themeMode = 'SYSTEM',
@@ -109,6 +100,16 @@ class UserSettings {
       sensorBatteryOptimizationDisabled: json['sensor_battery_optimization_disabled'] as bool? ?? false,
     );
   }
+  final String themeMode;
+  final bool notificationsEnabled;
+  final bool isPrivateMode;
+  final bool googleSyncEnabled;
+  final DateTime? lastSyncAt;
+  
+  // Sensor Hub Settings
+  final bool sensorGeofenceEnabled;
+  final bool sensorMotionEnabled;
+  final bool sensorBatteryOptimizationDisabled;
 
   Map<String, dynamic> toJson() => {
         'theme_mode': themeMode,

@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -27,7 +28,7 @@ void main() {
       final repo = helper.container.read(messRepositoryProvider);
       
       final cache = MenuCache(
-        menus: [
+        menus: const [
           MessMenu(
             menuId: 'M1',
             hostelId: 'H1',
@@ -62,7 +63,7 @@ void main() {
     test('saveCache overwrites existing cache', () async {
       final repo = helper.container.read(messRepositoryProvider);
       
-      await repo.saveCache(MenuCache(
+      await repo.saveCache(const MenuCache(
         menus: [MessMenu(
           menuId: 'M1',
           hostelId: 'H1',
@@ -74,7 +75,7 @@ void main() {
         )],
       ));
 
-      await repo.saveCache(MenuCache(
+      await repo.saveCache(const MenuCache(
         menus: [MessMenu(
           menuId: 'M2',
           hostelId: 'H2',

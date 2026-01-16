@@ -3,11 +3,11 @@ import 'package:adsum/domain/models/user_profile.dart';
 
 /// Repository for user profile data (user.json)
 class UserRepository {
+
+  UserRepository(this._jsonService);
   static const String _filename = 'user.json';
 
   final JsonFileService _jsonService;
-
-  UserRepository(this._jsonService);
 
   /// Get current user profile
   Future<UserProfile?> getUser() async {

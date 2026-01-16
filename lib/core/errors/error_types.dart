@@ -2,13 +2,10 @@
 /// 
 /// All application errors inherit from [AppException] for uniform handling.
 /// Use these specific types to trigger appropriate recovery strategies.
+library;
 
 /// Base exception class for all Adsum errors.
 abstract class AppException implements Exception {
-  final String message;
-  final String? code;
-  final dynamic originalError;
-  final StackTrace? stackTrace;
   
   const AppException({
     required this.message,
@@ -16,6 +13,10 @@ abstract class AppException implements Exception {
     this.originalError,
     this.stackTrace,
   });
+  final String message;
+  final String? code;
+  final dynamic originalError;
+  final StackTrace? stackTrace;
   
   /// Whether this error can be recovered from automatically
   bool get isRecoverable;
@@ -30,8 +31,6 @@ abstract class AppException implements Exception {
 /// Network connectivity issues, timeouts, DNS failures
 /// Recovery: Auto-retry with backoff → Offline mode
 class NetworkException extends AppException {
-  final int? statusCode;
-  final bool isTimeout;
   
   const NetworkException({
     required super.message,
@@ -41,6 +40,8 @@ class NetworkException extends AppException {
     this.statusCode,
     this.isTimeout = false,
   });
+  final int? statusCode;
+  final bool isTimeout;
   
   @override
   bool get isRecoverable => true;
@@ -57,7 +58,6 @@ class NetworkException extends AppException {
 /// Authentication issues: token expired, invalid credentials
 /// Recovery: Refresh token → Re-login prompt
 class AuthException extends AppException {
-  final AuthErrorType type;
   
   const AuthException({
     required super.message,
@@ -66,6 +66,7 @@ class AuthException extends AppException {
     super.originalError,
     super.stackTrace,
   });
+  final AuthErrorType type;
   
   @override
   bool get isRecoverable => type == AuthErrorType.tokenExpired;
@@ -80,7 +81,7 @@ class AuthException extends AppException {
       case AuthErrorType.notAuthenticated:
         return 'Please sign in to continue.';
       case AuthErrorType.insufficientPermissions:
-        return 'You don\'t have permission for this action.';
+        return "You don't have permission for this action.";
     }
   }
 }
@@ -95,8 +96,6 @@ enum AuthErrorType {
 /// Data integrity issues: corrupted files, schema mismatch
 /// Recovery: Restore from backup → Re-sync from cloud
 class DataIntegrityException extends AppException {
-  final DataIntegrityErrorType type;
-  final String? affectedEntity;
   
   const DataIntegrityException({
     required super.message,
@@ -106,6 +105,8 @@ class DataIntegrityException extends AppException {
     super.originalError,
     super.stackTrace,
   });
+  final DataIntegrityErrorType type;
+  final String? affectedEntity;
   
   @override
   bool get isRecoverable => type != DataIntegrityErrorType.migrationFailed;
@@ -135,7 +136,6 @@ enum DataIntegrityErrorType {
 /// Validation errors: invalid user input, business rule violations
 /// Recovery: Reject + show inline error
 class ValidationException extends AppException {
-  final Map<String, String>? fieldErrors;
   
   const ValidationException({
     required super.message,
@@ -144,6 +144,7 @@ class ValidationException extends AppException {
     super.originalError,
     super.stackTrace,
   });
+  final Map<String, String>? fieldErrors;
   
   @override
   bool get isRecoverable => false; // User must fix input
@@ -157,7 +158,6 @@ class ValidationException extends AppException {
 /// System-level errors: storage full, permissions denied
 /// Recovery: User guidance dialog
 class SystemException extends AppException {
-  final SystemErrorType type;
   
   const SystemException({
     required super.message,
@@ -166,6 +166,7 @@ class SystemException extends AppException {
     super.originalError,
     super.stackTrace,
   });
+  final SystemErrorType type;
   
   @override
   bool get isRecoverable => false; // Requires user action
@@ -192,8 +193,6 @@ enum SystemErrorType {
 /// Sync-related errors: conflicts, queue failures
 /// Recovery: Depends on type
 class SyncException extends AppException {
-  final SyncErrorType type;
-  final String? entityId;
   
   const SyncException({
     required super.message,
@@ -203,6 +202,8 @@ class SyncException extends AppException {
     super.originalError,
     super.stackTrace,
   });
+  final SyncErrorType type;
+  final String? entityId;
   
   @override
   bool get isRecoverable => type != SyncErrorType.deadLetter;

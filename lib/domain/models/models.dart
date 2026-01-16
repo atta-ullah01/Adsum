@@ -1,12 +1,13 @@
 /// Barrel file for domain models
-export 'course.dart';
-export 'user_profile.dart';
-export 'enrollment.dart';
-export 'attendance_log.dart';
-export 'schedule.dart';
+library;
 export 'action_item.dart';
-export 'work.dart';
-export 'syllabus.dart';
-export 'mess.dart';
+export 'attendance_log.dart';
 export 'calendar_event.dart';
+export 'course.dart';
+export 'enrollment.dart';
+export 'mess.dart';
+export 'schedule.dart';
+export 'syllabus.dart';
 export 'university.dart';
+export 'user_profile.dart';
+export 'work.dart';

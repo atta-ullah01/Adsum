@@ -339,7 +339,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
               Expanded(child: _buildActionButton(btn1, Colors.white, accent, () => _handleAction(item, btn1))),
               if (btn2 != null) ...[
                 const SizedBox(width: 12),
-                Expanded(child: _buildActionButton(btn2!, Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, btn2!))),
+                Expanded(child: _buildActionButton(btn2, Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, btn2!))),
               ]
             ],
           )

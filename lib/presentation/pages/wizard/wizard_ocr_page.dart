@@ -1,12 +1,12 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/presentation/widgets/pastel_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:adsum/data/providers/data_providers.dart';
 
 class WizardOcrPage extends ConsumerStatefulWidget {
   const WizardOcrPage({super.key});
@@ -23,7 +23,7 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
       backgroundColor: AppColors.bgApp,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -69,7 +69,7 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Let\'s set up your academic courses',
+                        "Let's set up your academic courses",
                         style: GoogleFonts.dmSans(fontSize: 16, color: AppColors.textMain.withOpacity(0.6)),
                       ),
                     ],
@@ -96,7 +96,7 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
                                  children: [
                                    const Icon(Ionicons.alert_circle, color: Colors.white, size: 20),
                                    const SizedBox(width: 12),
-                                   Expanded(child: Text("Not implemented, too poor to buy API keys 🥲", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14))),
+                                   Expanded(child: Text('Not implemented, too poor to buy API keys 🥲', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14))),
                                  ],
                                ),
                                backgroundColor: const Color(0xFF1F2937), // Dark grey like reference
@@ -122,9 +122,9 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
                               child: const Icon(Ionicons.scan, color: Colors.black),
                              ),
                              const SizedBox(height: 16),
-                             Text("Scan Slip", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
+                             Text('Scan Slip', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
                              const SizedBox(height: 4),
-                             Text("Auto-detect courses from image", style: GoogleFonts.dmSans(fontSize: 14, color: Colors.black54)),
+                             Text('Auto-detect courses from image', style: GoogleFonts.dmSans(fontSize: 14, color: Colors.black54)),
                           ],
                         ),
                       ),
@@ -153,9 +153,9 @@ class _WizardOcrPageState extends ConsumerState<WizardOcrPage> {
                               child: const Icon(Ionicons.create, color: Colors.black),
                              ),
                              const SizedBox(height: 16),
-                             Text("Manual Entry", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
+                             Text('Manual Entry', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
                              const SizedBox(height: 4),
-                             Text("Type course codes manually", style: GoogleFonts.dmSans(fontSize: 14, color: Colors.black54)),
+                             Text('Type course codes manually', style: GoogleFonts.dmSans(fontSize: 14, color: Colors.black54)),
                           ],
                         ),
                       ),

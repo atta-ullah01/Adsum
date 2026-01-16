@@ -7,11 +7,11 @@ import 'package:uuid/uuid.dart';
 
 /// Service for calendar management
 class CalendarService {
+
+  CalendarService(this._repository, this._workRepository);
   final CalendarRepository _repository;
   final WorkRepository _workRepository;
   static const _uuid = Uuid();
-
-  CalendarService(this._repository, this._workRepository);
 
   // ============ Event Queries ============
 
@@ -37,19 +37,16 @@ class CalendarService {
       switch (work.workType) {
         case WorkType.exam:
           type = CalendarEventType.exam;
-          break;
         case WorkType.quiz:
           type = CalendarEventType.quiz;
-          break;
         case WorkType.assignment:
         case WorkType.project:
           type = CalendarEventType.assignment;
-          break;
       }
       
       // Create derived event (read-only in calendar)
       derivedEvents.add(CalendarEvent(
-        eventId: "derived_${work.workId}", // Prevent ID collision
+        eventId: 'derived_${work.workId}', // Prevent ID collision
         title: work.title,
         date: date,
         startTime: work.startAt != null 
@@ -59,8 +56,7 @@ class CalendarService {
             ? _formatEndTime(work.startAt!, work.durationMinutes!)
             : null,
         type: type,
-        description: work.description ?? "${work.courseCode} ${work.workType.name}",
-        isActive: true, // Always active unless specifically hidden in overrides
+        description: work.description ?? '${work.courseCode} ${work.workType.name}',
       ));
     }
 
@@ -132,8 +128,8 @@ class CalendarService {
   /// Update an existing event
   Future<void> updateEvent(CalendarEvent event) async {
     // Prevent updating derived events
-    if (event.eventId.startsWith("derived_")) {
-      throw Exception("Cannot edit official academic events from the calendar.");
+    if (event.eventId.startsWith('derived_')) {
+      throw Exception('Cannot edit official academic events from the calendar.');
     }
     await _repository.saveEvent(event);
   }
@@ -141,7 +137,7 @@ class CalendarService {
   /// Delete an event
   Future<void> deleteEvent(String eventId) async {
     // Prevent deleting derived events
-    if (eventId.startsWith("derived_")) {
+    if (eventId.startsWith('derived_')) {
       throw Exception("Cannot delete official academic events from the calendar. Use 'Hide' instead.");
     }
     await _repository.deleteEvent(eventId);

@@ -1,4 +1,5 @@
 /// Attendance log domain models - matches `/data/attendance.json`
+library;
 
 import 'package:flutter/foundation.dart';
 
@@ -79,17 +80,6 @@ enum VerificationState {
 /// Attendance log entry
 @immutable
 class AttendanceLog {
-  final String logId;
-  final String enrollmentId;
-  final DateTime date;
-  final String? slotId; // References base_timetable_rules or custom_schedule_slots
-  final String? startTime; // For display: "10:00"
-  final AttendanceStatus status;
-  final AttendanceSource source;
-  final int confidenceScore;
-  final VerificationState verificationState;
-  final AttendanceEvidence? evidence;
-  final bool synced;
 
   const AttendanceLog({
     required this.logId,
@@ -123,6 +113,17 @@ class AttendanceLog {
       synced: json['synced'] as bool? ?? false,
     );
   }
+  final String logId;
+  final String enrollmentId;
+  final DateTime date;
+  final String? slotId; // References base_timetable_rules or custom_schedule_slots
+  final String? startTime; // For display: "10:00"
+  final AttendanceStatus status;
+  final AttendanceSource source;
+  final int confidenceScore;
+  final VerificationState verificationState;
+  final AttendanceEvidence? evidence;
+  final bool synced;
 
   Map<String, dynamic> toJson() => {
         'log_id': logId,
@@ -170,10 +171,6 @@ class AttendanceLog {
 /// Evidence supporting attendance detection
 @immutable
 class AttendanceEvidence {
-  final double? gpsLat;
-  final double? gpsLong;
-  final String? wifiBssid;
-  final String? activity;
 
   const AttendanceEvidence({
     this.gpsLat,
@@ -190,6 +187,10 @@ class AttendanceEvidence {
       activity: json['activity'] as String?,
     );
   }
+  final double? gpsLat;
+  final double? gpsLong;
+  final String? wifiBssid;
+  final String? activity;
 
   Map<String, dynamic> toJson() => {
         if (gpsLat != null) 'gps_lat': gpsLat,

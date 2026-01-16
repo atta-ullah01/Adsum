@@ -1,21 +1,18 @@
 
-import 'package:adsum/core/router/router.dart';
 import 'package:adsum/core/services/permission_service.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/data/repositories/repositories.dart';
-import 'package:adsum/domain/models/enrollment.dart';
+import 'package:adsum/data/sources/local/json_file_service.dart';
 import 'package:adsum/domain/models/models.dart';
-import 'package:adsum/domain/models/user_profile.dart';
 import 'package:adsum/presentation/pages/auth/auth_page.dart';
 import 'package:adsum/presentation/pages/courses/courses_page.dart';
 import 'package:adsum/presentation/pages/wizard/wizard_ocr_page.dart';
 import 'package:adsum/presentation/pages/wizard/wizard_sensors_page.dart';
+import 'package:adsum/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:adsum/presentation/providers/auth_provider.dart';
-import 'package:adsum/data/sources/local/json_file_service.dart';
 import 'package:mockito/mockito.dart';
 
 // --- FAKES ---
@@ -26,7 +23,7 @@ class FakeUserRepository extends UserRepository {
 
   @override
   Future<void> saveUser(UserProfile user) async {
-    print("FakeUserRepository: Saving user ${user.universityId}");
+    print('FakeUserRepository: Saving user ${user.universityId}');
     savedUser = user;
   }
   
@@ -122,7 +119,7 @@ void main() {
       ProviderScope(
         overrides: [
           userRepositoryProvider.overrideWithValue(fakeUserRepo),
-          authProvider.overrideWith(() => FakeAuthNotifier()),
+          authProvider.overrideWith(FakeAuthNotifier.new),
         ],
         child: MaterialApp.router(
           routerConfig: GoRouter(
@@ -149,18 +146,17 @@ void main() {
     await tester.tap(find.byKey(const Key('card_student')));
     await tester.pumpAndSettle();
 
-    expect(fakeUserRepo.savedUser, isNotNull, reason: "User should be saved");
+    expect(fakeUserRepo.savedUser, isNotNull, reason: 'User should be saved');
     expect(fakeUserRepo.savedUser!.universityId, 'iit_delhi');
   });
 
   testWidgets('Courses & Sensors Flow: Enroll, Duplicate Check, Sensors', skip: 'Flaky UI test due to search rendering. Logic verified in unit/enrollment_repository_test.dart', (WidgetTester tester) async {
     final fakeUserRepo = FakeUserRepository();
     // Pre-seed user
-    fakeUserRepo.savedUser = UserProfile(
+    fakeUserRepo.savedUser = const UserProfile(
       userId: 'test_user', 
       email: 'test@example.com',
-      universityId: 'iit_delhi', 
-      defaultSection: 'A',
+      universityId: 'iit_delhi',
       fullName: 'Test Student'
     );
     
@@ -175,7 +171,7 @@ void main() {
           enrollmentRepositoryProvider.overrideWithValue(fakeEnrollmentRepo),
           scheduleRepositoryProvider.overrideWithValue(fakeScheduleRepo),
           permissionServiceProvider.overrideWithValue(fakePermissionService),
-          authProvider.overrideWith(() => FakeAuthNotifier()),
+          authProvider.overrideWith(FakeAuthNotifier.new),
         ],
         child: MaterialApp.router(
           routerConfig: GoRouter(

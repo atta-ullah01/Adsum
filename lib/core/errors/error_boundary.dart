@@ -1,11 +1,8 @@
-import 'dart:async';
-
+import 'package:adsum/core/errors/error_types.dart';
+import 'package:adsum/core/utils/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'error_types.dart';
-import '../utils/app_logger.dart';
 
 /// Central error handling service with recovery strategies.
 /// 
@@ -224,10 +221,6 @@ class _CircuitState {
 
 /// Recovery action determined by error boundary
 class RecoveryAction {
-  final RecoveryType type;
-  final String message;
-  final AppException error;
-  final Duration? retryDelay;
   
   const RecoveryAction({
     required this.type,
@@ -235,6 +228,10 @@ class RecoveryAction {
     required this.error,
     this.retryDelay,
   });
+  final RecoveryType type;
+  final String message;
+  final AppException error;
+  final Duration? retryDelay;
 }
 
 enum RecoveryType {
@@ -256,14 +253,13 @@ final errorBoundaryProvider = Provider<ErrorBoundaryService>((ref) {
 
 /// Widget that wraps child with error boundary
 class ErrorBoundaryWidget extends ConsumerWidget {
-  final Widget child;
-  final Widget Function(BuildContext, AppException)? errorBuilder;
   
   const ErrorBoundaryWidget({
-    super.key,
-    required this.child,
+    required this.child, super.key,
     this.errorBuilder,
   });
+  final Widget child;
+  final Widget Function(BuildContext, AppException)? errorBuilder;
   
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -2,15 +2,13 @@
 ///
 /// Implements the validation flow:
 /// Input → Sanitize → Validate Schema → Validate Business Rules → Store/Reject
+library;
 
 import 'package:adsum/core/errors/error_types.dart';
 import 'package:adsum/core/utils/app_logger.dart';
 
 /// Result of validation
 class ValidationResult {
-  final bool isValid;
-  final Map<String, String> fieldErrors;
-  final String? message;
   
   const ValidationResult.valid()
       : isValid = true,
@@ -28,6 +26,9 @@ class ValidationResult {
       message: error,
     );
   }
+  final bool isValid;
+  final Map<String, String> fieldErrors;
+  final String? message;
 }
 
 /// Data sanitizer - cleans input before validation

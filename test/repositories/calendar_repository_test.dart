@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -29,7 +30,6 @@ void main() {
         eventId: 'E1',
         title: 'Team Meeting',
         date: DateTime(2026, 1, 15),
-        type: CalendarEventType.personal,
       );
 
       await repo.saveEvent(event);
@@ -83,7 +83,7 @@ void main() {
     test('saveOverride creates new override', () async {
       final repo = helper.container.read(calendarRepositoryProvider);
       
-      await repo.saveOverride(CalendarOverride(calendarId: 'E1', isHidden: true));
+      await repo.saveOverride(const CalendarOverride(calendarId: 'E1', isHidden: true));
       
       final overrides = await repo.getAllOverrides();
       expect(overrides.length, 1);
@@ -93,8 +93,8 @@ void main() {
     test('saveOverride updates existing override', () async {
       final repo = helper.container.read(calendarRepositoryProvider);
       
-      await repo.saveOverride(CalendarOverride(calendarId: 'E1', isHidden: true));
-      await repo.saveOverride(CalendarOverride(calendarId: 'E1', isHidden: false));
+      await repo.saveOverride(const CalendarOverride(calendarId: 'E1', isHidden: true));
+      await repo.saveOverride(const CalendarOverride(calendarId: 'E1'));
 
       final overrides = await repo.getAllOverrides();
       expect(overrides.length, 1);
@@ -104,7 +104,7 @@ void main() {
     test('deleteOverride removes override', () async {
       final repo = helper.container.read(calendarRepositoryProvider);
       
-      await repo.saveOverride(CalendarOverride(calendarId: 'E1', isHidden: true));
+      await repo.saveOverride(const CalendarOverride(calendarId: 'E1', isHidden: true));
       await repo.deleteOverride('E1');
       
       final overrides = await repo.getAllOverrides();

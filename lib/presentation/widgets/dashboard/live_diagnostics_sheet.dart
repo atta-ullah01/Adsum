@@ -2,7 +2,6 @@ import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'dart:math' as math;
 
 class LiveDiagnosticsSheet extends StatefulWidget {
   const LiveDiagnosticsSheet({super.key});
@@ -53,8 +52,8 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text("Live Verification", style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-                   Text("Scanning environment...", style: GoogleFonts.dmSans(color: AppColors.textMuted, fontSize: 13, fontWeight: FontWeight.w500)),
+                   Text('Live Verification', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textMain)),
+                   Text('Scanning environment...', style: GoogleFonts.dmSans(color: AppColors.textMuted, fontSize: 13, fontWeight: FontWeight.w500)),
                 ],
               ),
               // Confidence Score Badge
@@ -66,9 +65,9 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
                 ),
                 child: Row(
                   children: [
-                    Text("65%", style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    Text('65%', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     const SizedBox(width: 6),
-                    Text("Confidence", style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                    Text('Confidence', style: GoogleFonts.dmSans(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
                   ],
                 ),
               )
@@ -82,8 +81,8 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
             children: [
                Expanded(
                  child: _buildGridCard(
-                   title: "GPS Signal",
-                   subtitle: "Inside Bounds",
+                   title: 'GPS Signal',
+                   subtitle: 'Inside Bounds',
                    icon: Ionicons.location,
                    bg: AppColors.pastelBlue,
                    accent: Colors.blue,
@@ -93,12 +92,11 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
                const SizedBox(width: 16),
                Expanded(
                  child: _buildGridCard(
-                   title: "Access Point",
-                   subtitle: "Searching...",
+                   title: 'Access Point',
+                   subtitle: 'Searching...',
                    icon: Ionicons.wifi,
                    bg: AppColors.pastelPurple,
                    accent: Colors.deepPurple,
-                   isSuccess: false, // In progress
                    isLoading: true,
                  ),
                ),
@@ -109,8 +107,8 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
             children: [
                Expanded(
                  child: _buildGridCard(
-                   title: "Activity",
-                   subtitle: "Stationary",
+                   title: 'Activity',
+                   subtitle: 'Stationary',
                    icon: Ionicons.walk,
                    bg: AppColors.pastelGreen,
                    accent: Colors.teal,
@@ -120,8 +118,8 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
                const SizedBox(width: 16),
                Expanded(
                  child: _buildGridCard(
-                   title: "Present",
-                   subtitle: "32 Verified",
+                   title: 'Present',
+                   subtitle: '32 Verified',
                    icon: Ionicons.people,
                    bg: AppColors.pastelOrange,
                    accent: Colors.orange,
@@ -151,7 +149,7 @@ class _LiveDiagnosticsSheetState extends State<LiveDiagnosticsSheet> with Single
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Text("Mark Present", style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold)),
+                   Text('Mark Present', style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),

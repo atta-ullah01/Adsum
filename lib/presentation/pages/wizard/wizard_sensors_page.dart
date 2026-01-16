@@ -1,12 +1,11 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:adsum/data/providers/data_providers.dart';
-import 'package:adsum/domain/models/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class WizardSensorsPage extends ConsumerStatefulWidget {
   const WizardSensorsPage({super.key});
@@ -181,7 +180,6 @@ class _WizardSensorsPageState extends ConsumerState<WizardSensorsPage> {
                         crossAxisCount: 2,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 1.0, // Square ratio
                         children: [
                           _buildSensorCard(
                             icon: Ionicons.location,
@@ -221,9 +219,9 @@ class _WizardSensorsPageState extends ConsumerState<WizardSensorsPage> {
             ),
             // Loading overlay
             if (_isLoading)
-              Container(
+              const ColoredBox(
                 color: Colors.black26,
-                child: const Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator()),
               ),
           ],
         ),

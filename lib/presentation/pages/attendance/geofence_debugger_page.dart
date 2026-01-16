@@ -1,13 +1,13 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:go_router/go_router.dart';
 
 class GeofenceDebuggerPage extends StatefulWidget {
-  final String courseTitle;
 
-  const GeofenceDebuggerPage({super.key, required this.courseTitle});
+  const GeofenceDebuggerPage({required this.courseTitle, super.key});
+  final String courseTitle;
 
   @override
   State<GeofenceDebuggerPage> createState() => _GeofenceDebuggerPageState();
@@ -36,7 +36,7 @@ class _GeofenceDebuggerPageState extends State<GeofenceDebuggerPage> with Single
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Geofence Debugger", style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black)),
+        title: Text('Geofence Debugger', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -51,7 +51,7 @@ class _GeofenceDebuggerPageState extends State<GeofenceDebuggerPage> with Single
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Debugging: ${widget.courseTitle}",
+              'Debugging: ${widget.courseTitle}',
               style: GoogleFonts.dmSans(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 16),
@@ -72,13 +72,13 @@ class _GeofenceDebuggerPageState extends State<GeofenceDebuggerPage> with Single
                      return AnimatedBuilder(
                        animation: _controller,
                        builder: (context, child) {
-                         double value = (_controller.value + index * 0.33) % 1.0;
+                         final value = (_controller.value + index * 0.33) % 1.0;
                          return Container(
                            width: 300 * value,
                            height: 300 * value,
                            decoration: BoxDecoration(
                              shape: BoxShape.circle,
-                             border: Border.all(color: Colors.green.withOpacity(1 - value), width: 1),
+                             border: Border.all(color: Colors.green.withOpacity(1 - value)),
                            ),
                          );
                        },
@@ -93,7 +93,7 @@ class _GeofenceDebuggerPageState extends State<GeofenceDebuggerPage> with Single
                        color: Colors.blueAccent.withOpacity(0.1),
                        borderRadius: BorderRadius.circular(16)
                      ),
-                     child: Center(child: Text("CLASSROOM ZONE", style: GoogleFonts.outfit(fontSize: 10, color: Colors.blueAccent, fontWeight: FontWeight.bold))),
+                     child: Center(child: Text('CLASSROOM ZONE', style: GoogleFonts.outfit(fontSize: 10, color: Colors.blueAccent, fontWeight: FontWeight.bold))),
                    ),
                    
                    // User Dot (Inside)
@@ -114,27 +114,27 @@ class _GeofenceDebuggerPageState extends State<GeofenceDebuggerPage> with Single
             const SizedBox(height: 24),
             
             // 2. Live Scoreboard
-            Text("Live Scoreboard", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Live Scoreboard', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             
             Row(
               children: [
-                Expanded(child: _buildScoreCard("GPS Accuracy", "4.2m", Colors.green, Ionicons.locate)),
+                Expanded(child: _buildScoreCard('GPS Accuracy', '4.2m', Colors.green, Ionicons.locate)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildScoreCard("Wi-Fi Signal", "-58 dBm", Colors.green, Ionicons.wifi)),
+                Expanded(child: _buildScoreCard('Wi-Fi Signal', '-58 dBm', Colors.green, Ionicons.wifi)),
               ],
             ),
             const SizedBox(height: 16),
-            _buildScoreCard("Total Confidence", "88% (High)", AppColors.primary, Ionicons.shield_checkmark, isFullWidth: true),
+            _buildScoreCard('Total Confidence', '88% (High)', AppColors.primary, Ionicons.shield_checkmark, isFullWidth: true),
             
             const SizedBox(height: 32),
             const Divider(),
             const SizedBox(height: 16),
             
             // 3. Calibration
-            Text("Calibration", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Calibration', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
              const SizedBox(height: 8),
-            Text("If you are inside the class but getting low confidence, calibrate the Wi-Fi signature.", style: GoogleFonts.dmSans(fontSize: 12, color: Colors.grey)),
+            Text('If you are inside the class but getting low confidence, calibrate the Wi-Fi signature.', style: GoogleFonts.dmSans(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 16),
             
             SizedBox(
@@ -142,10 +142,10 @@ class _GeofenceDebuggerPageState extends State<GeofenceDebuggerPage> with Single
               height: 50,
               child: ElevatedButton.icon(
                 onPressed: () {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Wi-Fi Signature Updated!")));
+                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Wi-Fi Signature Updated!')));
                 },
                 icon: const Icon(Ionicons.scan_outline),
-                label: const Text("Calibrate Wi-Fi"),
+                label: const Text('Calibrate Wi-Fi'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,

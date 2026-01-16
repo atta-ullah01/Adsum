@@ -4,11 +4,11 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for enrollment data (enrollments.json)
 class EnrollmentRepository {
+
+  EnrollmentRepository(this._jsonService);
   static const String _filename = 'enrollments.json';
 
   final JsonFileService _jsonService;
-
-  EnrollmentRepository(this._jsonService);
 
   /// Get all enrollments
   Future<List<Enrollment>> getEnrollments() async {

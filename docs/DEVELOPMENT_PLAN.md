@@ -261,42 +261,188 @@ The demo at `lib/presentation/` contains **24 pages** across 12 feature director
 
 *Goal: Full connection to Supabase (Auth, DB, Realtime) with offline-first reliability.*
 
-### 3.1 Backend Setup & Auth
-- [ ] Initialize Supabase project & client
-- [ ] **Auth Integration**: Connect generic `AuthProvider` to Supabase Auth (Google/Email)
-- [ ] **Row Level Security (RLS)**: Verify policies for Users, Enrollments, Attendance
-- [ ] **Database Helpers**: RPC functions for complex queries (e.g., stats aggregation)
+> [!NOTE]
+> **Prerequisites:**
+> - ✅ Drift database with `OfflineQueue` and `SyncMetadata` tables (Phase 1A)
+> - ✅ `supabase_flutter` package in `pubspec.yaml`
+> - ✅ `lib/data/sources/remote/` directory structure exists
 
-### 3.2 Offline Queue Processing
-- [ ] `SyncService`: Process `OfflineQueue` table
-- [ ] Retry with exponential backoff (5 attempts)
-- [ ] Dead letter queue for failures
-- [ ] User notification for failed syncs
+---
 
-### 3.3 Data Sync Implementation
-- [ ] **Read-Only Sync**: Fetch shared data (Universities, Global Courses) on startup
-- [ ] **Write Sync**: Push local actions (Enrollments, Attendance) to server
-- [ ] **Realtime Subscriptions**: Listen for Schedule changes (`schedule_modifications`)
+### 3.1 Supabase Project Setup
+- [ ] **Create Supabase Project**: Initialize at supabase.com
+- [ ] **Config File**: `lib/core/config/supabase_config.dart`
+  - `SUPABASE_URL` (from project settings)
+  - `SUPABASE_ANON_KEY` (public anon key)
+  - Production: Use `--dart-define` for secrets
+- [ ] **Initialize Client**: Add to `main.dart` before `runApp()`
+  ```dart
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+  ```
+- [ ] **Provider**: Create `supabaseClientProvider` in `data_providers.dart`
 
-### 3.3 Conflict Resolution
-- [ ] Timestamp comparison (Sync Engine)
-- [ ] Create `ActionItem(type=CONFLICT)` on conflict
+---
+
+### 3.2 Authentication Integration
+- [ ] **AuthService** (`lib/data/services/auth_service.dart`):
+  - `signInWithGoogle()` → Supabase OAuth
+  - `signOut()` → Clear session + local data
+  - `onAuthStateChange` → Stream for session updates
+  - Error mapping to `AuthException`
+- [ ] **Connect AuthPage**: Replace mock with `AuthService`
+- [ ] **Session Persistence**: Handle tokens via Supabase SDK
+- [ ] **Deep Linking**: Configure OAuth callback (Android: `AndroidManifest.xml`, iOS: `Info.plist`)
+
+---
+
+### 3.3 Remote Data Sources
+Create read-only sources in `lib/data/sources/remote/`:
+
+| Source | Tables | Sync Strategy |
+|--------|--------|---------------|
+| `UniversityRemoteSource` | `universities`, `hostels` | App launch |
+| `CourseRemoteSource` | `courses`, `global_schedules` | App launch |
+| `CalendarRemoteSource` | `academic_calendar` | Launch + daily refresh |
+| `WorkRemoteSource` | `course_work` | Launch + Realtime |
+| `MessRemoteSource` | `mess_menus` | On hostel change |
+| `SyllabusRemoteSource` | `syllabus_units`, `syllabus_topics` | On course enroll |
+
+**Base Pattern:**
+```dart
+abstract class SupabaseDataSource<T> {
+  Future<List<T>> fetchAll({DateTime? since});
+  Future<T?> fetchById(String id);
+  Stream<List<T>>? watch(); // For realtime tables
+}
+```
+
+- [ ] Implement `SupabaseDataSource` abstract base
+- [ ] Implement all 6 remote sources
+- [ ] Register providers in `data_providers.dart`
+
+---
+
+### 3.4 Offline Queue Processing
+- [ ] **SyncService** (`lib/data/services/sync_service.dart`):
+  - Process `OfflineQueue` table from Drift
+  - Retry with exponential backoff: 1s → 2s → 4s → 8s → 16s
+  - Max 5 attempts before `DEAD_LETTER` status
+  - Create `ActionItem(type=SYNC_FAILED)` for user notification
+- [ ] **Trigger Conditions**:
+  - On app foreground
+  - On network restored (via `connectivity_plus`)
+  - Periodic (every 5 minutes when online)
+- [ ] **Priority Queue**: Process `ATTENDANCE` writes before `SETTINGS`
+
+---
+
+### 3.5 Write Sync Implementation
+
+| Data Type | Local Target | Cloud Target | Sync Trigger |
+|-----------|--------------|--------------|--------------|
+| Attendance | `attendance.json` | `attendance_log` | Immediate |
+| Enrollments | `enrollments.json` | `user_enrollments` | On change |
+| Settings | `user.json` | `users.settings` | Debounced (5s) |
+| Events | `events.json` | Local-only | Google Drive |
+
+**Write Flow:**
+```
+User Action → Write Local → Enqueue → SyncService → Supabase
+                                    ↓
+                           Success: Remove from queue
+                           Failure: Retry with backoff
+```
+
+- [ ] Implement `QueueWriter` for each data type
+- [ ] Add `synced` flag to local JSON entries
+- [ ] Handle offline gracefully (queue continues to grow)
+
+---
+
+### 3.6 Realtime Subscriptions
+- [ ] **RealtimeService** (`lib/data/services/realtime_service.dart`)
+- [ ] **Schedule Changes**: Subscribe to `schedule_modifications`
+  - Filter: `course_code IN (enrolled) AND section = user_section`
+  - On INSERT: Create `ActionItem(type=SCHEDULE_CHANGE)`
+- [ ] **Course Work**: Subscribe to `course_work`
+  - On INSERT: Create `ActionItem(type=ASSIGNMENT_DUE)`
+- [ ] **Live Presence**: Subscribe to `presence_confirmations` for current slot
+  - Ephemeral stream, no persistence
+  - See FEATURES.md Section 10
+
+---
+
+### 3.7 Conflict Resolution
+- [ ] **Timestamp-based LWW**: Compare `updated_at` fields
+- [ ] **User Prompt**: Create `ActionItem(type=CONFLICT)` with both versions
+- [ ] **Resolution Actions**:
+  - `ACCEPT_SERVER` → Overwrite local
+  - `KEEP_LOCAL` → Force push (if authorized)
 - [ ] Resolution UI in Action Center
 
 #### Course Slot Conflicts (Design Decision: 2026-01-15)
 - **Behavior**: Allow enrollment even when time-slots conflict.
-- **Resolution**: Create `ActionItem(type=CONFLICT)` for user to resolve in Action Center.
-- **Persistence**: Conflict remains until slot is changed or user explicitly dismisses.
-- **No Blocking**: Enrollment/course creation is NOT blocked by conflicts.
+- **Resolution**: Create `ActionItem(type=CONFLICT)` for user to resolve.
+- **Persistence**: Conflict remains until slot changed or dismissed.
+- **No Blocking**: Enrollment is NOT blocked by conflicts.
 
-### 3.4 Live Presence Voting (Crowdsourcing)
-*See FEATURES.md Section 10, SCHEMA.md `verification_votes`, DATA_FLOW.md*
+---
 
-- [ ] **Model**: Create `VerificationVote` domain model
-- [ ] **Provider**: `liveVotesProvider(ruleId, date)` using Supabase Realtime streams
-- [ ] **Repository**: `VoteRepository.castVote(ruleId, date, status)` → upsert
-- [ ] **UI Widget**: `LiveVotingStrip` in `ScheduleCard` (only when `isLive && isAcademic`)
-- [ ] **Cleanup Job**: Supabase Edge Function to delete votes older than 24h
+### 3.8 Row Level Security (RLS)
+
+| Table | SELECT | INSERT | UPDATE | DELETE |
+|-------|--------|--------|--------|--------|
+| `users` | Own | Own | Own | Own |
+| `universities` | Active | Admin | Admin | Admin |
+| `courses` | By uni | Admin | Admin | Admin |
+| `global_schedules` | Enrolled | Admin | Admin | Admin |
+| `schedule_modifications` | Enrolled | CR (verified) | CR | Never |
+| `attendance_log` | Own | Own | Own | Never |
+| `course_work` | Enrolled | CR (Edge) | Never | Never |
+| `presence_confirmations` | All | Own | Never | Never |
+
+- [ ] Apply RLS policies via Supabase SQL Editor
+- [ ] Test with non-admin user before deployment
+
+---
+
+### 3.9 Edge Functions (Supabase)
+- [ ] **`verify-cr-signature`**: Validates Ed25519 on schedule patches
+- [ ] **`broadcast-notification`**: Sends FCM push to students
+- [ ] **`cleanup-votes`**: CRON to delete old `presence_confirmations`
+
+---
+
+### 3.10 Connection State Management
+- [ ] **ConnectivityService**: Watch network state
+- [ ] **UI Indicators**:
+  - "Offline" banner when disconnected
+  - "Syncing..." during queue processing
+  - Badge on Action Center for failed syncs
+- [ ] **Graceful Degradation**: All reads work offline from cache
+
+---
+
+### 3.11 Live Presence Voting (Crowdsourcing)
+*See FEATURES.md Section 10, SCHEMA.md `presence_confirmations`, DATA_FLOW.md*
+
+- [ ] **Model**: Create `PresenceConfirmation` domain model
+- [ ] **Provider**: `presenceCountProvider(ruleId, date)` using Realtime
+- [ ] **Repository**: `PresenceRepository.confirm(ruleId, date)` → INSERT
+- [ ] **UI Widget**: `LivePresenceStrip` in `ScheduleCard` (when `isLive && isAcademic`)
+- [ ] **Cleanup**: Edge Function deletes entries older than 24h
+
+---
+
+### 🛑 VERIFICATION GATE 3
+> 1. User can sign in with Google OAuth
+> 2. Universities and courses load from Supabase on launch
+> 3. Offline attendance syncs when back online
+> 4. Realtime schedule change creates ActionItem
+> 5. No data loss during network interruptions
 
 ---
 
@@ -378,3 +524,4 @@ lib/
 | 2026-01-14 | Updated to reflect actual implementation, marked Phase 0/1 complete |
 | 2026-01-14 | Enhanced plan with robustness focus, failure modes, verification gates |
 | 2026-01-15 | Added Live Presence Voting (Crowdsourcing) feature spec to Phase 3 |
+| 2026-01-15 | **Expanded Phase 3** with 11 detailed subsections for Supabase integration |

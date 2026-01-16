@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:adsum/data/providers/data_providers.dart';
+
+import 'package:adsum/core/utils/app_logger.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/data/sources/local/json_file_service.dart';
-import 'package:adsum/core/utils/app_logger.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Helper class to manage test infrastructure
 class TestHelper {

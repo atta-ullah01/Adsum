@@ -1,11 +1,10 @@
-import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class AttendanceBarChart extends StatelessWidget {
-  final List<bool> history; // true = present, false = absent
+class AttendanceBarChart extends StatelessWidget { // true = present, false = absent
 
-  const AttendanceBarChart({super.key, required this.history});
+  const AttendanceBarChart({required this.history, super.key});
+  final List<bool> history;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +53,7 @@ class AttendanceBarChart extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          "D-${history.length - 1 - index}", // D-4, D-3...
+          'D-${history.length - 1 - index}', // D-4, D-3...
           style: GoogleFonts.dmSans(fontSize: 10, color: Colors.grey),
         )
       ],

@@ -24,52 +24,17 @@ enum ModificationAction {
 /// Represents a modification to the standard schedule (Layer 2)
 /// Maps to `schedule_modifications` table in SCHEMA.md
 class ScheduleModification extends Equatable {
-  final String patchId;
-  final String? targetRuleId; // Null for extra class
-  final String courseCode;
-  final String? section;
-  final DateTime affectedDate;
-  final ModificationAction action;
-  final DateTime? newDate;
-  final String? newStartTime;
-  final String? newEndTime;
-  final String? newLocation;
-  final String? note;
-  final String crUserId;
-  final DateTime createdAt;
 
   const ScheduleModification({
     required this.patchId,
-    this.targetRuleId,
-    required this.courseCode,
+    required this.courseCode, required this.affectedDate, required this.action, required this.crUserId, required this.createdAt, this.targetRuleId,
     this.section,
-    required this.affectedDate,
-    required this.action,
     this.newDate,
     this.newStartTime,
     this.newEndTime,
     this.newLocation,
     this.note,
-    required this.crUserId,
-    required this.createdAt,
   });
-
-  @override
-  List<Object?> get props => [
-        patchId,
-        targetRuleId,
-        courseCode,
-        section,
-        affectedDate,
-        action,
-        newDate,
-        newStartTime,
-        newEndTime,
-        newLocation,
-        note,
-        crUserId,
-        createdAt,
-      ];
 
   factory ScheduleModification.fromJson(Map<String, dynamic> json) {
     return ScheduleModification(
@@ -88,6 +53,36 @@ class ScheduleModification extends Equatable {
       createdAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
     );
   }
+  final String patchId;
+  final String? targetRuleId; // Null for extra class
+  final String courseCode;
+  final String? section;
+  final DateTime affectedDate;
+  final ModificationAction action;
+  final DateTime? newDate;
+  final String? newStartTime;
+  final String? newEndTime;
+  final String? newLocation;
+  final String? note;
+  final String crUserId;
+  final DateTime createdAt;
+
+  @override
+  List<Object?> get props => [
+        patchId,
+        targetRuleId,
+        courseCode,
+        section,
+        affectedDate,
+        action,
+        newDate,
+        newStartTime,
+        newEndTime,
+        newLocation,
+        note,
+        crUserId,
+        createdAt,
+      ];
 
   Map<String, dynamic> toJson() {
     return {

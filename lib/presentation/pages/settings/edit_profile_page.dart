@@ -3,9 +3,9 @@ import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:go_router/go_router.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -43,7 +43,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     setState(() => _isSaving = true);
     try {
       final currentUser = ref.read(userProfileProvider).value;
-      if (currentUser == null) throw Exception("User not loaded");
+      if (currentUser == null) throw Exception('User not loaded');
 
       final updatedUser = currentUser.copyWith(
         fullName: _nameCtrl.text.trim(),
@@ -57,12 +57,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       // Update provider
       ref.invalidate(userProfileProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Updated!")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile Updated!')));
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating profile: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -75,7 +75,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final universitiesAsync = ref.watch(universitiesProvider);
     
     // Derived State for Display Names
-    String uniName = "Select University";
+    var uniName = 'Select University';
     if (universitiesAsync.hasValue && _selectedUniId != null) {
       try {
         final u = universitiesAsync.value!.firstWhere((u) => u.id == _selectedUniId);
@@ -85,7 +85,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       }
     }
 
-    String hostelName = "Select Hostel";
+    var hostelName = 'Select Hostel';
     // We only fetch hostels if a university is selected
     if (_selectedUniId != null) {
       final hostelsAsync = ref.watch(hostelsProvider(_selectedUniId!));
@@ -100,7 +100,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Edit Profile", style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.textMain, fontSize: 24)),
+        title: Text('Edit Profile', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.textMain, fontSize: 24)),
         centerTitle: false,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -128,17 +128,17 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     ),
                     child: _isSaving 
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
-                      : Text("Save", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 16)),
+                      : Text('Save', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
             ),
         ],
       ),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text("Error loading profile: $err")),
+        error: (err, stack) => Center(child: Text('Error loading profile: $err')),
         data: (user) {
           if (user == null) {
-            return Center(child: Text("Profile not found", style: GoogleFonts.dmSans(color: Colors.red)));
+            return Center(child: Text('Profile not found', style: GoogleFonts.dmSans(color: Colors.red)));
           }
 
           if (!_isInitialized) {
@@ -166,20 +166,20 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                      child: CircleAvatar(
                          radius: 64, 
                          backgroundColor: AppColors.primary, 
-                         child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : "A", style: GoogleFonts.outfit(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold))
+                         child: Text(_nameCtrl.text.isNotEmpty ? _nameCtrl.text[0] : 'A', style: GoogleFonts.outfit(fontSize: 48, color: Colors.white, fontWeight: FontWeight.bold))
                      ),
                    ),
                 ),
                 const SizedBox(height: 48),
                 
-                _buildField("Full Name", _nameCtrl, Ionicons.person),
+                _buildField('Full Name', _nameCtrl, Ionicons.person),
                 const SizedBox(height: 24),
                 
                 // University Selector
-                _buildSelector("University", uniName, Ionicons.school, () {
+                _buildSelector('University', uniName, Ionicons.school, () {
                     universitiesAsync.whenData((unis) {
                       _showPicker<University>(
-                        title: "Select University",
+                        title: 'Select University',
                         items: unis,
                         getName: (u) => u.name,
                         onSelected: (u) {
@@ -195,9 +195,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 const SizedBox(height: 24),
                 
                 // Hostel Selector (Dependent)
-                _buildSelector("Hostel / Residence", hostelName, Ionicons.home, () {
+                _buildSelector('Hostel / Residence', hostelName, Ionicons.home, () {
                     if (_selectedUniId == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a university first")));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a university first')));
                         return;
                     }
                     // Fetch hostels for selected uni
@@ -211,11 +211,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     hostelsState.when(
                       data: (hostels) {
                          if (hostels.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No hostels found for this university")));
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No hostels found for this university')));
                             return;
                          }
                          _showPicker<Hostel>(
-                            title: "Select Hostel",
+                            title: 'Select Hostel',
                             items: hostels,
                             getName: (h) => h.name,
                             onSelected: (h) {
@@ -225,13 +225,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             }
                          );
                       },
-                      loading: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Loading hostels..."))),
-                      error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"))),
+                      loading: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Loading hostels...'))),
+                      error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'))),
                     );
                 }),
 
                 const SizedBox(height: 24),
-                _buildField("Default Section", _sectionCtrl, Ionicons.people),
+                _buildField('Default Section', _sectionCtrl, Ionicons.people),
               ],
             ),
           );
@@ -260,7 +260,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                     padding: const EdgeInsets.only(left: 20, right: 12),
                     child: Icon(icon, color: Colors.grey.shade400, size: 22),
                 ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                prefixIconConstraints: const BoxConstraints(),
                 filled: false,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -318,7 +318,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       Text(title, style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
                       if (items.isEmpty)
-                         Padding(padding: const EdgeInsets.all(24), child: Text("No items found", style: GoogleFonts.dmSans(color: Colors.grey))),
+                         Padding(padding: const EdgeInsets.all(24), child: Text('No items found', style: GoogleFonts.dmSans(color: Colors.grey))),
                       Flexible(
                         child: ListView.builder(
                           shrinkWrap: true,

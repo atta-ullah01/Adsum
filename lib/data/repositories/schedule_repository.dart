@@ -5,12 +5,12 @@ import 'package:uuid/uuid.dart';
 /// Repository for schedule data 
 /// (`custom_schedules.json` and `schedule_bindings.json`)
 class ScheduleRepository {
+  
+  ScheduleRepository(this._jsonService);
   static const String _schedulesFile = 'custom_schedules.json';
   static const String _bindingsFile = 'schedule_bindings.json';
   
   final JsonFileService _jsonService;
-  
-  ScheduleRepository(this._jsonService);
   
   // ============ Custom Schedules ============
   

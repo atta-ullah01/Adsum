@@ -3,21 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PrimaryButton extends StatelessWidget {
+
+  const PrimaryButton({
+    required this.text, super.key,
+    this.onPressed,
+    this.icon,
+    this.isBlack = true,
+    this.backgroundColor,
+  });
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool isBlack;
 
   final Color? backgroundColor;
-
-  const PrimaryButton({
-    super.key,
-    required this.text,
-    this.onPressed,
-    this.icon,
-    this.isBlack = true,
-    this.backgroundColor,
-  });
 
   @override
   Widget build(BuildContext context) {

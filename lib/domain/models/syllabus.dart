@@ -3,10 +3,6 @@ import 'package:equatable/equatable.dart';
 /// Represents a syllabus unit with topics
 /// Maps to `syllabus_units` and `syllabus_topics` in SCHEMA.md
 class SyllabusUnit extends Equatable {
-  final String unitId;
-  final String title;
-  final int unitOrder;
-  final List<SyllabusTopic> topics;
 
   const SyllabusUnit({
     required this.unitId,
@@ -14,9 +10,6 @@ class SyllabusUnit extends Equatable {
     required this.unitOrder,
     this.topics = const [],
   });
-
-  @override
-  List<Object?> get props => [unitId, title, unitOrder, topics];
 
   factory SyllabusUnit.fromJson(Map<String, dynamic> json) {
     return SyllabusUnit(
@@ -29,6 +22,13 @@ class SyllabusUnit extends Equatable {
           [],
     );
   }
+  final String unitId;
+  final String title;
+  final int unitOrder;
+  final List<SyllabusTopic> topics;
+
+  @override
+  List<Object?> get props => [unitId, title, unitOrder, topics];
 
   Map<String, dynamic> toJson() {
     return {
@@ -63,16 +63,11 @@ class SyllabusUnit extends Equatable {
 
 /// Represents a single topic within a syllabus unit
 class SyllabusTopic extends Equatable {
-  final String topicId;
-  final String title;
 
   const SyllabusTopic({
     required this.topicId,
     required this.title,
   });
-
-  @override
-  List<Object?> get props => [topicId, title];
 
   factory SyllabusTopic.fromJson(Map<String, dynamic> json) {
     return SyllabusTopic(
@@ -80,6 +75,11 @@ class SyllabusTopic extends Equatable {
       title: json['name'] as String? ?? json['title'] as String,
     );
   }
+  final String topicId;
+  final String title;
+
+  @override
+  List<Object?> get props => [topicId, title];
 
   Map<String, dynamic> toJson() {
     return {
@@ -101,16 +101,11 @@ class SyllabusTopic extends Equatable {
 
 /// Wrapper for a course's custom syllabus
 class CustomSyllabus extends Equatable {
-  final String courseCode;
-  final List<SyllabusUnit> units;
 
   const CustomSyllabus({
     required this.courseCode,
     this.units = const [],
   });
-
-  @override
-  List<Object?> get props => [courseCode, units];
 
   factory CustomSyllabus.fromJson(Map<String, dynamic> json) {
     return CustomSyllabus(
@@ -121,6 +116,11 @@ class CustomSyllabus extends Equatable {
           [],
     );
   }
+  final String courseCode;
+  final List<SyllabusUnit> units;
+
+  @override
+  List<Object?> get props => [courseCode, units];
 
   Map<String, dynamic> toJson() {
     return {

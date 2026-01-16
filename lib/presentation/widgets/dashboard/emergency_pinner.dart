@@ -4,22 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 
 class EmergencyPinner extends StatelessWidget {
+
+  const EmergencyPinner({
+    required this.title, required this.subtitle, required this.time, super.key,
+    this.color = AppColors.danger,
+    this.label = 'URGENT',
+    this.icon = Ionicons.alert_circle,
+  });
   final String title;
   final String subtitle;
   final String time;
   final Color color;
   final String label;
   final IconData icon;
-
-  const EmergencyPinner({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.time,
-    this.color = AppColors.danger,
-    this.label = "URGENT",
-    this.icon = Ionicons.alert_circle,
-  });
 
   @override
   Widget build(BuildContext context) {

@@ -631,18 +631,16 @@ class UsersCompanion extends UpdateCompanion<User> {
   }
 }
 
-class $EnrollmentsTable extends Enrollments
-    with TableInfo<$EnrollmentsTable, Enrollment> {
+class $GlobalSchedulesTable extends GlobalSchedules
+    with TableInfo<$GlobalSchedulesTable, GlobalScheduleEntity> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EnrollmentsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _enrollmentIdMeta = const VerificationMeta(
-    'enrollmentId',
-  );
+  $GlobalSchedulesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _ruleIdMeta = const VerificationMeta('ruleId');
   @override
-  late final GeneratedColumn<String> enrollmentId = GeneratedColumn<String>(
-    'enrollment_id',
+  late final GeneratedColumn<String> ruleId = GeneratedColumn<String>(
+    'rule_id',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -655,20 +653,9 @@ class $EnrollmentsTable extends Enrollments
   late final GeneratedColumn<String> courseCode = GeneratedColumn<String>(
     'course_code',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _customCourseJsonMeta = const VerificationMeta(
-    'customCourseJson',
-  );
-  @override
-  late final GeneratedColumn<String> customCourseJson = GeneratedColumn<String>(
-    'custom_course_json',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _sectionMeta = const VerificationMeta(
     'section',
@@ -677,136 +664,140 @@ class $EnrollmentsTable extends Enrollments
   late final GeneratedColumn<String> section = GeneratedColumn<String>(
     'section',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('A'),
   );
-  static const VerificationMeta _targetAttendanceMeta = const VerificationMeta(
-    'targetAttendance',
+  static const VerificationMeta _dayOfWeekMeta = const VerificationMeta(
+    'dayOfWeek',
   );
   @override
-  late final GeneratedColumn<double> targetAttendance = GeneratedColumn<double>(
-    'target_attendance',
+  late final GeneratedColumn<String> dayOfWeek = GeneratedColumn<String>(
+    'day_of_week',
     aliasedName,
     false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startTimeMeta = const VerificationMeta(
+    'startTime',
+  );
+  @override
+  late final GeneratedColumn<String> startTime = GeneratedColumn<String>(
+    'start_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endTimeMeta = const VerificationMeta(
+    'endTime',
+  );
+  @override
+  late final GeneratedColumn<String> endTime = GeneratedColumn<String>(
+    'end_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationNameMeta = const VerificationMeta(
+    'locationName',
+  );
+  @override
+  late final GeneratedColumn<String> locationName = GeneratedColumn<String>(
+    'location_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationLatMeta = const VerificationMeta(
+    'locationLat',
+  );
+  @override
+  late final GeneratedColumn<double> locationLat = GeneratedColumn<double>(
+    'location_lat',
+    aliasedName,
+    true,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(75.0),
   );
-  static const VerificationMeta _colorThemeMeta = const VerificationMeta(
-    'colorTheme',
+  static const VerificationMeta _locationLongMeta = const VerificationMeta(
+    'locationLong',
   );
   @override
-  late final GeneratedColumn<String> colorTheme = GeneratedColumn<String>(
-    'color_theme',
+  late final GeneratedColumn<double> locationLong = GeneratedColumn<double>(
+    'location_long',
     aliasedName,
-    false,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _wifiSsidMeta = const VerificationMeta(
+    'wifiSsid',
+  );
+  @override
+  late final GeneratedColumn<String> wifiSsid = GeneratedColumn<String>(
+    'wifi_ssid',
+    aliasedName,
+    true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('#6366F1'),
   );
-  static const VerificationMeta _statsJsonMeta = const VerificationMeta(
-    'statsJson',
-  );
-  @override
-  late final GeneratedColumn<String> statsJson = GeneratedColumn<String>(
-    'stats_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(
-      '{"total_classes":0,"attended":0,"safe_bunks":0}',
-    ),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
   );
   @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _syncedMeta = const VerificationMeta('synced');
-  @override
-  late final GeneratedColumn<bool> synced = GeneratedColumn<bool>(
-    'synced',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("synced" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
   );
   @override
   List<GeneratedColumn> get $columns => [
-    enrollmentId,
+    ruleId,
     courseCode,
-    customCourseJson,
     section,
-    targetAttendance,
-    colorTheme,
-    statsJson,
-    createdAt,
-    updatedAt,
-    synced,
+    dayOfWeek,
+    startTime,
+    endTime,
+    locationName,
+    locationLat,
+    locationLong,
+    wifiSsid,
+    lastSyncedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'enrollments';
+  static const String $name = 'global_schedules';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Enrollment> instance, {
+    Insertable<GlobalScheduleEntity> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('enrollment_id')) {
+    if (data.containsKey('rule_id')) {
       context.handle(
-        _enrollmentIdMeta,
-        enrollmentId.isAcceptableOrUnknown(
-          data['enrollment_id']!,
-          _enrollmentIdMeta,
-        ),
+        _ruleIdMeta,
+        ruleId.isAcceptableOrUnknown(data['rule_id']!, _ruleIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_enrollmentIdMeta);
+      context.missing(_ruleIdMeta);
     }
     if (data.containsKey('course_code')) {
       context.handle(
         _courseCodeMeta,
         courseCode.isAcceptableOrUnknown(data['course_code']!, _courseCodeMeta),
       );
-    }
-    if (data.containsKey('custom_course_json')) {
-      context.handle(
-        _customCourseJsonMeta,
-        customCourseJson.isAcceptableOrUnknown(
-          data['custom_course_json']!,
-          _customCourseJsonMeta,
-        ),
-      );
+    } else if (isInserting) {
+      context.missing(_courseCodeMeta);
     }
     if (data.containsKey('section')) {
       context.handle(
@@ -814,386 +805,450 @@ class $EnrollmentsTable extends Enrollments
         section.isAcceptableOrUnknown(data['section']!, _sectionMeta),
       );
     }
-    if (data.containsKey('target_attendance')) {
+    if (data.containsKey('day_of_week')) {
       context.handle(
-        _targetAttendanceMeta,
-        targetAttendance.isAcceptableOrUnknown(
-          data['target_attendance']!,
-          _targetAttendanceMeta,
+        _dayOfWeekMeta,
+        dayOfWeek.isAcceptableOrUnknown(data['day_of_week']!, _dayOfWeekMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayOfWeekMeta);
+    }
+    if (data.containsKey('start_time')) {
+      context.handle(
+        _startTimeMeta,
+        startTime.isAcceptableOrUnknown(data['start_time']!, _startTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startTimeMeta);
+    }
+    if (data.containsKey('end_time')) {
+      context.handle(
+        _endTimeMeta,
+        endTime.isAcceptableOrUnknown(data['end_time']!, _endTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endTimeMeta);
+    }
+    if (data.containsKey('location_name')) {
+      context.handle(
+        _locationNameMeta,
+        locationName.isAcceptableOrUnknown(
+          data['location_name']!,
+          _locationNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_locationNameMeta);
+    }
+    if (data.containsKey('location_lat')) {
+      context.handle(
+        _locationLatMeta,
+        locationLat.isAcceptableOrUnknown(
+          data['location_lat']!,
+          _locationLatMeta,
         ),
       );
     }
-    if (data.containsKey('color_theme')) {
+    if (data.containsKey('location_long')) {
       context.handle(
-        _colorThemeMeta,
-        colorTheme.isAcceptableOrUnknown(data['color_theme']!, _colorThemeMeta),
+        _locationLongMeta,
+        locationLong.isAcceptableOrUnknown(
+          data['location_long']!,
+          _locationLongMeta,
+        ),
       );
     }
-    if (data.containsKey('stats_json')) {
+    if (data.containsKey('wifi_ssid')) {
       context.handle(
-        _statsJsonMeta,
-        statsJson.isAcceptableOrUnknown(data['stats_json']!, _statsJsonMeta),
+        _wifiSsidMeta,
+        wifiSsid.isAcceptableOrUnknown(data['wifi_ssid']!, _wifiSsidMeta),
       );
     }
-    if (data.containsKey('created_at')) {
+    if (data.containsKey('last_synced_at')) {
       context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('synced')) {
-      context.handle(
-        _syncedMeta,
-        synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta),
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
       );
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {enrollmentId};
+  Set<GeneratedColumn> get $primaryKey => {ruleId};
   @override
-  Enrollment map(Map<String, dynamic> data, {String? tablePrefix}) {
+  GlobalScheduleEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Enrollment(
-      enrollmentId: attachedDatabase.typeMapping.read(
+    return GlobalScheduleEntity(
+      ruleId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}enrollment_id'],
+        data['${effectivePrefix}rule_id'],
       )!,
       courseCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}course_code'],
-      ),
-      customCourseJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}custom_course_json'],
-      ),
+      )!,
       section: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}section'],
+      ),
+      dayOfWeek: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day_of_week'],
       )!,
-      targetAttendance: attachedDatabase.typeMapping.read(
+      startTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}start_time'],
+      )!,
+      endTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}end_time'],
+      )!,
+      locationName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_name'],
+      )!,
+      locationLat: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
-        data['${effectivePrefix}target_attendance'],
-      )!,
-      colorTheme: attachedDatabase.typeMapping.read(
+        data['${effectivePrefix}location_lat'],
+      ),
+      locationLong: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}location_long'],
+      ),
+      wifiSsid: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}color_theme'],
-      )!,
-      statsJson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}stats_json'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
+        data['${effectivePrefix}wifi_ssid'],
+      ),
+      lastSyncedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      synced: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}synced'],
+        data['${effectivePrefix}last_synced_at'],
       )!,
     );
   }
 
   @override
-  $EnrollmentsTable createAlias(String alias) {
-    return $EnrollmentsTable(attachedDatabase, alias);
+  $GlobalSchedulesTable createAlias(String alias) {
+    return $GlobalSchedulesTable(attachedDatabase, alias);
   }
 }
 
-class Enrollment extends DataClass implements Insertable<Enrollment> {
-  final String enrollmentId;
-  final String? courseCode;
-  final String? customCourseJson;
-  final String section;
-  final double targetAttendance;
-  final String colorTheme;
-  final String statsJson;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final bool synced;
-  const Enrollment({
-    required this.enrollmentId,
-    this.courseCode,
-    this.customCourseJson,
-    required this.section,
-    required this.targetAttendance,
-    required this.colorTheme,
-    required this.statsJson,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.synced,
+class GlobalScheduleEntity extends DataClass
+    implements Insertable<GlobalScheduleEntity> {
+  final String ruleId;
+  final String courseCode;
+  final String? section;
+  final String dayOfWeek;
+  final String startTime;
+  final String endTime;
+  final String locationName;
+  final double? locationLat;
+  final double? locationLong;
+  final String? wifiSsid;
+  final DateTime lastSyncedAt;
+  const GlobalScheduleEntity({
+    required this.ruleId,
+    required this.courseCode,
+    this.section,
+    required this.dayOfWeek,
+    required this.startTime,
+    required this.endTime,
+    required this.locationName,
+    this.locationLat,
+    this.locationLong,
+    this.wifiSsid,
+    required this.lastSyncedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['enrollment_id'] = Variable<String>(enrollmentId);
-    if (!nullToAbsent || courseCode != null) {
-      map['course_code'] = Variable<String>(courseCode);
+    map['rule_id'] = Variable<String>(ruleId);
+    map['course_code'] = Variable<String>(courseCode);
+    if (!nullToAbsent || section != null) {
+      map['section'] = Variable<String>(section);
     }
-    if (!nullToAbsent || customCourseJson != null) {
-      map['custom_course_json'] = Variable<String>(customCourseJson);
+    map['day_of_week'] = Variable<String>(dayOfWeek);
+    map['start_time'] = Variable<String>(startTime);
+    map['end_time'] = Variable<String>(endTime);
+    map['location_name'] = Variable<String>(locationName);
+    if (!nullToAbsent || locationLat != null) {
+      map['location_lat'] = Variable<double>(locationLat);
     }
-    map['section'] = Variable<String>(section);
-    map['target_attendance'] = Variable<double>(targetAttendance);
-    map['color_theme'] = Variable<String>(colorTheme);
-    map['stats_json'] = Variable<String>(statsJson);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['synced'] = Variable<bool>(synced);
+    if (!nullToAbsent || locationLong != null) {
+      map['location_long'] = Variable<double>(locationLong);
+    }
+    if (!nullToAbsent || wifiSsid != null) {
+      map['wifi_ssid'] = Variable<String>(wifiSsid);
+    }
+    map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
     return map;
   }
 
-  EnrollmentsCompanion toCompanion(bool nullToAbsent) {
-    return EnrollmentsCompanion(
-      enrollmentId: Value(enrollmentId),
-      courseCode: courseCode == null && nullToAbsent
+  GlobalSchedulesCompanion toCompanion(bool nullToAbsent) {
+    return GlobalSchedulesCompanion(
+      ruleId: Value(ruleId),
+      courseCode: Value(courseCode),
+      section: section == null && nullToAbsent
           ? const Value.absent()
-          : Value(courseCode),
-      customCourseJson: customCourseJson == null && nullToAbsent
+          : Value(section),
+      dayOfWeek: Value(dayOfWeek),
+      startTime: Value(startTime),
+      endTime: Value(endTime),
+      locationName: Value(locationName),
+      locationLat: locationLat == null && nullToAbsent
           ? const Value.absent()
-          : Value(customCourseJson),
-      section: Value(section),
-      targetAttendance: Value(targetAttendance),
-      colorTheme: Value(colorTheme),
-      statsJson: Value(statsJson),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      synced: Value(synced),
+          : Value(locationLat),
+      locationLong: locationLong == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationLong),
+      wifiSsid: wifiSsid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(wifiSsid),
+      lastSyncedAt: Value(lastSyncedAt),
     );
   }
 
-  factory Enrollment.fromJson(
+  factory GlobalScheduleEntity.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Enrollment(
-      enrollmentId: serializer.fromJson<String>(json['enrollmentId']),
-      courseCode: serializer.fromJson<String?>(json['courseCode']),
-      customCourseJson: serializer.fromJson<String?>(json['customCourseJson']),
-      section: serializer.fromJson<String>(json['section']),
-      targetAttendance: serializer.fromJson<double>(json['targetAttendance']),
-      colorTheme: serializer.fromJson<String>(json['colorTheme']),
-      statsJson: serializer.fromJson<String>(json['statsJson']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      synced: serializer.fromJson<bool>(json['synced']),
+    return GlobalScheduleEntity(
+      ruleId: serializer.fromJson<String>(json['ruleId']),
+      courseCode: serializer.fromJson<String>(json['courseCode']),
+      section: serializer.fromJson<String?>(json['section']),
+      dayOfWeek: serializer.fromJson<String>(json['dayOfWeek']),
+      startTime: serializer.fromJson<String>(json['startTime']),
+      endTime: serializer.fromJson<String>(json['endTime']),
+      locationName: serializer.fromJson<String>(json['locationName']),
+      locationLat: serializer.fromJson<double?>(json['locationLat']),
+      locationLong: serializer.fromJson<double?>(json['locationLong']),
+      wifiSsid: serializer.fromJson<String?>(json['wifiSsid']),
+      lastSyncedAt: serializer.fromJson<DateTime>(json['lastSyncedAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'enrollmentId': serializer.toJson<String>(enrollmentId),
-      'courseCode': serializer.toJson<String?>(courseCode),
-      'customCourseJson': serializer.toJson<String?>(customCourseJson),
-      'section': serializer.toJson<String>(section),
-      'targetAttendance': serializer.toJson<double>(targetAttendance),
-      'colorTheme': serializer.toJson<String>(colorTheme),
-      'statsJson': serializer.toJson<String>(statsJson),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'synced': serializer.toJson<bool>(synced),
+      'ruleId': serializer.toJson<String>(ruleId),
+      'courseCode': serializer.toJson<String>(courseCode),
+      'section': serializer.toJson<String?>(section),
+      'dayOfWeek': serializer.toJson<String>(dayOfWeek),
+      'startTime': serializer.toJson<String>(startTime),
+      'endTime': serializer.toJson<String>(endTime),
+      'locationName': serializer.toJson<String>(locationName),
+      'locationLat': serializer.toJson<double?>(locationLat),
+      'locationLong': serializer.toJson<double?>(locationLong),
+      'wifiSsid': serializer.toJson<String?>(wifiSsid),
+      'lastSyncedAt': serializer.toJson<DateTime>(lastSyncedAt),
     };
   }
 
-  Enrollment copyWith({
-    String? enrollmentId,
-    Value<String?> courseCode = const Value.absent(),
-    Value<String?> customCourseJson = const Value.absent(),
-    String? section,
-    double? targetAttendance,
-    String? colorTheme,
-    String? statsJson,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? synced,
-  }) => Enrollment(
-    enrollmentId: enrollmentId ?? this.enrollmentId,
-    courseCode: courseCode.present ? courseCode.value : this.courseCode,
-    customCourseJson: customCourseJson.present
-        ? customCourseJson.value
-        : this.customCourseJson,
-    section: section ?? this.section,
-    targetAttendance: targetAttendance ?? this.targetAttendance,
-    colorTheme: colorTheme ?? this.colorTheme,
-    statsJson: statsJson ?? this.statsJson,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    synced: synced ?? this.synced,
+  GlobalScheduleEntity copyWith({
+    String? ruleId,
+    String? courseCode,
+    Value<String?> section = const Value.absent(),
+    String? dayOfWeek,
+    String? startTime,
+    String? endTime,
+    String? locationName,
+    Value<double?> locationLat = const Value.absent(),
+    Value<double?> locationLong = const Value.absent(),
+    Value<String?> wifiSsid = const Value.absent(),
+    DateTime? lastSyncedAt,
+  }) => GlobalScheduleEntity(
+    ruleId: ruleId ?? this.ruleId,
+    courseCode: courseCode ?? this.courseCode,
+    section: section.present ? section.value : this.section,
+    dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+    locationName: locationName ?? this.locationName,
+    locationLat: locationLat.present ? locationLat.value : this.locationLat,
+    locationLong: locationLong.present ? locationLong.value : this.locationLong,
+    wifiSsid: wifiSsid.present ? wifiSsid.value : this.wifiSsid,
+    lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
   );
-  Enrollment copyWithCompanion(EnrollmentsCompanion data) {
-    return Enrollment(
-      enrollmentId: data.enrollmentId.present
-          ? data.enrollmentId.value
-          : this.enrollmentId,
+  GlobalScheduleEntity copyWithCompanion(GlobalSchedulesCompanion data) {
+    return GlobalScheduleEntity(
+      ruleId: data.ruleId.present ? data.ruleId.value : this.ruleId,
       courseCode: data.courseCode.present
           ? data.courseCode.value
           : this.courseCode,
-      customCourseJson: data.customCourseJson.present
-          ? data.customCourseJson.value
-          : this.customCourseJson,
       section: data.section.present ? data.section.value : this.section,
-      targetAttendance: data.targetAttendance.present
-          ? data.targetAttendance.value
-          : this.targetAttendance,
-      colorTheme: data.colorTheme.present
-          ? data.colorTheme.value
-          : this.colorTheme,
-      statsJson: data.statsJson.present ? data.statsJson.value : this.statsJson,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      synced: data.synced.present ? data.synced.value : this.synced,
+      dayOfWeek: data.dayOfWeek.present ? data.dayOfWeek.value : this.dayOfWeek,
+      startTime: data.startTime.present ? data.startTime.value : this.startTime,
+      endTime: data.endTime.present ? data.endTime.value : this.endTime,
+      locationName: data.locationName.present
+          ? data.locationName.value
+          : this.locationName,
+      locationLat: data.locationLat.present
+          ? data.locationLat.value
+          : this.locationLat,
+      locationLong: data.locationLong.present
+          ? data.locationLong.value
+          : this.locationLong,
+      wifiSsid: data.wifiSsid.present ? data.wifiSsid.value : this.wifiSsid,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Enrollment(')
-          ..write('enrollmentId: $enrollmentId, ')
+    return (StringBuffer('GlobalScheduleEntity(')
+          ..write('ruleId: $ruleId, ')
           ..write('courseCode: $courseCode, ')
-          ..write('customCourseJson: $customCourseJson, ')
           ..write('section: $section, ')
-          ..write('targetAttendance: $targetAttendance, ')
-          ..write('colorTheme: $colorTheme, ')
-          ..write('statsJson: $statsJson, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('synced: $synced')
+          ..write('dayOfWeek: $dayOfWeek, ')
+          ..write('startTime: $startTime, ')
+          ..write('endTime: $endTime, ')
+          ..write('locationName: $locationName, ')
+          ..write('locationLat: $locationLat, ')
+          ..write('locationLong: $locationLong, ')
+          ..write('wifiSsid: $wifiSsid, ')
+          ..write('lastSyncedAt: $lastSyncedAt')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(
-    enrollmentId,
+    ruleId,
     courseCode,
-    customCourseJson,
     section,
-    targetAttendance,
-    colorTheme,
-    statsJson,
-    createdAt,
-    updatedAt,
-    synced,
+    dayOfWeek,
+    startTime,
+    endTime,
+    locationName,
+    locationLat,
+    locationLong,
+    wifiSsid,
+    lastSyncedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Enrollment &&
-          other.enrollmentId == this.enrollmentId &&
+      (other is GlobalScheduleEntity &&
+          other.ruleId == this.ruleId &&
           other.courseCode == this.courseCode &&
-          other.customCourseJson == this.customCourseJson &&
           other.section == this.section &&
-          other.targetAttendance == this.targetAttendance &&
-          other.colorTheme == this.colorTheme &&
-          other.statsJson == this.statsJson &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.synced == this.synced);
+          other.dayOfWeek == this.dayOfWeek &&
+          other.startTime == this.startTime &&
+          other.endTime == this.endTime &&
+          other.locationName == this.locationName &&
+          other.locationLat == this.locationLat &&
+          other.locationLong == this.locationLong &&
+          other.wifiSsid == this.wifiSsid &&
+          other.lastSyncedAt == this.lastSyncedAt);
 }
 
-class EnrollmentsCompanion extends UpdateCompanion<Enrollment> {
-  final Value<String> enrollmentId;
-  final Value<String?> courseCode;
-  final Value<String?> customCourseJson;
-  final Value<String> section;
-  final Value<double> targetAttendance;
-  final Value<String> colorTheme;
-  final Value<String> statsJson;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<bool> synced;
+class GlobalSchedulesCompanion extends UpdateCompanion<GlobalScheduleEntity> {
+  final Value<String> ruleId;
+  final Value<String> courseCode;
+  final Value<String?> section;
+  final Value<String> dayOfWeek;
+  final Value<String> startTime;
+  final Value<String> endTime;
+  final Value<String> locationName;
+  final Value<double?> locationLat;
+  final Value<double?> locationLong;
+  final Value<String?> wifiSsid;
+  final Value<DateTime> lastSyncedAt;
   final Value<int> rowid;
-  const EnrollmentsCompanion({
-    this.enrollmentId = const Value.absent(),
+  const GlobalSchedulesCompanion({
+    this.ruleId = const Value.absent(),
     this.courseCode = const Value.absent(),
-    this.customCourseJson = const Value.absent(),
     this.section = const Value.absent(),
-    this.targetAttendance = const Value.absent(),
-    this.colorTheme = const Value.absent(),
-    this.statsJson = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.synced = const Value.absent(),
+    this.dayOfWeek = const Value.absent(),
+    this.startTime = const Value.absent(),
+    this.endTime = const Value.absent(),
+    this.locationName = const Value.absent(),
+    this.locationLat = const Value.absent(),
+    this.locationLong = const Value.absent(),
+    this.wifiSsid = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  EnrollmentsCompanion.insert({
-    required String enrollmentId,
-    this.courseCode = const Value.absent(),
-    this.customCourseJson = const Value.absent(),
+  GlobalSchedulesCompanion.insert({
+    required String ruleId,
+    required String courseCode,
     this.section = const Value.absent(),
-    this.targetAttendance = const Value.absent(),
-    this.colorTheme = const Value.absent(),
-    this.statsJson = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.synced = const Value.absent(),
+    required String dayOfWeek,
+    required String startTime,
+    required String endTime,
+    required String locationName,
+    this.locationLat = const Value.absent(),
+    this.locationLong = const Value.absent(),
+    this.wifiSsid = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : enrollmentId = Value(enrollmentId);
-  static Insertable<Enrollment> custom({
-    Expression<String>? enrollmentId,
+  }) : ruleId = Value(ruleId),
+       courseCode = Value(courseCode),
+       dayOfWeek = Value(dayOfWeek),
+       startTime = Value(startTime),
+       endTime = Value(endTime),
+       locationName = Value(locationName);
+  static Insertable<GlobalScheduleEntity> custom({
+    Expression<String>? ruleId,
     Expression<String>? courseCode,
-    Expression<String>? customCourseJson,
     Expression<String>? section,
-    Expression<double>? targetAttendance,
-    Expression<String>? colorTheme,
-    Expression<String>? statsJson,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<bool>? synced,
+    Expression<String>? dayOfWeek,
+    Expression<String>? startTime,
+    Expression<String>? endTime,
+    Expression<String>? locationName,
+    Expression<double>? locationLat,
+    Expression<double>? locationLong,
+    Expression<String>? wifiSsid,
+    Expression<DateTime>? lastSyncedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (enrollmentId != null) 'enrollment_id': enrollmentId,
+      if (ruleId != null) 'rule_id': ruleId,
       if (courseCode != null) 'course_code': courseCode,
-      if (customCourseJson != null) 'custom_course_json': customCourseJson,
       if (section != null) 'section': section,
-      if (targetAttendance != null) 'target_attendance': targetAttendance,
-      if (colorTheme != null) 'color_theme': colorTheme,
-      if (statsJson != null) 'stats_json': statsJson,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (synced != null) 'synced': synced,
+      if (dayOfWeek != null) 'day_of_week': dayOfWeek,
+      if (startTime != null) 'start_time': startTime,
+      if (endTime != null) 'end_time': endTime,
+      if (locationName != null) 'location_name': locationName,
+      if (locationLat != null) 'location_lat': locationLat,
+      if (locationLong != null) 'location_long': locationLong,
+      if (wifiSsid != null) 'wifi_ssid': wifiSsid,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  EnrollmentsCompanion copyWith({
-    Value<String>? enrollmentId,
-    Value<String?>? courseCode,
-    Value<String?>? customCourseJson,
-    Value<String>? section,
-    Value<double>? targetAttendance,
-    Value<String>? colorTheme,
-    Value<String>? statsJson,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<bool>? synced,
+  GlobalSchedulesCompanion copyWith({
+    Value<String>? ruleId,
+    Value<String>? courseCode,
+    Value<String?>? section,
+    Value<String>? dayOfWeek,
+    Value<String>? startTime,
+    Value<String>? endTime,
+    Value<String>? locationName,
+    Value<double?>? locationLat,
+    Value<double?>? locationLong,
+    Value<String?>? wifiSsid,
+    Value<DateTime>? lastSyncedAt,
     Value<int>? rowid,
   }) {
-    return EnrollmentsCompanion(
-      enrollmentId: enrollmentId ?? this.enrollmentId,
+    return GlobalSchedulesCompanion(
+      ruleId: ruleId ?? this.ruleId,
       courseCode: courseCode ?? this.courseCode,
-      customCourseJson: customCourseJson ?? this.customCourseJson,
       section: section ?? this.section,
-      targetAttendance: targetAttendance ?? this.targetAttendance,
-      colorTheme: colorTheme ?? this.colorTheme,
-      statsJson: statsJson ?? this.statsJson,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      synced: synced ?? this.synced,
+      dayOfWeek: dayOfWeek ?? this.dayOfWeek,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      locationName: locationName ?? this.locationName,
+      locationLat: locationLat ?? this.locationLat,
+      locationLong: locationLong ?? this.locationLong,
+      wifiSsid: wifiSsid ?? this.wifiSsid,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1201,35 +1256,38 @@ class EnrollmentsCompanion extends UpdateCompanion<Enrollment> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (enrollmentId.present) {
-      map['enrollment_id'] = Variable<String>(enrollmentId.value);
+    if (ruleId.present) {
+      map['rule_id'] = Variable<String>(ruleId.value);
     }
     if (courseCode.present) {
       map['course_code'] = Variable<String>(courseCode.value);
     }
-    if (customCourseJson.present) {
-      map['custom_course_json'] = Variable<String>(customCourseJson.value);
-    }
     if (section.present) {
       map['section'] = Variable<String>(section.value);
     }
-    if (targetAttendance.present) {
-      map['target_attendance'] = Variable<double>(targetAttendance.value);
+    if (dayOfWeek.present) {
+      map['day_of_week'] = Variable<String>(dayOfWeek.value);
     }
-    if (colorTheme.present) {
-      map['color_theme'] = Variable<String>(colorTheme.value);
+    if (startTime.present) {
+      map['start_time'] = Variable<String>(startTime.value);
     }
-    if (statsJson.present) {
-      map['stats_json'] = Variable<String>(statsJson.value);
+    if (endTime.present) {
+      map['end_time'] = Variable<String>(endTime.value);
     }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+    if (locationName.present) {
+      map['location_name'] = Variable<String>(locationName.value);
     }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    if (locationLat.present) {
+      map['location_lat'] = Variable<double>(locationLat.value);
     }
-    if (synced.present) {
-      map['synced'] = Variable<bool>(synced.value);
+    if (locationLong.present) {
+      map['location_long'] = Variable<double>(locationLong.value);
+    }
+    if (wifiSsid.present) {
+      map['wifi_ssid'] = Variable<String>(wifiSsid.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1239,17 +1297,18 @@ class EnrollmentsCompanion extends UpdateCompanion<Enrollment> {
 
   @override
   String toString() {
-    return (StringBuffer('EnrollmentsCompanion(')
-          ..write('enrollmentId: $enrollmentId, ')
+    return (StringBuffer('GlobalSchedulesCompanion(')
+          ..write('ruleId: $ruleId, ')
           ..write('courseCode: $courseCode, ')
-          ..write('customCourseJson: $customCourseJson, ')
           ..write('section: $section, ')
-          ..write('targetAttendance: $targetAttendance, ')
-          ..write('colorTheme: $colorTheme, ')
-          ..write('statsJson: $statsJson, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('synced: $synced, ')
+          ..write('dayOfWeek: $dayOfWeek, ')
+          ..write('startTime: $startTime, ')
+          ..write('endTime: $endTime, ')
+          ..write('locationName: $locationName, ')
+          ..write('locationLat: $locationLat, ')
+          ..write('locationLong: $locationLong, ')
+          ..write('wifiSsid: $wifiSsid, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2188,7 +2247,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
-  late final $EnrollmentsTable enrollments = $EnrollmentsTable(this);
+  late final $GlobalSchedulesTable globalSchedules = $GlobalSchedulesTable(
+    this,
+  );
   late final $OfflineQueueTable offlineQueue = $OfflineQueueTable(this);
   late final $SyncMetadataTable syncMetadata = $SyncMetadataTable(this);
   @override
@@ -2197,7 +2258,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     users,
-    enrollments,
+    globalSchedules,
     offlineQueue,
     syncMetadata,
   ];
@@ -2501,46 +2562,48 @@ typedef $$UsersTableProcessedTableManager =
       User,
       PrefetchHooks Function()
     >;
-typedef $$EnrollmentsTableCreateCompanionBuilder =
-    EnrollmentsCompanion Function({
-      required String enrollmentId,
-      Value<String?> courseCode,
-      Value<String?> customCourseJson,
-      Value<String> section,
-      Value<double> targetAttendance,
-      Value<String> colorTheme,
-      Value<String> statsJson,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> synced,
+typedef $$GlobalSchedulesTableCreateCompanionBuilder =
+    GlobalSchedulesCompanion Function({
+      required String ruleId,
+      required String courseCode,
+      Value<String?> section,
+      required String dayOfWeek,
+      required String startTime,
+      required String endTime,
+      required String locationName,
+      Value<double?> locationLat,
+      Value<double?> locationLong,
+      Value<String?> wifiSsid,
+      Value<DateTime> lastSyncedAt,
       Value<int> rowid,
     });
-typedef $$EnrollmentsTableUpdateCompanionBuilder =
-    EnrollmentsCompanion Function({
-      Value<String> enrollmentId,
-      Value<String?> courseCode,
-      Value<String?> customCourseJson,
-      Value<String> section,
-      Value<double> targetAttendance,
-      Value<String> colorTheme,
-      Value<String> statsJson,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<bool> synced,
+typedef $$GlobalSchedulesTableUpdateCompanionBuilder =
+    GlobalSchedulesCompanion Function({
+      Value<String> ruleId,
+      Value<String> courseCode,
+      Value<String?> section,
+      Value<String> dayOfWeek,
+      Value<String> startTime,
+      Value<String> endTime,
+      Value<String> locationName,
+      Value<double?> locationLat,
+      Value<double?> locationLong,
+      Value<String?> wifiSsid,
+      Value<DateTime> lastSyncedAt,
       Value<int> rowid,
     });
 
-class $$EnrollmentsTableFilterComposer
-    extends Composer<_$AppDatabase, $EnrollmentsTable> {
-  $$EnrollmentsTableFilterComposer({
+class $$GlobalSchedulesTableFilterComposer
+    extends Composer<_$AppDatabase, $GlobalSchedulesTable> {
+  $$GlobalSchedulesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get enrollmentId => $composableBuilder(
-    column: $table.enrollmentId,
+  ColumnFilters<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2549,58 +2612,63 @@ class $$EnrollmentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get customCourseJson => $composableBuilder(
-    column: $table.customCourseJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get section => $composableBuilder(
     column: $table.section,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get targetAttendance => $composableBuilder(
-    column: $table.targetAttendance,
+  ColumnFilters<String> get dayOfWeek => $composableBuilder(
+    column: $table.dayOfWeek,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get colorTheme => $composableBuilder(
-    column: $table.colorTheme,
+  ColumnFilters<String> get startTime => $composableBuilder(
+    column: $table.startTime,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get statsJson => $composableBuilder(
-    column: $table.statsJson,
+  ColumnFilters<String> get endTime => $composableBuilder(
+    column: $table.endTime,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
+  ColumnFilters<String> get locationName => $composableBuilder(
+    column: $table.locationName,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  ColumnFilters<double> get locationLat => $composableBuilder(
+    column: $table.locationLat,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get synced => $composableBuilder(
-    column: $table.synced,
+  ColumnFilters<double> get locationLong => $composableBuilder(
+    column: $table.locationLong,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get wifiSsid => $composableBuilder(
+    column: $table.wifiSsid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
 
-class $$EnrollmentsTableOrderingComposer
-    extends Composer<_$AppDatabase, $EnrollmentsTable> {
-  $$EnrollmentsTableOrderingComposer({
+class $$GlobalSchedulesTableOrderingComposer
+    extends Composer<_$AppDatabase, $GlobalSchedulesTable> {
+  $$GlobalSchedulesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get enrollmentId => $composableBuilder(
-    column: $table.enrollmentId,
+  ColumnOrderings<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -2609,176 +2677,194 @@ class $$EnrollmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get customCourseJson => $composableBuilder(
-    column: $table.customCourseJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get section => $composableBuilder(
     column: $table.section,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get targetAttendance => $composableBuilder(
-    column: $table.targetAttendance,
+  ColumnOrderings<String> get dayOfWeek => $composableBuilder(
+    column: $table.dayOfWeek,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get colorTheme => $composableBuilder(
-    column: $table.colorTheme,
+  ColumnOrderings<String> get startTime => $composableBuilder(
+    column: $table.startTime,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get statsJson => $composableBuilder(
-    column: $table.statsJson,
+  ColumnOrderings<String> get endTime => $composableBuilder(
+    column: $table.endTime,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
+  ColumnOrderings<String> get locationName => $composableBuilder(
+    column: $table.locationName,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  ColumnOrderings<double> get locationLat => $composableBuilder(
+    column: $table.locationLat,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get synced => $composableBuilder(
-    column: $table.synced,
+  ColumnOrderings<double> get locationLong => $composableBuilder(
+    column: $table.locationLong,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get wifiSsid => $composableBuilder(
+    column: $table.wifiSsid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
     builder: (column) => ColumnOrderings(column),
   );
 }
 
-class $$EnrollmentsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EnrollmentsTable> {
-  $$EnrollmentsTableAnnotationComposer({
+class $$GlobalSchedulesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GlobalSchedulesTable> {
+  $$GlobalSchedulesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get enrollmentId => $composableBuilder(
-    column: $table.enrollmentId,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get ruleId =>
+      $composableBuilder(column: $table.ruleId, builder: (column) => column);
 
   GeneratedColumn<String> get courseCode => $composableBuilder(
     column: $table.courseCode,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get customCourseJson => $composableBuilder(
-    column: $table.customCourseJson,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get section =>
       $composableBuilder(column: $table.section, builder: (column) => column);
 
-  GeneratedColumn<double> get targetAttendance => $composableBuilder(
-    column: $table.targetAttendance,
+  GeneratedColumn<String> get dayOfWeek =>
+      $composableBuilder(column: $table.dayOfWeek, builder: (column) => column);
+
+  GeneratedColumn<String> get startTime =>
+      $composableBuilder(column: $table.startTime, builder: (column) => column);
+
+  GeneratedColumn<String> get endTime =>
+      $composableBuilder(column: $table.endTime, builder: (column) => column);
+
+  GeneratedColumn<String> get locationName => $composableBuilder(
+    column: $table.locationName,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get colorTheme => $composableBuilder(
-    column: $table.colorTheme,
+  GeneratedColumn<double> get locationLat => $composableBuilder(
+    column: $table.locationLat,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get statsJson =>
-      $composableBuilder(column: $table.statsJson, builder: (column) => column);
+  GeneratedColumn<double> get locationLong => $composableBuilder(
+    column: $table.locationLong,
+    builder: (column) => column,
+  );
 
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+  GeneratedColumn<String> get wifiSsid =>
+      $composableBuilder(column: $table.wifiSsid, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<bool> get synced =>
-      $composableBuilder(column: $table.synced, builder: (column) => column);
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
 }
 
-class $$EnrollmentsTableTableManager
+class $$GlobalSchedulesTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EnrollmentsTable,
-          Enrollment,
-          $$EnrollmentsTableFilterComposer,
-          $$EnrollmentsTableOrderingComposer,
-          $$EnrollmentsTableAnnotationComposer,
-          $$EnrollmentsTableCreateCompanionBuilder,
-          $$EnrollmentsTableUpdateCompanionBuilder,
+          $GlobalSchedulesTable,
+          GlobalScheduleEntity,
+          $$GlobalSchedulesTableFilterComposer,
+          $$GlobalSchedulesTableOrderingComposer,
+          $$GlobalSchedulesTableAnnotationComposer,
+          $$GlobalSchedulesTableCreateCompanionBuilder,
+          $$GlobalSchedulesTableUpdateCompanionBuilder,
           (
-            Enrollment,
-            BaseReferences<_$AppDatabase, $EnrollmentsTable, Enrollment>,
+            GlobalScheduleEntity,
+            BaseReferences<
+              _$AppDatabase,
+              $GlobalSchedulesTable,
+              GlobalScheduleEntity
+            >,
           ),
-          Enrollment,
+          GlobalScheduleEntity,
           PrefetchHooks Function()
         > {
-  $$EnrollmentsTableTableManager(_$AppDatabase db, $EnrollmentsTable table)
-    : super(
+  $$GlobalSchedulesTableTableManager(
+    _$AppDatabase db,
+    $GlobalSchedulesTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EnrollmentsTableFilterComposer($db: db, $table: table),
+              $$GlobalSchedulesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EnrollmentsTableOrderingComposer($db: db, $table: table),
+              $$GlobalSchedulesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EnrollmentsTableAnnotationComposer($db: db, $table: table),
+              $$GlobalSchedulesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> enrollmentId = const Value.absent(),
-                Value<String?> courseCode = const Value.absent(),
-                Value<String?> customCourseJson = const Value.absent(),
-                Value<String> section = const Value.absent(),
-                Value<double> targetAttendance = const Value.absent(),
-                Value<String> colorTheme = const Value.absent(),
-                Value<String> statsJson = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> synced = const Value.absent(),
+                Value<String> ruleId = const Value.absent(),
+                Value<String> courseCode = const Value.absent(),
+                Value<String?> section = const Value.absent(),
+                Value<String> dayOfWeek = const Value.absent(),
+                Value<String> startTime = const Value.absent(),
+                Value<String> endTime = const Value.absent(),
+                Value<String> locationName = const Value.absent(),
+                Value<double?> locationLat = const Value.absent(),
+                Value<double?> locationLong = const Value.absent(),
+                Value<String?> wifiSsid = const Value.absent(),
+                Value<DateTime> lastSyncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => EnrollmentsCompanion(
-                enrollmentId: enrollmentId,
+              }) => GlobalSchedulesCompanion(
+                ruleId: ruleId,
                 courseCode: courseCode,
-                customCourseJson: customCourseJson,
                 section: section,
-                targetAttendance: targetAttendance,
-                colorTheme: colorTheme,
-                statsJson: statsJson,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                synced: synced,
+                dayOfWeek: dayOfWeek,
+                startTime: startTime,
+                endTime: endTime,
+                locationName: locationName,
+                locationLat: locationLat,
+                locationLong: locationLong,
+                wifiSsid: wifiSsid,
+                lastSyncedAt: lastSyncedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                required String enrollmentId,
-                Value<String?> courseCode = const Value.absent(),
-                Value<String?> customCourseJson = const Value.absent(),
-                Value<String> section = const Value.absent(),
-                Value<double> targetAttendance = const Value.absent(),
-                Value<String> colorTheme = const Value.absent(),
-                Value<String> statsJson = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<bool> synced = const Value.absent(),
+                required String ruleId,
+                required String courseCode,
+                Value<String?> section = const Value.absent(),
+                required String dayOfWeek,
+                required String startTime,
+                required String endTime,
+                required String locationName,
+                Value<double?> locationLat = const Value.absent(),
+                Value<double?> locationLong = const Value.absent(),
+                Value<String?> wifiSsid = const Value.absent(),
+                Value<DateTime> lastSyncedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => EnrollmentsCompanion.insert(
-                enrollmentId: enrollmentId,
+              }) => GlobalSchedulesCompanion.insert(
+                ruleId: ruleId,
                 courseCode: courseCode,
-                customCourseJson: customCourseJson,
                 section: section,
-                targetAttendance: targetAttendance,
-                colorTheme: colorTheme,
-                statsJson: statsJson,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                synced: synced,
+                dayOfWeek: dayOfWeek,
+                startTime: startTime,
+                endTime: endTime,
+                locationName: locationName,
+                locationLat: locationLat,
+                locationLong: locationLong,
+                wifiSsid: wifiSsid,
+                lastSyncedAt: lastSyncedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2789,21 +2875,25 @@ class $$EnrollmentsTableTableManager
       );
 }
 
-typedef $$EnrollmentsTableProcessedTableManager =
+typedef $$GlobalSchedulesTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EnrollmentsTable,
-      Enrollment,
-      $$EnrollmentsTableFilterComposer,
-      $$EnrollmentsTableOrderingComposer,
-      $$EnrollmentsTableAnnotationComposer,
-      $$EnrollmentsTableCreateCompanionBuilder,
-      $$EnrollmentsTableUpdateCompanionBuilder,
+      $GlobalSchedulesTable,
+      GlobalScheduleEntity,
+      $$GlobalSchedulesTableFilterComposer,
+      $$GlobalSchedulesTableOrderingComposer,
+      $$GlobalSchedulesTableAnnotationComposer,
+      $$GlobalSchedulesTableCreateCompanionBuilder,
+      $$GlobalSchedulesTableUpdateCompanionBuilder,
       (
-        Enrollment,
-        BaseReferences<_$AppDatabase, $EnrollmentsTable, Enrollment>,
+        GlobalScheduleEntity,
+        BaseReferences<
+          _$AppDatabase,
+          $GlobalSchedulesTable,
+          GlobalScheduleEntity
+        >,
       ),
-      Enrollment,
+      GlobalScheduleEntity,
       PrefetchHooks Function()
     >;
 typedef $$OfflineQueueTableCreateCompanionBuilder =
@@ -3293,8 +3383,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$UsersTableTableManager get users =>
       $$UsersTableTableManager(_db, _db.users);
-  $$EnrollmentsTableTableManager get enrollments =>
-      $$EnrollmentsTableTableManager(_db, _db.enrollments);
+  $$GlobalSchedulesTableTableManager get globalSchedules =>
+      $$GlobalSchedulesTableTableManager(_db, _db.globalSchedules);
   $$OfflineQueueTableTableManager get offlineQueue =>
       $$OfflineQueueTableTableManager(_db, _db.offlineQueue);
   $$SyncMetadataTableTableManager get syncMetadata =>

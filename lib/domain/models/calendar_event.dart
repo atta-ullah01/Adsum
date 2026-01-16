@@ -40,16 +40,6 @@ enum CalendarEventType {
 /// Represents a calendar event
 /// Maps to `/data/events.json` in SCHEMA.md
 class CalendarEvent extends Equatable {
-  final String eventId;
-  final String title;
-  final DateTime date;
-  final String? startTime;
-  final String? endTime;
-  final CalendarEventType type;
-  final String? description;
-  final bool isActive;
-  /// For DAY_SWAP events only: which day's schedule to follow (e.g., "MON", "TUE")
-  final String? dayOrderOverride;
 
   const CalendarEvent({
     required this.eventId,
@@ -62,19 +52,6 @@ class CalendarEvent extends Equatable {
     this.isActive = true,
     this.dayOrderOverride,
   });
-
-  @override
-  List<Object?> get props => [
-        eventId,
-        title,
-        date,
-        startTime,
-        endTime,
-        type,
-        description,
-        isActive,
-        dayOrderOverride,
-      ];
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) {
     return CalendarEvent(
@@ -89,6 +66,29 @@ class CalendarEvent extends Equatable {
       dayOrderOverride: json['day_order_override'] as String?,
     );
   }
+  final String eventId;
+  final String title;
+  final DateTime date;
+  final String? startTime;
+  final String? endTime;
+  final CalendarEventType type;
+  final String? description;
+  final bool isActive;
+  /// For DAY_SWAP events only: which day's schedule to follow (e.g., "MON", "TUE")
+  final String? dayOrderOverride;
+
+  @override
+  List<Object?> get props => [
+        eventId,
+        title,
+        date,
+        startTime,
+        endTime,
+        type,
+        description,
+        isActive,
+        dayOrderOverride,
+      ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -142,16 +142,11 @@ class CalendarEvent extends Equatable {
 /// Calendar override - hides specific events locally
 /// Maps to `/data/calendar_overrides.json` in SCHEMA.md
 class CalendarOverride extends Equatable {
-  final String calendarId;
-  final bool isHidden;
 
   const CalendarOverride({
     required this.calendarId,
     this.isHidden = false,
   });
-
-  @override
-  List<Object?> get props => [calendarId, isHidden];
 
   factory CalendarOverride.fromJson(Map<String, dynamic> json) {
     return CalendarOverride(
@@ -159,6 +154,11 @@ class CalendarOverride extends Equatable {
       isHidden: json['is_hidden'] as bool? ?? false,
     );
   }
+  final String calendarId;
+  final bool isHidden;
+
+  @override
+  List<Object?> get props => [calendarId, isHidden];
 
   Map<String, dynamic> toJson() {
     return {

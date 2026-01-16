@@ -1,14 +1,16 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:adsum/presentation/pages/mess/menu_editor_page.dart';
+import 'package:adsum/presentation/pages/mess/providers/mess_menu_viewmodel.dart';
+import 'package:adsum/presentation/pages/mess/widgets/mess_meal_card.dart';
 import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
-import 'package:adsum/presentation/pages/mess/menu_editor_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:ionicons/ionicons.dart';
 
 class MessMenuPage extends ConsumerStatefulWidget {
   const MessMenuPage({super.key});
@@ -18,41 +20,50 @@ class MessMenuPage extends ConsumerStatefulWidget {
 }
 
 class _MessMenuPageState extends ConsumerState<MessMenuPage> {
-  String _selectedHostel = "Kumaon Hostel"; // Default to Kumaon (matches test data)
-  DateTime _selectedDate = DateTime.now();
-
+  
   @override
   void initState() {
     super.initState();
-    // Initialize hostel from service (optional, fire and forget)
-    ref.read(messServiceProvider).getCurrentHostelId().then((id) {
-       if (id != null) setState(() => _selectedHostel = _mapIdToName(id));
+    // Initialize hostel from preferences
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(messMenuViewModelProvider.notifier).initHostel();
     });
   }
 
   String _mapIdToName(String id) {
-     // Map hostel IDs to display names
      switch (id) {
-       case 'h_kumaon': return "Kumaon Hostel";
-       case 'h_aravali': return "Aravali Hostel";
-       case 'h_girnar': return "Girnar Hostel";
+       case 'h_kumaon': return 'Kumaon Hostel';
+       case 'h_aravali': return 'Aravali Hostel';
+       case 'h_girnar': return 'Girnar Hostel';
        default: return id;
      }
   }
   
   String _mapNameToId(String name) {
      switch (name) {
-       case "Kumaon Hostel": return 'h_kumaon';
-       case "Aravali Hostel": return 'h_aravali';
-       case "Girnar Hostel": return 'h_girnar';
+       case 'Kumaon Hostel': return 'h_kumaon';
+       case 'Aravali Hostel': return 'h_aravali';
+       case 'Girnar Hostel': return 'h_girnar';
        default: return name.toLowerCase().replaceAll(' ', '_');
      }
   }
 
+  int _mealIndex(MealType type) {
+    switch (type) {
+      case MealType.breakfast: return 0;
+      case MealType.lunch: return 1;
+      case MealType.snacks: return 2;
+      case MealType.dinner: return 3;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final vmState = ref.watch(messMenuViewModelProvider);
+    final vmNotifier = ref.read(messMenuViewModelProvider.notifier);
+    
     // 1. Determine Day
-    final dayOfWeek = MessDayOfWeek.fromDateTime(_selectedDate);
+    final dayOfWeek = MessDayOfWeek.fromDateTime(vmState.selectedDate);
     
     // 2. Watch Menus for Day
     final menusAsync = ref.watch(messMenuForDayProvider(dayOfWeek));
@@ -66,7 +77,7 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
           icon: const Icon(Ionicons.arrow_back, color: Colors.black),
           onPressed: () => context.pop(),
         ),
-        title: _buildHostelSelector(),
+        title: _buildHostelSelector(vmState.selectedHostel, vmNotifier),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -74,16 +85,16 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Date Header (Clickable)
+            // Date Header
             GestureDetector(
               onTap: () async {
                 final date = await showDatePicker(
                   context: context, 
-                  initialDate: _selectedDate, 
+                  initialDate: vmState.selectedDate, 
                   firstDate: DateTime(2025), 
                   lastDate: DateTime(2030)
                 );
-                if (date != null) setState(() => _selectedDate = date);
+                if (date != null) vmNotifier.setDate(date);
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -91,11 +102,11 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Menu", style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold)),
+                      Text('Menu', style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold)),
                       Row(
                         children: [
                           Text(
-                            _formatDate(_selectedDate), 
+                            DateFormat('E, d MMM').format(vmState.selectedDate), 
                             style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)
                           ),
                           const Icon(Ionicons.chevron_down, size: 14, color: Colors.grey),
@@ -123,18 +134,10 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
               error: (err, stack) => Center(child: Text('Error loading menu: $err')),
               data: (menus) {
                  if (menus.isEmpty) {
-                    return Center(child: Text("No menu found for this day.", style: GoogleFonts.dmSans(color: Colors.grey)));
+                    return Center(child: Text('No menu found for this day.', style: GoogleFonts.dmSans(color: Colors.grey)));
                  }
                  
-                 // Filter by hostel locally if provider returns all?
-                 // Service getMenusForDay takes optional hostelId. We used family ONLY with day.
-                 // So provider returns ALL hostels? Let's check provider def...
-                 // `return service.getMenusForDay(day);` -> calls service without hostelId (unless service default uses cache current).
-                 // Service `getMenusForDay` implementation: `if (hostelId != null && m.hostelId != hostelId) return false;`.
-                 // So if hostelId is null, it returns ALL. We need to filter by `_selectedHostel`.
-                 
-                 final hostelId = _mapNameToId(_selectedHostel);
-                 final hostelMenus = menus.where((m) => m.hostelId == hostelId).toList();
+                 final hostelMenus = menus.where((m) => m.hostelId == vmState.selectedHostel).toList();
                  
                  if (hostelMenus.isEmpty) {
                     return Center(child: Column(
@@ -142,12 +145,11 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
                          const SizedBox(height: 40),
                          Icon(Ionicons.restaurant_outline, size: 48, color: Colors.grey[300]),
                          const SizedBox(height: 16),
-                         Text("No menu data for $_selectedHostel", style: GoogleFonts.dmSans(color: Colors.grey)),
+                         Text('No menu data for ${_mapIdToName(vmState.selectedHostel)}', style: GoogleFonts.dmSans(color: Colors.grey)),
                       ],
                     ));
                  }
                  
-                 // Sort by meal type
                  hostelMenus.sort((a,b) => _mealIndex(a.mealType).compareTo(_mealIndex(b.mealType)));
 
                  return ListView.separated(
@@ -159,7 +161,7 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
                     final menu = hostelMenus[index];
                     return FadeSlideTransition(
                       index: index,
-                      child: _buildMealCard(menu),
+                      child: MessMealCard(menu: menu),
                     );
                   },
                 );
@@ -172,60 +174,38 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          // Check data availability first
           final menusVal = menusAsync.asData?.value;
           if (menusVal == null) return;
           
-          final hostelId = _mapNameToId(_selectedHostel);
-          final hostelMenus = menusVal.where((m) => m.hostelId == hostelId).toList();
+          final hostelMenus = menusVal.where((m) => m.hostelId == vmState.selectedHostel).toList();
 
-          // Edit Menu
           await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => MenuEditorPage(
                 initialMenus: hostelMenus,
                 day: dayOfWeek,
-                hostelId: hostelId,
+                hostelId: vmState.selectedHostel,
               )
             )
           );
           
-          // Refresh
           ref.invalidate(messMenuForDayProvider);
-          // Also messServiceProvider usually updates cache which updates queries.
         },
         backgroundColor: Colors.black,
         icon: const Icon(Ionicons.create_outline, color: Colors.white),
-        label: Text("Edit Menu", style: GoogleFonts.dmSans(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: Text('Edit Menu', style: GoogleFonts.dmSans(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
-  int _mealIndex(MealType type) {
-    switch (type) {
-      case MealType.breakfast: return 0;
-      case MealType.lunch: return 1;
-      case MealType.snacks: return 2;
-      case MealType.dinner: return 3;
-    }
-  }
-
-  String _formatDate(DateTime date) {
-    return DateFormat("E, d MMM").format(date);
-  }
-
-  Widget _buildHostelSelector() {
+  Widget _buildHostelSelector(String selectedHostelId, MessMenuViewModel notifier) {
     return PopupMenuButton<String>(
-      onSelected: (value) {
-         setState(() => _selectedHostel = value);
-         // Update Global Preference
-         ref.read(messServiceProvider).setCurrentHostelId(_mapNameToId(value));
-      },
+      onSelected: (value) => notifier.setHostel(_mapNameToId(value)),
       itemBuilder: (context) => [
-        const PopupMenuItem(value: "Kumaon Hostel", child: Text("Kumaon Hostel")),
-        const PopupMenuItem(value: "Aravali Hostel", child: Text("Aravali Hostel")),
-        const PopupMenuItem(value: "Girnar Hostel", child: Text("Girnar Hostel")),
+        const PopupMenuItem(value: 'Kumaon Hostel', child: Text('Kumaon Hostel')),
+        const PopupMenuItem(value: 'Aravali Hostel', child: Text('Aravali Hostel')),
+        const PopupMenuItem(value: 'Girnar Hostel', child: Text('Girnar Hostel')),
       ],
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -236,103 +216,11 @@ class _MessMenuPageState extends ConsumerState<MessMenuPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_selectedHostel, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(_mapIdToName(selectedHostelId), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(width: 4),
             const Icon(Ionicons.chevron_down, size: 16, color: Colors.black),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildMealCard(MessMenu menu) {
-    // Determine status
-    String status = "Upcoming";
-    // Basic time check (mock logic for now since string parsing is complex without strict format)
-    // In real app, parse `menu.startTime` (HH:mm)
-    
-    Color color;
-    IconData icon;
-    
-    switch (menu.mealType) {
-      case MealType.breakfast:
-         color = AppColors.pastelOrange;
-         icon = Ionicons.sunny;
-         break;
-      case MealType.lunch:
-         color = AppColors.pastelGreen;
-         icon = Ionicons.restaurant;
-         break;
-      case MealType.snacks:
-         color = AppColors.pastelBlue;
-         icon = Ionicons.cafe;
-         break;
-      case MealType.dinner:
-         color = AppColors.pastelPurple;
-         icon = Ionicons.moon;
-         break;
-    }
-    
-    // Check if Modified
-    bool isModified = menu.isModified;
-    
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(32),
-        border: isModified ? Border.all(color: Colors.blue, width: 2) : null,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                    child: Icon(icon, size: 20, color: Colors.black),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(menu.mealType.displayName, style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
-                      Text("${menu.startTime} - ${menu.endTime}", style: GoogleFonts.dmSans(fontSize: 12, color: Colors.black54)),
-                    ],
-                  ),
-                ],
-              ),
-              if (isModified)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text("Edited", style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
-                )
-            ],
-          ),
-          const SizedBox(height: 20),
-          
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: menu.itemsList.map((item) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(item, style: GoogleFonts.dmSans(fontSize: 14, fontWeight: FontWeight.w500)),
-            )).toList(),
-          )
-        ],
       ),
     );
   }

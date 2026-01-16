@@ -1,11 +1,10 @@
+import 'package:adsum/data/repositories/calendar_repository.dart';
 import 'package:adsum/data/repositories/enrollment_repository.dart';
+import 'package:adsum/data/repositories/schedule_modification_repository.dart';
 import 'package:adsum/data/repositories/schedule_repository.dart';
 import 'package:adsum/data/repositories/work_repository.dart';
-import 'package:adsum/data/repositories/calendar_repository.dart';
-import 'package:adsum/data/repositories/schedule_modification_repository.dart';
 import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/domain/models/schedule_modification.dart';
-import 'package:flutter/material.dart';
 
 /// Service to calculate the effective schedule by merging L1, L2, and L3 layers
 class ScheduleService {
@@ -44,7 +43,7 @@ class ScheduleService {
 
     // --- 0. Check for Day Swap ---
     // If there's a DAY_SWAP event on this date, use that day's schedule instead.
-    DayOfWeek effectiveDayOfWeek = _getDayOfWeek(date);
+    var effectiveDayOfWeek = _getDayOfWeek(date);
     CalendarEvent? daySwapEvent;
     
     for (final calEvent in calendarEvents) {
@@ -80,7 +79,12 @@ class ScheduleService {
             type: ScheduleEventType.exam,
             color: '#EC4899', // Pink for exams
             location: work.venue,
-            metadata: {'type': 'EXAM', 'work_type': work.workType.name},
+            metadata: {
+              'type': 'EXAM', 
+              'work_type': work.workType.name,
+              'work_data': work.toJson(), // Inject full JSON for navigation
+              'course_code': work.courseCode,
+            },
           ));
         } else {
            // Assignment due date - represented as an event or handled separately?
@@ -93,7 +97,12 @@ class ScheduleService {
             endTime: work.dueAt!,
             type: ScheduleEventType.event,
             color: '#F59E0B', // Orange for assignments
-            metadata: {'type': 'ASSIGNMENT', 'work_type': work.workType.name},
+            metadata: {
+              'type': 'ASSIGNMENT', 
+              'work_type': work.workType.name,
+              'work_data': work.toJson(), // Inject full JSON
+              'course_code': work.courseCode,
+            },
           ));
         }
       }
@@ -104,8 +113,8 @@ class ScheduleService {
       if (!calEvent.isActive) continue;
       
       // Parse times if available, else all day
-      DateTime start = date;
-      DateTime end = date.add(const Duration(hours: 1)); 
+      var start = date;
+      var end = date.add(const Duration(hours: 1)); 
 
       if (calEvent.startTime != null) {
          start = _parseTime(date, calEvent.startTime!);
@@ -144,7 +153,7 @@ class ScheduleService {
     if (inputEvents.isEmpty) return [];
     
     final resolved = <ScheduleEvent>[];
-    List<ScheduleEvent> currentCluster = [];
+    var currentCluster = <ScheduleEvent>[];
     DateTime? clusterEnd;
 
     for (final event in inputEvents) {
@@ -235,7 +244,7 @@ class ScheduleService {
       } else {
         // Global Courses (Mock/L1) - Now explicitly supporting all weekdays for demo
         if (date.weekday <= 5) {
-           bool shouldAdd = false;
+           var shouldAdd = false;
            // Simple hash logic to distribute courses across days
            // Monday (1): Odd hash
            // Tuesday (2): Even hash
@@ -245,7 +254,7 @@ class ScheduleService {
 
            if (shouldAdd) {
              final hash = enrollment.courseCode.hashCode;
-             int startHour = 9 + (hash % 6); // 9am - 3pm
+             var startHour = 9 + (hash % 6); // 9am - 3pm
              
              // FORCE CONFLICT FOR DEMO on Jan 15 (Thursday)
              // "Project Discussion" is 16:00-17:00.
@@ -254,7 +263,7 @@ class ScheduleService {
                 startHour = 16;
              }
 
-             final start = DateTime(date.year, date.month, date.day, startHour, 0);
+             final start = DateTime(date.year, date.month, date.day, startHour);
              final end = start.add(const Duration(hours: 1));
              
              events.add(ScheduleEvent(
@@ -289,7 +298,7 @@ class ScheduleService {
     // Actually modifications might target specific rules, but here we mock rules.
     // Let's match by course code for now since we don't have stable rule IDs in this mock L1.
 
-    for (var event in baseEvents) {
+    for (final event in baseEvents) {
       final courseCode = event.metadata['course_code'];
       if (courseCode == null) {
         processedEvents.add(event);
@@ -320,7 +329,6 @@ class ScheduleService {
               location: event.location,
               metadata: {...event.metadata, 'status': 'CANCELLED'},
             ));
-            break;
             
           case ModificationAction.swapRoom:
              processedEvents.add(ScheduleEvent(
@@ -335,7 +343,6 @@ class ScheduleService {
               location: mod.newLocation, // Update location
               metadata: {...event.metadata, 'status': 'ROOM_SWAP', 'new_location': mod.newLocation},
             ));
-            break;
             
           case ModificationAction.reschedule:
              // Remove original, add new slot
@@ -357,7 +364,6 @@ class ScheduleService {
                   metadata: {...event.metadata, 'status': 'RESCHEDULED'},
                 ));
              }
-            break;
             
           default:
             processedEvents.add(event);

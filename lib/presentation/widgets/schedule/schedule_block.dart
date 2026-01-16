@@ -1,29 +1,25 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 
 enum ScheduleSource { admin, cr, user }
 
-class ScheduleBlock extends StatelessWidget {
+class ScheduleBlock extends StatelessWidget { // New: Explains the conflict logic ("Replaces Math")
+
+  const ScheduleBlock({
+    required this.title, required this.time, required this.location, required this.source, super.key,
+    this.isCancelled = false,
+    this.isUnconfirmed = false,
+    this.resolutionNote,
+  });
   final String title;
   final String time;
   final String location;
   final ScheduleSource source;
   final bool isCancelled;
   final bool isUnconfirmed;
-  final String? resolutionNote; // New: Explains the conflict logic ("Replaces Math")
-
-  const ScheduleBlock({
-    super.key,
-    required this.title,
-    required this.time,
-    required this.location,
-    required this.source,
-    this.isCancelled = false,
-    this.isUnconfirmed = false,
-    this.resolutionNote,
-  });
+  final String? resolutionNote;
 
   // Source-specific Colors (Bold logic)
   Color get _accentColor {
@@ -49,9 +45,9 @@ class ScheduleBlock extends StatelessWidget {
 
   String get _sourceLabel {
     switch (source) {
-      case ScheduleSource.admin: return "Official";
-      case ScheduleSource.cr: return "CR Update";
-      case ScheduleSource.user: return "Personal";
+      case ScheduleSource.admin: return 'Official';
+      case ScheduleSource.cr: return 'CR Update';
+      case ScheduleSource.user: return 'Personal';
     }
   }
 
@@ -86,7 +82,7 @@ class ScheduleBlock extends StatelessWidget {
             onTap: () {
               context.push('/subject-detail', extra: {
                 'title': title,
-                'code': "CS-101", // Mock Code for now
+                'code': 'CS-101', // Mock Code for now
               });
             },
             child: Row(
@@ -209,7 +205,7 @@ class ScheduleBlock extends StatelessWidget {
                                  const Icon(Ionicons.alert_circle, size: 14, color: Colors.red),
                                  const SizedBox(width: 6),
                                  Text(
-                                  "Class Cancelled",
+                                  'Class Cancelled',
                                   style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red),
                                 ),
                               ],

@@ -1,12 +1,11 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/presentation/pages/splash/providers/splash_viewmodel.dart';
 import 'package:adsum/presentation/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:adsum/data/providers/data_providers.dart';
-import 'package:adsum/presentation/providers/auth_provider.dart';
 
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
@@ -17,59 +16,16 @@ class SplashPage extends ConsumerStatefulWidget {
 
 class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  bool _checkingSession = true;
 
   @override
   void initState() {
     super.initState();
-    // For the floating animation
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
-    
-    _checkSession();
   }
   
-  Future<void> _checkSession() async {
-    // Artificial minimum delay for branding
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    try {
-      // Auto-seed mock data for development/testing
-      final seeder = ref.read(mockDataSeederProvider);
-      // Force seed action items and events for testing to ensure latest fixtures are used
-      await seeder.seedActionItems();
-      await seeder.seedEvents();
-      await seeder.seedWork();
-      await seeder.seedAttendance(); // Force seed attendance for testing changes
-      
-      if (!await seeder.isSeeded()) {
-        debugPrint('Seeding mock data from fixtures...');
-        await seeder.seedAllData();
-      }
-
-      final userRepo = ref.read(userRepositoryProvider);
-      final hasUser = await userRepo.hasUser();
-      
-      if (hasUser) {
-        // Sync auth provider state
-        ref.read(authProvider.notifier).loginAsUser();
-        
-        if (mounted) {
-          context.go('/dashboard');
-          return;
-        }
-      }
-    } catch (e) {
-      debugPrint("Session check error: $e");
-    }
-    
-    if (mounted) {
-      setState(() => _checkingSession = false);
-    }
-  }
-
   @override
   void dispose() {
     _controller.dispose();
@@ -78,16 +34,21 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    // While checking, show a minimal splash or the same UI without buttons?
-    // Let's show the UI but maybe loading indicator if it takes long? 
-    // Actually, showing the full UI immediately is fine, if we redirect quickly it's just a blip.
-    // If _checkingSession is true, maybe hide the "Get Started" button to prevent double nav.
+    // Listen to state changes for navigation
+    ref.listen(splashViewModelProvider, (prev, next) {
+      if (next == SplashState.authenticated) {
+        context.go('/dashboard');
+      }
+    });
+
+    final state = ref.watch(splashViewModelProvider);
+    final isChecking = state == SplashState.checking;
 
     return Scaffold(
       backgroundColor: AppColors.bgApp,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(30.0), // match padding: 30px
+          padding: const EdgeInsets.all(30), 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -155,7 +116,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
                         const TextSpan(text: 'Attendance.\n'),
                         TextSpan(
                           text: 'Simplified.',
-                          style: TextStyle(color: AppColors.textMain.withOpacity(0.5)),
+                          style: TextStyle(color: AppColors.textMain.withValues(alpha: 0.5)),
                         ),
                       ],
                     ),
@@ -165,7 +126,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
                     'Manage your entire campus life\nseamlessly from your pocket.',
                     style: GoogleFonts.dmSans(
                       fontSize: 18,
-                      color: AppColors.textMain.withOpacity(0.7),
+                      color: AppColors.textMain.withValues(alpha: 0.7),
                       height: 1.6,
                       fontWeight: FontWeight.w500,
                     ),
@@ -176,7 +137,7 @@ class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProvid
               const Spacer(),
 
               // Bottom Action
-              if (_checkingSession)
+              if (isChecking)
                  const Center(child: CircularProgressIndicator())
               else
                 PrimaryButton(

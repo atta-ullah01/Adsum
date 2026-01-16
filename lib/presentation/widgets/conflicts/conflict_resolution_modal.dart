@@ -1,17 +1,15 @@
+import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:adsum/core/theme/app_colors.dart';
 
 class ConflictResolutionModal extends StatelessWidget {
-  final VoidCallback onResolveKeepExisting;
-  final VoidCallback onResolveAcceptNew;
 
   const ConflictResolutionModal({
-    super.key,
-    required this.onResolveKeepExisting,
-    required this.onResolveAcceptNew,
+    required this.onResolveKeepExisting, required this.onResolveAcceptNew, super.key,
   });
+  final VoidCallback onResolveKeepExisting;
+  final VoidCallback onResolveAcceptNew;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +37,7 @@ class ConflictResolutionModal extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Schedule Conflict", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('Schedule Conflict', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
                   Text("You can't be in two places at once.", style: GoogleFonts.dmSans(color: Colors.grey)),
                 ],
               ),
@@ -54,9 +52,9 @@ class ConflictResolutionModal extends StatelessWidget {
               // Left: Incoming (The Intruder)
               Expanded(
                 child: _buildConflictCard(
-                  title: "Extra Class",
-                  subtitle: "Mathematics",
-                  time: "4:00 PM",
+                  title: 'Extra Class',
+                  subtitle: 'Mathematics',
+                  time: '4:00 PM',
                   color: AppColors.primary,
                   isIncoming: true,
                 ),
@@ -74,15 +72,15 @@ class ConflictResolutionModal extends StatelessWidget {
                     BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)
                   ]
                 ),
-                child: Text("VS", style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.grey)),
+                child: Text('VS', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 10, color: Colors.grey)),
               ),
               
               // Right: Existing (The Plan)
               Expanded(
                 child: _buildConflictCard(
-                  title: "Gym",
-                  subtitle: "Personal",
-                  time: "4:00 PM",
+                  title: 'Gym',
+                  subtitle: 'Personal',
+                  time: '4:00 PM',
                   color: Colors.purple,
                   isIncoming: false,
                 ),
@@ -106,7 +104,7 @@ class ConflictResolutionModal extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text("Skip Gym", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+                  child: Text('Skip Gym', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(width: 16),
@@ -119,7 +117,7 @@ class ConflictResolutionModal extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text("Keep Gym", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+                  child: Text('Keep Gym', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -128,7 +126,7 @@ class ConflictResolutionModal extends StatelessWidget {
           const SizedBox(height: 16),
           TextButton(
              onPressed: () => Navigator.pop(context),
-             child: Text("Decide Later", style: GoogleFonts.dmSans(color: Colors.grey)),
+             child: Text('Decide Later', style: GoogleFonts.dmSans(color: Colors.grey)),
           )
         ],
       ),
@@ -159,7 +157,7 @@ class ConflictResolutionModal extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(4)),
-              child: Text("NEW CHANGE", style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
+              child: Text('NEW CHANGE', style: GoogleFonts.outfit(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red)),
             ),
           
           Text(time, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -180,11 +178,11 @@ void showConflictResolutionModal(BuildContext context) {
     builder: (context) => ConflictResolutionModal(
       onResolveAcceptNew: () {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Resolved: Gym Skipped. Attending Class.")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Resolved: Gym Skipped. Attending Class.')));
       },
       onResolveKeepExisting: () {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Resolved: Class Hidden. Keeping Gym.")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Resolved: Class Hidden. Keeping Gym.')));
       },
     ),
   );

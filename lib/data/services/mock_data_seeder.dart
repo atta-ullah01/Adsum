@@ -4,6 +4,7 @@
 /// This ensures consistency between test fixtures and runtime seeding.
 ///
 /// Fixture location: test/fixtures/mock_data/
+library;
 
 import 'dart:convert';
 import 'dart:io';
@@ -14,12 +15,12 @@ import 'package:flutter/services.dart';
 
 /// Service to seed mock data from fixture files
 class MockDataSeeder {
+  
+  MockDataSeeder(this._jsonService);
   final JsonFileService _jsonService;
   
   /// Base path to fixture files (relative to project root)
   static const String _fixturesPath = 'test/fixtures/mock_data';
-  
-  MockDataSeeder(this._jsonService);
   
   /// Seeds all mock data from fixture files
   /// Call this to populate dashboard with test data

@@ -3,9 +3,9 @@ import 'package:adsum/domain/models/mess.dart';
 
 /// Service for mess menu management
 class MessService {
-  final MessRepository _repository;
 
   MessService(this._repository);
+  final MessRepository _repository;
 
   // ============ Menu Queries ============
 

@@ -45,7 +45,6 @@ void main() {
     test('addEnrollment adds a new enrollment successfully', () async {
       final result = await repository.addEnrollment(
         courseCode: 'CS101',
-        section: 'A',
       );
 
       expect(result, isNotNull);
@@ -58,10 +57,10 @@ void main() {
 
     test('addEnrollment returns null for DUPLICATE course and section', () async {
       // 1. Add first
-      await repository.addEnrollment(courseCode: 'CS101', section: 'A');
+      await repository.addEnrollment(courseCode: 'CS101');
       
       // 2. Add same again
-      final result = await repository.addEnrollment(courseCode: 'CS101', section: 'A');
+      final result = await repository.addEnrollment(courseCode: 'CS101');
       
       // Expect null (Duplicate)
       expect(result, isNull);
@@ -73,7 +72,7 @@ void main() {
 
     test('addEnrollment allows same course with DIFFERENT section', () async {
       // 1. Add Section A
-      await repository.addEnrollment(courseCode: 'CS101', section: 'A');
+      await repository.addEnrollment(courseCode: 'CS101');
       
       // 2. Add Section B
       final result = await repository.addEnrollment(courseCode: 'CS101', section: 'B');

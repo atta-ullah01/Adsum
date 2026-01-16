@@ -178,7 +178,7 @@ class _CreateCustomCoursePageState extends State<CreateCustomCoursePage> {
     );
   }
 
-  Widget _buildFormGroup(String label, String placeholder, {bool isTime = false}) {
+  Widget _buildFormGroup(String label, String placeholder) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

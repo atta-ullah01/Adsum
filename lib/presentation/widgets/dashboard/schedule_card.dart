@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'dart:math' as math;
 
 class ScheduleCard extends StatelessWidget {
+
+  const ScheduleCard({
+    required this.title, required this.subtitle, required this.tag, required this.tagColor, required this.tagTextColor, required this.leftBorderColor, super.key,
+    this.backgroundColor = Colors.white,
+    this.isLab = false,
+    this.isExam = false,
+    this.isLive = false,
+    this.voteCount,
+    this.showVoting = false,
+    this.isCancelled = false, // New property
+    this.onPulseTap,
+    this.onTap, // New property
+  });
   final String title;
   final String subtitle;
   final String tag;
@@ -14,33 +26,18 @@ class ScheduleCard extends StatelessWidget {
   final bool isLab;
   final bool isExam;
   final bool isLive; 
-  final int? voteCount; // Number of people who verified presence
-  final bool showVoting; // Whether to show voting stats
+  final bool isCancelled; // New property
+  final int? voteCount;
+  final bool showVoting;
   final VoidCallback? onPulseTap;
-
-  const ScheduleCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.tag,
-    required this.tagColor,
-    required this.tagTextColor,
-    required this.leftBorderColor,
-    this.backgroundColor = Colors.white,
-    this.isLab = false,
-    this.isExam = false,
-    this.isLive = false,
-    this.voteCount,
-    this.showVoting = false,
-    this.onPulseTap,
-  });
+  final VoidCallback? onTap; // New property
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget cardContent = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white, // Always white background (no fill)
+        color: Colors.white, 
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -50,7 +47,7 @@ class ScheduleCard extends StatelessWidget {
           ),
         ],
         border: Border.all(
-          color: isLive ? Colors.black87 : Colors.grey.shade200, // Black border for Live
+          color: isLive ? Colors.black87 : Colors.grey.shade200, 
           width: isLive ? 2 : 1
         ),
       ),
@@ -78,7 +75,7 @@ class ScheduleCard extends StatelessWidget {
                             child: Icon(Ionicons.scan_circle, size: 14, color: Colors.white),
                           ),
                        Text(
-                         isLive ? "Live • Tap to Verify" : tag,
+                         isLive ? 'Live • Tap to Verify' : tag,
                          style: GoogleFonts.dmSans(
                            fontSize: 11,
                            fontWeight: FontWeight.bold,
@@ -129,12 +126,23 @@ class ScheduleCard extends StatelessWidget {
           if (showVoting && voteCount != null && voteCount! > 0) ...[
             const SizedBox(height: 20),
             Text(
-              "$voteCount Present",
+              '$voteCount Present',
               style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[600]),
             ),
           ]
         ],
       ),
+    );
+
+    // Apply Opacity for cancelled
+    if (isCancelled) {
+      cardContent = Opacity(opacity: 0.6, child: cardContent);
+    }
+
+    // Wrap in GestureDetector for card tap
+    return GestureDetector(
+      onTap: onTap,
+      child: cardContent,
     );
   }
 }

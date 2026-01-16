@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:adsum/core/theme/app_colors.dart';
 
 class TimelineItem extends StatelessWidget {
+
+  const TimelineItem({required this.time, required this.child, super.key});
   final String time;
   final Widget child;
-
-  const TimelineItem({super.key, required this.time, required this.child});
 
   @override
   Widget build(BuildContext context) {

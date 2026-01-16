@@ -3,16 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomSegmentedControl extends StatelessWidget {
+
+  const CustomSegmentedControl({
+    required this.tabs, required this.selectedIndex, required this.onIndexChanged, super.key,
+  });
   final List<String> tabs;
   final int selectedIndex;
   final ValueChanged<int> onIndexChanged;
-
-  const CustomSegmentedControl({
-    super.key,
-    required this.tabs,
-    required this.selectedIndex,
-    required this.onIndexChanged,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +23,7 @@ class CustomSegmentedControl extends StatelessWidget {
           // Transparent background for a cleaner "Navbar" look
           decoration: const BoxDecoration(
             color: Colors.transparent,
-            border: Border(bottom: BorderSide(color: Colors.black12, width: 1)), // Thin divider line
+            border: Border(bottom: BorderSide(color: Colors.black12)), // Thin divider line
           ),
           child: Stack(
             children: [
@@ -42,9 +39,9 @@ class CustomSegmentedControl extends StatelessWidget {
                   child: Container(
                     width: tabWidth * 0.6, // Indicator is 60% of tab width for a sleek look
                     height: 3,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.primary, // Brand color
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
                     ),
                   ),
                 ),
@@ -64,8 +61,8 @@ class CustomSegmentedControl extends StatelessWidget {
                           style: GoogleFonts.outfit(
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                             // Active: Primary Color, Inactive: Muted Grey
-                            color: isSelected ? AppColors.primary : AppColors.textMain.withOpacity(0.5),
-                            fontSize: 15, // Slightly larger font
+                            color: isSelected ? AppColors.primary : AppColors.textMain.withValues(alpha: 0.5),
+                            fontSize: 15, // Slightly larger
                           ),
                           child: Text(tabs[index]),
                         ),

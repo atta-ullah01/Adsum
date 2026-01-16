@@ -1,10 +1,16 @@
-import 'package:adsum/domain/models/university.dart';
+import 'package:adsum/data/sources/local/app_database.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:drift/drift.dart' as drift;
 
 /// Repository for shared app data (Universities, Hostels, Global Config)
-/// In production, this would fetch from Supabase.
+/// Uses a Hybrid Strategy:
+/// 1. Offline? -> Serve from Drift (GlobalSchedules table)
+/// 2. Online? -> Mock/Fetch Remote -> Cache to Drift -> Return
 class SharedDataRepository {
   
+  SharedDataRepository(this._db);
+  final AppDatabase _db;
+
   // Mock Data
   final List<University> _universities = [
     University(id: 'iit_delhi', name: 'IIT Delhi', domain: 'iitd.ac.in', semesterStart: DateTime(2026, 1, 6), semesterEnd: DateTime(2026, 5, 15)),
@@ -13,7 +19,7 @@ class SharedDataRepository {
     University(id: 'iit_madras', name: 'IIT Madras', domain: 'iitm.ac.in', semesterStart: DateTime(2026, 1, 12), semesterEnd: DateTime(2026, 5, 18)),
     University(id: 'iit_kharagpur', name: 'IIT Kharagpur', domain: 'iitkgp.ac.in', semesterStart: DateTime(2026, 1, 8), semesterEnd: DateTime(2026, 5, 14)),
     University(id: 'bits_pilani', name: 'BITS Pilani', domain: 'bits-pilani.ac.in', semesterStart: DateTime(2026, 1, 10), semesterEnd: DateTime(2026, 5, 20)),
-    University(id: 'iiit_una', name: 'IIIT Una', domain: 'iiitu.ac.in', semesterStart: DateTime(2026, 2, 1), semesterEnd: DateTime(2026, 6, 15)),
+    University(id: 'iiit_una', name: 'IIIT Una', domain: 'iiitu.ac.in', semesterStart: DateTime(2026, 2), semesterEnd: DateTime(2026, 6, 15)),
     University(id: 'srm_univ', name: 'SRM University', domain: 'srmist.edu.in', semesterStart: DateTime(2026, 1, 20), semesterEnd: DateTime(2026, 5, 25)),
   ];
 
@@ -186,51 +192,111 @@ class SharedDataRepository {
   
   /// Global schedule entries for catalog courses
   /// Key: courseCode, Value: List of schedule slots
-  final Map<String, List<GlobalScheduleSlot>> _globalSchedules = {
+  /// Global schedule entries for catalog courses
+  /// Key: courseCode, Value: List of schedule slots
+  final Map<String, List<GlobalSchedule>> _mockRemoteSchedules = {
     'COL106': [
-      GlobalScheduleSlot(ruleId: 'r_col106_1', courseCode: 'COL106', section: 'A', dayOfWeek: 'MON', startTime: '09:00', endTime: '10:00', locationName: 'LH-101', locationLat: 28.5455, locationLong: 77.1938),
-      GlobalScheduleSlot(ruleId: 'r_col106_2', courseCode: 'COL106', section: 'A', dayOfWeek: 'WED', startTime: '09:00', endTime: '10:00', locationName: 'LH-101', locationLat: 28.5455, locationLong: 77.1938),
-      GlobalScheduleSlot(ruleId: 'r_col106_3', courseCode: 'COL106', section: 'A', dayOfWeek: 'FRI', startTime: '09:00', endTime: '10:00', locationName: 'LH-101', locationLat: 28.5455, locationLong: 77.1938),
-      GlobalScheduleSlot(ruleId: 'r_col106_tut', courseCode: 'COL106', section: 'A', dayOfWeek: 'THU', startTime: '14:00', endTime: '15:00', locationName: 'TB-2', locationLat: 28.5458, locationLong: 77.1935),
+      const GlobalSchedule(ruleId: 'r_col106_1', courseCode: 'COL106', section: 'A', dayOfWeek: DayOfWeek.mon, startTime: '09:00', endTime: '10:00', locationName: 'LH-101', locationLat: 28.5455, locationLong: 77.1938),
+      const GlobalSchedule(ruleId: 'r_col106_2', courseCode: 'COL106', section: 'A', dayOfWeek: DayOfWeek.wed, startTime: '09:00', endTime: '10:00', locationName: 'LH-101', locationLat: 28.5455, locationLong: 77.1938),
+      const GlobalSchedule(ruleId: 'r_col106_3', courseCode: 'COL106', section: 'A', dayOfWeek: DayOfWeek.fri, startTime: '09:00', endTime: '10:00', locationName: 'LH-101', locationLat: 28.5455, locationLong: 77.1938),
+      const GlobalSchedule(ruleId: 'r_col106_tut', courseCode: 'COL106', section: 'A', dayOfWeek: DayOfWeek.thu, startTime: '14:00', endTime: '15:00', locationName: 'TB-2', locationLat: 28.5458, locationLong: 77.1935),
     ],
     'COL774': [
-      GlobalScheduleSlot(ruleId: 'r_col774_1', courseCode: 'COL774', section: 'A', dayOfWeek: 'TUE', startTime: '14:00', endTime: '15:30', locationName: 'LH-310', locationLat: 28.5452, locationLong: 77.1930),
-      GlobalScheduleSlot(ruleId: 'r_col774_2', courseCode: 'COL774', section: 'A', dayOfWeek: 'THU', startTime: '14:00', endTime: '15:30', locationName: 'LH-310', locationLat: 28.5452, locationLong: 77.1930),
+      const GlobalSchedule(ruleId: 'r_col774_1', courseCode: 'COL774', section: 'A', dayOfWeek: DayOfWeek.tue, startTime: '14:00', endTime: '15:30', locationName: 'LH-310', locationLat: 28.5452, locationLong: 77.1930),
+      const GlobalSchedule(ruleId: 'r_col774_2', courseCode: 'COL774', section: 'A', dayOfWeek: DayOfWeek.thu, startTime: '14:00', endTime: '15:30', locationName: 'LH-310', locationLat: 28.5452, locationLong: 77.1930),
     ],
     'COL331': [
-      GlobalScheduleSlot(ruleId: 'r_col331_1', courseCode: 'COL331', section: 'B', dayOfWeek: 'MON', startTime: '11:00', endTime: '12:00', locationName: 'LH-221', locationLat: 28.5453, locationLong: 77.1932),
-      GlobalScheduleSlot(ruleId: 'r_col331_2', courseCode: 'COL331', section: 'B', dayOfWeek: 'WED', startTime: '11:00', endTime: '12:00', locationName: 'LH-221', locationLat: 28.5453, locationLong: 77.1932),
-      GlobalScheduleSlot(ruleId: 'r_col331_lab', courseCode: 'COL331', section: 'B', dayOfWeek: 'FRI', startTime: '14:00', endTime: '17:00', locationName: 'SIT-LAB-1', locationLat: 28.5460, locationLong: 77.1940),
+      const GlobalSchedule(ruleId: 'r_col331_1', courseCode: 'COL331', section: 'B', dayOfWeek: DayOfWeek.mon, startTime: '11:00', endTime: '12:00', locationName: 'LH-221', locationLat: 28.5453, locationLong: 77.1932),
+      const GlobalSchedule(ruleId: 'r_col331_2', courseCode: 'COL331', section: 'B', dayOfWeek: DayOfWeek.wed, startTime: '11:00', endTime: '12:00', locationName: 'LH-221', locationLat: 28.5453, locationLong: 77.1932),
+      const GlobalSchedule(ruleId: 'r_col331_lab', courseCode: 'COL331', section: 'B', dayOfWeek: DayOfWeek.fri, startTime: '14:00', endTime: '17:00', locationName: 'SIT-LAB-1', locationLat: 28.5460, locationLong: 77.1940),
     ],
     'COL362': [
-      GlobalScheduleSlot(ruleId: 'r_col362_1', courseCode: 'COL362', section: 'A', dayOfWeek: 'TUE', startTime: '09:00', endTime: '10:00', locationName: 'LH-108', locationLat: 28.5454, locationLong: 77.1936),
-      GlobalScheduleSlot(ruleId: 'r_col362_2', courseCode: 'COL362', section: 'A', dayOfWeek: 'THU', startTime: '09:00', endTime: '10:00', locationName: 'LH-108', locationLat: 28.5454, locationLong: 77.1936),
-      GlobalScheduleSlot(ruleId: 'r_col362_3', courseCode: 'COL362', section: 'A', dayOfWeek: 'FRI', startTime: '11:00', endTime: '12:00', locationName: 'LH-108', locationLat: 28.5454, locationLong: 77.1936),
+      const GlobalSchedule(ruleId: 'r_col362_1', courseCode: 'COL362', section: 'A', dayOfWeek: DayOfWeek.tue, startTime: '09:00', endTime: '10:00', locationName: 'LH-108', locationLat: 28.5454, locationLong: 77.1936),
+      const GlobalSchedule(ruleId: 'r_col362_2', courseCode: 'COL362', section: 'A', dayOfWeek: DayOfWeek.thu, startTime: '09:00', endTime: '10:00', locationName: 'LH-108', locationLat: 28.5454, locationLong: 77.1936),
+      const GlobalSchedule(ruleId: 'r_col362_3', courseCode: 'COL362', section: 'A', dayOfWeek: DayOfWeek.fri, startTime: '11:00', endTime: '12:00', locationName: 'LH-108', locationLat: 28.5454, locationLong: 77.1936),
     ],
     'COL334': [
-      GlobalScheduleSlot(ruleId: 'r_col334_1', courseCode: 'COL334', section: 'A', dayOfWeek: 'MON', startTime: '14:00', endTime: '15:00', locationName: 'LH-120', locationLat: 28.5456, locationLong: 77.1934),
-      GlobalScheduleSlot(ruleId: 'r_col334_2', courseCode: 'COL334', section: 'A', dayOfWeek: 'WED', startTime: '14:00', endTime: '15:00', locationName: 'LH-120', locationLat: 28.5456, locationLong: 77.1934),
+      const GlobalSchedule(ruleId: 'r_col334_1', courseCode: 'COL334', section: 'A', dayOfWeek: DayOfWeek.mon, startTime: '14:00', endTime: '15:00', locationName: 'LH-120', locationLat: 28.5456, locationLong: 77.1934),
+      const GlobalSchedule(ruleId: 'r_col334_2', courseCode: 'COL334', section: 'A', dayOfWeek: DayOfWeek.wed, startTime: '14:00', endTime: '15:00', locationName: 'LH-120', locationLat: 28.5456, locationLong: 77.1934),
     ],
   };
 
   /// Get global schedule for a course
-  Future<List<GlobalScheduleSlot>> getGlobalSchedule(String courseCode, {String? section}) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    final slots = _globalSchedules[courseCode] ?? [];
-    if (section != null) {
-      return slots.where((s) => s.section == section || s.section == null).toList();
+  /// Tries local Drift cache first, then fetches "Remote".
+  Future<List<GlobalSchedule>> getGlobalSchedule(String courseCode, {String? section}) async {
+    // 1. Check Offline Cache (Drift)
+    final hasCache = await _db.hasSchedulesForCourse(courseCode);
+    
+    if (hasCache) {
+      // Return cached data
+      final cached = await _db.getSchedulesForCourse(courseCode);
+      
+      // Filter by section if needed
+      var filtered = cached;
+      if (section != null) {
+        filtered = cached.where((s) => s.section == section || s.section == null).toList();
+      }
+      
+      return filtered.map((e) => GlobalSchedule(
+        ruleId: e.ruleId,
+        courseCode: e.courseCode,
+        section: e.section,
+        dayOfWeek: DayOfWeek.fromString(e.dayOfWeek), // Convert string to Enum
+        startTime: e.startTime,
+        endTime: e.endTime,
+        locationName: e.locationName,
+        locationLat: e.locationLat,
+        locationLong: e.locationLong,
+        wifiSsid: e.wifiSsid,
+      )).toList();
     }
-    return slots;
+    
+    // 2. Fetch "Remote" (Mock)
+    await Future.delayed(const Duration(milliseconds: 200));
+    final remoteSlots = _mockRemoteSchedules[courseCode] ?? [];
+    
+    // 3. Cache to Drift
+    if (remoteSlots.isNotEmpty) {
+      await _db.cacheGlobalSchedules(courseCode, remoteSlots.map((s) => GlobalSchedulesCompanion(
+        ruleId: drift.Value(s.ruleId),
+        courseCode: drift.Value(s.courseCode),
+        section: drift.Value(s.section),
+        dayOfWeek: drift.Value(s.dayOfWeek.toJson()), // Store Enum as String
+        startTime: drift.Value(s.startTime),
+        endTime: drift.Value(s.endTime),
+        locationName: drift.Value(s.locationName ?? 'TBD'),
+        locationLat: drift.Value(s.locationLat),
+        locationLong: drift.Value(s.locationLong),
+        wifiSsid: drift.Value(s.wifiSsid),
+      )).toList());
+    }
+
+    if (section != null) {
+      return remoteSlots.where((s) => s.section == section || s.section == null).toList();
+    }
+    return remoteSlots;
   }
 
   /// Get all global schedules for today (for dashboard timeline)
-  Future<List<GlobalScheduleSlot>> getSchedulesForDay(String dayOfWeek, {List<String>? courseCodes}) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    final result = <GlobalScheduleSlot>[];
+  /// Note: This fetches one-by-one which isn't efficient but works for now.
+  /// In real Supabase impl, we'd query `global_schedules` with `course_code IN (...)`.
+  Future<List<GlobalSchedule>> getSchedulesForDay(String dayOfWeek, {List<String>? courseCodes}) async {
+    final result = <GlobalSchedule>[];
     
-    for (final entry in _globalSchedules.entries) {
-      if (courseCodes != null && !courseCodes.contains(entry.key)) continue;
-      result.addAll(entry.value.where((s) => s.dayOfWeek == dayOfWeek.toUpperCase()));
+    // Convert input string to Enum for comparison if needed, or string compare
+    // But GlobalSchedule.dayOfWeek is Enum.
+    
+    if (courseCodes != null) {
+      for (final code in courseCodes) {
+        final slots = await getGlobalSchedule(code);
+        result.addAll(slots.where((s) => s.dayOfWeek.name.toUpperCase() == dayOfWeek.toUpperCase()));
+      }
+    } else {
+      // Fallback (all known)
+       for (final code in _mockRemoteSchedules.keys) {
+        final slots = await getGlobalSchedule(code);
+        result.addAll(slots.where((s) => s.dayOfWeek.name.toUpperCase() == dayOfWeek.toUpperCase()));
+      }
     }
     
     // Sort by start time
@@ -239,30 +305,5 @@ class SharedDataRepository {
   }
 }
 
-/// Global schedule slot model (Layer 1 - from Supabase)
-class GlobalScheduleSlot {
-  final String ruleId;
-  final String courseCode;
-  final String? section;
-  final String dayOfWeek;
-  final String startTime;
-  final String endTime;
-  final String locationName;
-  final double? locationLat;
-  final double? locationLong;
-  final String? wifiSsid;
-
-  const GlobalScheduleSlot({
-    required this.ruleId,
-    required this.courseCode,
-    this.section,
-    required this.dayOfWeek,
-    required this.startTime,
-    required this.endTime,
-    required this.locationName,
-    this.locationLat,
-    this.locationLong,
-    this.wifiSsid,
-  });
-}
+// NOTE: GlobalScheduleSlot was removed in favor of domain model GlobalSchedule
 

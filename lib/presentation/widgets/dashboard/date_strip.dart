@@ -3,18 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DateStrip extends StatefulWidget {
-  final DateTime initialDate;
-  final ValueChanged<DateTime>? onDateSelected;
-  final bool enablePast;
-  final int daysCount;
 
   const DateStrip({
-    super.key,
-    required this.initialDate,
+    required this.initialDate, super.key,
     this.onDateSelected,
     this.enablePast = true,
     this.daysCount = 7,
   });
+  final DateTime initialDate;
+  final ValueChanged<DateTime>? onDateSelected;
+  final bool enablePast;
+  final int daysCount;
 
   @override
   State<DateStrip> createState() => _DateStripState();

@@ -4,11 +4,11 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for action items (action_items.json)
 class ActionItemRepository {
+
+  ActionItemRepository(this._jsonService);
   static const String _filename = 'action_items.json';
 
   final JsonFileService _jsonService;
-
-  ActionItemRepository(this._jsonService);
 
   /// Get all action items
   Future<List<ActionItem>> getAll() async {
@@ -58,6 +58,17 @@ class ActionItemRepository {
 
     await _jsonService.appendToJsonArray(_filename, item.toJson());
     return item;
+  }
+
+  /// Save existing or new item object
+  Future<void> save(ActionItem item) async {
+    // Check if exists to update or append?
+    // For simplicity, append if not exists or update.
+    // RealtimeService creates NEW items.
+    
+    // Check if ID exists (expensive? or just append?)
+    // RealtimeService uses unique IDs.
+    await _jsonService.appendToJsonArray(_filename, item.toJson());
   }
 
   /// Resolve action item

@@ -1,7 +1,6 @@
-import 'package:uuid/uuid.dart';
-
 import 'package:adsum/data/sources/local/json_file_service.dart';
 import 'package:adsum/domain/models/work.dart';
+import 'package:uuid/uuid.dart';
 
 /// Repository for course work (assignments, quizzes, exams, projects)
 /// 
@@ -9,13 +8,13 @@ import 'package:adsum/domain/models/work.dart';
 /// - `work.json` - The actual work items
 /// - `work_states.json` - Local state tracking (submitted, grade, hidden)
 class WorkRepository {
+
+  WorkRepository(this._jsonService);
   static const String _workFile = 'course_work.json';
   static const String _statesFile = 'work_states.json';
   static const _uuid = Uuid();
 
   final JsonFileService _jsonService;
-
-  WorkRepository(this._jsonService);
 
   // ============ Work CRUD ============
 
@@ -25,7 +24,7 @@ class WorkRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => Work.fromJson(json))
+        .map(Work.fromJson)
         .toList();
   }
 
@@ -111,7 +110,7 @@ class WorkRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => WorkState.fromJson(json))
+        .map(WorkState.fromJson)
         .toList();
   }
 
@@ -147,7 +146,7 @@ class WorkRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => WorkComment.fromJson(json))
+        .map(WorkComment.fromJson)
         .where((c) => c.workId == workId)
         .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Newest first

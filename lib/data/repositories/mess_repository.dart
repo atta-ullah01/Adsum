@@ -5,11 +5,11 @@ import 'package:adsum/domain/models/mess.dart';
 /// 
 /// Manages `/data/menu_cache.json` - local cache of mess menus
 class MessRepository {
+
+  MessRepository(this._jsonService);
   static const String _cacheFile = 'menu_cache.json';
 
   final JsonFileService _jsonService;
-
-  MessRepository(this._jsonService);
 
   // ============ Cache Management ============
 

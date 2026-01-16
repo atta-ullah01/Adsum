@@ -36,46 +36,19 @@ enum WorkStatus {
 /// Represents course work (assignment, quiz, exam, project)
 /// Maps to `course_work` table in SCHEMA.md
 class Work extends Equatable {
-  final String workId;
-  final String courseCode;
-  final WorkType workType;
-  final String title;
-  final DateTime? dueAt;
-  final DateTime? startAt;
-  final int? durationMinutes;
-  final String? venue;
-  final String? description;
-  final bool isSuperEvent;
-  final DateTime createdAt;
 
   const Work({
     required this.workId,
     required this.courseCode,
     required this.workType,
     required this.title,
-    this.dueAt,
+    required this.createdAt, this.dueAt,
     this.startAt,
     this.durationMinutes,
     this.venue,
     this.description,
     this.isSuperEvent = false,
-    required this.createdAt,
   });
-
-  @override
-  List<Object?> get props => [
-        workId,
-        courseCode,
-        workType,
-        title,
-        dueAt,
-        startAt,
-        durationMinutes,
-        venue,
-        description,
-        isSuperEvent,
-        createdAt,
-      ];
 
   factory Work.fromJson(Map<String, dynamic> json) {
     return Work(
@@ -92,6 +65,32 @@ class Work extends Equatable {
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
+  final String workId;
+  final String courseCode;
+  final WorkType workType;
+  final String title;
+  final DateTime? dueAt;
+  final DateTime? startAt;
+  final int? durationMinutes;
+  final String? venue;
+  final String? description;
+  final bool isSuperEvent;
+  final DateTime createdAt;
+
+  @override
+  List<Object?> get props => [
+        workId,
+        courseCode,
+        workType,
+        title,
+        dueAt,
+        startAt,
+        durationMinutes,
+        venue,
+        description,
+        isSuperEvent,
+        createdAt,
+      ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -155,10 +154,6 @@ class Work extends Equatable {
 /// Tracks local state of course work
 /// Maps to `/data/work_states.json` in SCHEMA.md
 class WorkState extends Equatable {
-  final String workId;
-  final WorkStatus status;
-  final String? grade;
-  final bool isHiddenFromCalendar;
 
   const WorkState({
     required this.workId,
@@ -166,9 +161,6 @@ class WorkState extends Equatable {
     this.grade,
     this.isHiddenFromCalendar = false,
   });
-
-  @override
-  List<Object?> get props => [workId, status, grade, isHiddenFromCalendar];
 
   factory WorkState.fromJson(Map<String, dynamic> json) {
     return WorkState(
@@ -178,6 +170,13 @@ class WorkState extends Equatable {
       isHiddenFromCalendar: json['is_hidden_from_calendar'] as bool? ?? false,
     );
   }
+  final String workId;
+  final WorkStatus status;
+  final String? grade;
+  final bool isHiddenFromCalendar;
+
+  @override
+  List<Object?> get props => [workId, status, grade, isHiddenFromCalendar];
 
   Map<String, dynamic> toJson() {
     return {
@@ -206,11 +205,6 @@ class WorkState extends Equatable {
 /// Represents a comment on a work item
 /// Maps to `work_comments` table in SCHEMA.md
 class WorkComment extends Equatable {
-  final String commentId;
-  final String workId;
-  final String userId;
-  final String text;
-  final DateTime createdAt;
 
   const WorkComment({
     required this.commentId,
@@ -219,9 +213,6 @@ class WorkComment extends Equatable {
     required this.text,
     required this.createdAt,
   });
-
-  @override
-  List<Object?> get props => [commentId, workId, userId, text, createdAt];
 
   factory WorkComment.fromJson(Map<String, dynamic> json) {
     return WorkComment(
@@ -232,6 +223,14 @@ class WorkComment extends Equatable {
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
+  final String commentId;
+  final String workId;
+  final String userId;
+  final String text;
+  final DateTime createdAt;
+
+  @override
+  List<Object?> get props => [commentId, workId, userId, text, createdAt];
 
   Map<String, dynamic> toJson() {
     return {

@@ -1,13 +1,14 @@
 import 'dart:async';
 
+import 'package:adsum/core/config/supabase_config.dart';
+import 'package:adsum/core/errors/error_boundary.dart';
+import 'package:adsum/core/router/router.dart';
+import 'package:adsum/core/theme/app_theme.dart';
+import 'package:adsum/core/utils/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'core/router/router.dart';
-import 'core/theme/app_theme.dart';
-import 'core/utils/app_logger.dart';
-import 'core/errors/error_boundary.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
   // Wrap entire app in error zone
@@ -18,6 +19,13 @@ void main() {
       // Initialize logging
       await AppLogger.initialize();
       AppLogger.info('App starting', tags: ['lifecycle']);
+
+      // Initialize Supabase
+      await Supabase.initialize(
+        url: SupabaseConfig.url,
+        anonKey: SupabaseConfig.anonKey,
+      );
+      AppLogger.info('Supabase initialized', tags: ['init', 'auth']);
       
       // Set Flutter error handler
       FlutterError.onError = flutterErrorHandler;
@@ -69,9 +77,9 @@ class AdsumApp extends ConsumerWidget {
 
 /// Production-friendly error widget (no red screen)
 class _ProductionErrorWidget extends StatelessWidget {
-  final FlutterErrorDetails details;
   
   const _ProductionErrorWidget({required this.details});
+  final FlutterErrorDetails details;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +104,7 @@ class _ProductionErrorWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'We\'re working to fix this. Please restart the app.',
+              "We're working to fix this. Please restart the app.",
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.grey[600],
               ),

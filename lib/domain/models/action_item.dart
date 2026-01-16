@@ -1,6 +1,6 @@
 /// Action Item domain models - matches `/data/action_items.json`
+library;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Action item type
@@ -118,33 +118,17 @@ enum Resolution {
 /// Action item - matches `/data/action_items.json`
 @immutable
 class ActionItem {
-  final String itemId;
-  final ActionItemType type;
-  final ActionItemStatus status;
-  final String title;
-  final String body;
-  final DateTime createdAt;
-  final DateTime? resolvedAt;
-  final Resolution? resolution;
-  final Color bgColor;
-  final Color accentColor;
-  final Map<String, dynamic> payload;
 
   const ActionItem({
     required this.itemId,
     required this.type,
-    this.status = ActionItemStatus.pending,
-    required this.title,
-    required this.body,
-    required this.createdAt,
+    required this.title, required this.body, required this.createdAt, this.status = ActionItemStatus.pending,
     this.resolvedAt,
     this.resolution,
     this.bgColor = const Color(0xFFF3F4F6),
     this.accentColor = const Color(0xFF6366F1),
     this.payload = const {},
   });
-
-  bool get isPending => status == ActionItemStatus.pending;
 
   factory ActionItem.fromJson(Map<String, dynamic> json) {
     return ActionItem(
@@ -165,6 +149,19 @@ class ActionItem {
           : const {},
     );
   }
+  final String itemId;
+  final ActionItemType type;
+  final ActionItemStatus status;
+  final String title;
+  final String body;
+  final DateTime createdAt;
+  final DateTime? resolvedAt;
+  final Resolution? resolution;
+  final Color bgColor;
+  final Color accentColor;
+  final Map<String, dynamic> payload;
+
+  bool get isPending => status == ActionItemStatus.pending;
 
   static Color _parseColor(String? hex) {
     if (hex == null || hex.isEmpty) return const Color(0xFFF3F4F6);
@@ -230,9 +227,6 @@ class ActionItem {
 /// Conflict payload details
 @immutable
 class ConflictPayload {
-  final String conflictCategory;
-  final ConflictSource sourceA;
-  final ConflictSource sourceB;
 
   const ConflictPayload({
     required this.conflictCategory,
@@ -247,14 +241,13 @@ class ConflictPayload {
       sourceB: ConflictSource.fromJson(json['sourceB'] as Map<String, dynamic>),
     );
   }
+  final String conflictCategory;
+  final ConflictSource sourceA;
+  final ConflictSource sourceB;
 }
 
 @immutable
 class ConflictSource {
-  final String label;
-  final String title;
-  final String subtitle;
-  final String layer;
 
   const ConflictSource({
     required this.label,
@@ -271,4 +264,8 @@ class ConflictSource {
       layer: json['layer'] as String,
     );
   }
+  final String label;
+  final String title;
+  final String subtitle;
+  final String layer;
 }

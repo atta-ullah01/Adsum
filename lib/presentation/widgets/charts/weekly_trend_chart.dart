@@ -2,10 +2,10 @@ import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class WeeklyTrendChart extends StatelessWidget {
-  final List<double> weeklyAttendance; // List of percentages (0.0 to 1.0) for each week
+class WeeklyTrendChart extends StatelessWidget { // List of percentages (0.0 to 1.0) for each week
 
-  const WeeklyTrendChart({super.key, required this.weeklyAttendance});
+  const WeeklyTrendChart({required this.weeklyAttendance, super.key});
+  final List<double> weeklyAttendance;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class WeeklyTrendChart extends StatelessWidget {
       children: [
         // Percentage Label
         Text(
-          "${(percentage * 100).toInt()}%",
+          '${(percentage * 100).toInt()}%',
           style: GoogleFonts.dmSans(
             fontSize: 10,
             fontWeight: FontWeight.bold,
@@ -57,7 +57,7 @@ class WeeklyTrendChart extends StatelessWidget {
         
         // Week Label
         Text(
-          "W${index + 1}",
+          'W${index + 1}',
           style: GoogleFonts.dmSans(
             fontSize: 12, 
             fontWeight: FontWeight.w600,

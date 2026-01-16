@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -53,7 +54,7 @@ void main() {
     test('saveCustomSyllabus creates new syllabus', () async {
       final repo = helper.container.read(syllabusRepositoryProvider);
       
-      final syllabus = CustomSyllabus(
+      const syllabus = CustomSyllabus(
         courseCode: 'CS101',
         units: [
           SyllabusUnit(
@@ -80,15 +81,15 @@ void main() {
       final repo = helper.container.read(syllabusRepositoryProvider);
       
       // Create initial
-      await repo.saveCustomSyllabus(CustomSyllabus(
+      await repo.saveCustomSyllabus(const CustomSyllabus(
         courseCode: 'CS101',
-        units: [SyllabusUnit(unitId: 'U1', title: 'Old', unitOrder: 1, topics: [])],
+        units: [SyllabusUnit(unitId: 'U1', title: 'Old', unitOrder: 1)],
       ));
 
       // Update
-      await repo.saveCustomSyllabus(CustomSyllabus(
+      await repo.saveCustomSyllabus(const CustomSyllabus(
         courseCode: 'CS101',
-        units: [SyllabusUnit(unitId: 'U1', title: 'New', unitOrder: 1, topics: [])],
+        units: [SyllabusUnit(unitId: 'U1', title: 'New', unitOrder: 1)],
       ));
 
       final fetched = await repo.getCustomSyllabus('CS101');
@@ -104,7 +105,7 @@ void main() {
     test('deleteCustomSyllabus removes syllabus and clears progress', () async {
       final repo = helper.container.read(syllabusRepositoryProvider);
       
-      await repo.saveCustomSyllabus(CustomSyllabus(
+      await repo.saveCustomSyllabus(const CustomSyllabus(
         courseCode: 'CS101',
         units: [SyllabusUnit(unitId: 'U1', title: 'Unit', unitOrder: 1, topics: [
           SyllabusTopic(topicId: 'T1', title: 'Topic'),

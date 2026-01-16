@@ -88,7 +88,7 @@ class _AuditTrailPageState extends State<AuditTrailPage> {
         title: Column(
           children: [
             Text(
-              "CR Audit Trail",
+              'CR Audit Trail',
               style: GoogleFonts.outfit(
                 color: AppColors.textMain, 
                 fontWeight: FontWeight.bold,
@@ -96,7 +96,7 @@ class _AuditTrailPageState extends State<AuditTrailPage> {
               ),
             ),
              Text(
-              "View schedule modifications",
+              'View schedule modifications',
               style: GoogleFonts.dmSans(
                 color: Colors.grey, 
                 fontSize: 12,
@@ -169,9 +169,7 @@ class _AuditTrailPageState extends State<AuditTrailPage> {
                       tagTextColor: event['color'],
                       title: event['title'],
                       subtitle: event['subtitle'],
-                      leftBorderColor: event['borderColor'],
-                      // Add an "Edit" badge if patchable
-                      isLive: false, 
+                      leftBorderColor: event['borderColor'], 
                     );
 
                       // Visual cue for details
@@ -220,14 +218,14 @@ class _AuditTrailPageState extends State<AuditTrailPage> {
               child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 20),
-            Text("Patch Details", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Patch Details', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            _buildDetailRow("Event", event['title']),
-            _buildDetailRow("Status", event['type']),
-            _buildDetailRow("Time", event['time']),
-            _buildDetailRow("Reason", event['subtitle']),
-            _buildDetailRow("Issued By", "You (CR)"),
-            _buildDetailRow("Issued At", "Jan 14, 2026 • 10:30 AM"),
+            _buildDetailRow('Event', event['title']),
+            _buildDetailRow('Status', event['type']),
+            _buildDetailRow('Time', event['time']),
+            _buildDetailRow('Reason', event['subtitle']),
+            _buildDetailRow('Issued By', 'You (CR)'),
+            _buildDetailRow('Issued At', 'Jan 14, 2026 • 10:30 AM'),
             const SizedBox(height: 24),
           ],
         ),

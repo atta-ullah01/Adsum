@@ -91,7 +91,7 @@ class _SyllabusEditorPageState extends State<SyllabusEditorPage> {
           Text("Units & Topics", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           
-          ..._units.map((unit) => _buildUnitCard(unit)).toList(),
+          ..._units.map((unit) => _buildUnitCard(unit)),
           
           const SizedBox(height: 80), // Fab space
         ],

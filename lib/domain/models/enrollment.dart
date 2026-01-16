@@ -1,45 +1,22 @@
 /// Enrollment domain models - matches `/data/enrollments.json`
+library;
 
 import 'package:flutter/foundation.dart';
 
 /// A course enrollment with stats
 @immutable
 class Enrollment {
-  final String enrollmentId;
-  final String? courseCode; // For catalog courses
-  final String? catalogInstructor; // Snapshot of instructor name for catalog courses
-  final CustomCourse? customCourse; // For custom courses
-  final String section;
-  final double targetAttendance;
-  final String colorTheme;
-  final DateTime startDate;
-  final EnrollmentStats stats;
 
   const Enrollment({
     required this.enrollmentId,
-    this.courseCode,
+    required this.startDate, this.courseCode,
     this.catalogInstructor,
     this.customCourse,
     this.section = 'A',
     this.targetAttendance = 75.0,
     this.colorTheme = '#6366F1',
-    required this.startDate,
     this.stats = const EnrollmentStats(),
   });
-
-  /// Whether this is a custom course (not from catalog)
-  bool get isCustom => customCourse != null;
-
-  /// Get course code (custom or catalog)
-  String get effectiveCourseCode =>
-      courseCode ?? customCourse?.code ?? 'UNKNOWN';
-
-  /// Get course name
-  String get courseName =>
-      customCourse?.name ?? courseCode ?? 'Unknown Course';
-
-  /// Get instructor name (custom or catalog)
-  String? get instructor => customCourse?.instructor ?? catalogInstructor;
 
   factory Enrollment.fromJson(Map<String, dynamic> json) {
     return Enrollment(
@@ -60,6 +37,29 @@ class Enrollment {
           : const EnrollmentStats(),
     );
   }
+  final String enrollmentId;
+  final String? courseCode; // For catalog courses
+  final String? catalogInstructor; // Snapshot of instructor name for catalog courses
+  final CustomCourse? customCourse; // For custom courses
+  final String section;
+  final double targetAttendance;
+  final String colorTheme;
+  final DateTime startDate;
+  final EnrollmentStats stats;
+
+  /// Whether this is a custom course (not from catalog)
+  bool get isCustom => customCourse != null;
+
+  /// Get course code (custom or catalog)
+  String get effectiveCourseCode =>
+      courseCode ?? customCourse?.code ?? 'UNKNOWN';
+
+  /// Get course name
+  String get courseName =>
+      customCourse?.name ?? courseCode ?? 'Unknown Course';
+
+  /// Get instructor name (custom or catalog)
+  String? get instructor => customCourse?.instructor ?? catalogInstructor;
 
   Map<String, dynamic> toJson() => {
         'enrollment_id': enrollmentId,
@@ -101,10 +101,6 @@ class Enrollment {
 /// Custom course definition (embedded in enrollment)
 @immutable
 class CustomCourse {
-  final String code;
-  final String name;
-  final String instructor;
-  final int totalExpected;
 
   const CustomCourse({
     required this.code,
@@ -121,6 +117,10 @@ class CustomCourse {
       totalExpected: json['total_expected'] as int? ?? 30,
     );
   }
+  final String code;
+  final String name;
+  final String instructor;
+  final int totalExpected;
 
   Map<String, dynamic> toJson() => {
         'code': code,
@@ -147,19 +147,12 @@ class CustomCourse {
 /// Enrollment statistics
 @immutable
 class EnrollmentStats {
-  final int totalClasses;
-  final int attended;
-  final int safeBunks;
 
   const EnrollmentStats({
     this.totalClasses = 0,
     this.attended = 0,
     this.safeBunks = 0,
   });
-
-  /// Current attendance percentage
-  double get attendancePercent =>
-      totalClasses > 0 ? (attended / totalClasses) * 100 : 0;
 
   factory EnrollmentStats.fromJson(Map<String, dynamic> json) {
     return EnrollmentStats(
@@ -168,6 +161,13 @@ class EnrollmentStats {
       safeBunks: json['safe_bunks'] as int? ?? 0,
     );
   }
+  final int totalClasses;
+  final int attended;
+  final int safeBunks;
+
+  /// Current attendance percentage
+  double get attendancePercent =>
+      totalClasses > 0 ? (attended / totalClasses) * 100 : 0;
 
   Map<String, dynamic> toJson() => {
         'total_classes': totalClasses,

@@ -1,6 +1,6 @@
+import 'package:adsum/domain/models/user_profile.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:adsum/domain/models/user_profile.dart';
 
 /// Service for handling device permission requests.
 ///
@@ -53,12 +53,12 @@ class PermissionService {
 
   /// Check if Location Always permission is granted.
   Future<bool> isLocationGranted() async {
-    return await Permission.locationAlways.isGranted;
+    return Permission.locationAlways.isGranted;
   }
 
   /// Check if Activity Recognition permission is granted.
   Future<bool> isActivityGranted() async {
-    return await Permission.activityRecognition.isGranted;
+    return Permission.activityRecognition.isGranted;
   }
 
   /// Verify all enabled permissions are still granted.

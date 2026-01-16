@@ -2,11 +2,6 @@ import 'package:flutter/foundation.dart';
 
 @immutable
 class Course {
-  final String courseCode;
-  final String universityId;
-  final String name;
-  final String instructor;
-  final String description;
 
   const Course({
     required this.courseCode,
@@ -25,6 +20,11 @@ class Course {
       description: json['description'] as String? ?? '',
     );
   }
+  final String courseCode;
+  final String universityId;
+  final String name;
+  final String instructor;
+  final String description;
 
   Map<String, dynamic> toJson() => {
         'course_code': courseCode,

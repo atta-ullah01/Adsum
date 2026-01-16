@@ -1,21 +1,29 @@
+import 'package:adsum/domain/models/models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class User {
-  final String name;
-  final bool isGuest;
 
   const User({
     required this.name,
     required this.isGuest,
+    this.profile,
   });
 
   factory User.guest() {
-    return const User(name: "Guest", isGuest: true);
+    return const User(name: 'Guest', isGuest: true);
   }
 
-  factory User.mock() {
-    return const User(name: "Attaullah", isGuest: false);
+  factory User.fromProfile(UserProfile profile) {
+    return User(
+      name: profile.fullName,
+      isGuest: false,
+      profile: profile,
+    );
   }
+  final String name;
+  final bool isGuest;
+
+  final UserProfile? profile;
 }
 
 class AuthNotifier extends Notifier<User?> {
@@ -28,8 +36,8 @@ class AuthNotifier extends Notifier<User?> {
     state = User.guest();
   }
 
-  void loginAsUser() {
-    state = User.mock();
+  void loginAsUser(UserProfile profile) {
+    state = User.fromProfile(profile);
   }
 
   void logout() {

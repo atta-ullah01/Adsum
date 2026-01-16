@@ -1,17 +1,41 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:adsum/core/services/permission_service.dart';
+import 'package:adsum/data/repositories/repositories.dart';
+import 'package:adsum/data/repositories/schedule_modification_repository.dart';
+import 'package:adsum/data/repositories/shared_data_repository.dart';
+import 'package:adsum/data/services/auth_service.dart';
+import 'package:adsum/data/services/mock_data_seeder.dart';
+import 'package:adsum/data/services/realtime_service.dart';
+import 'package:adsum/data/services/sync_service.dart';
 import 'package:adsum/data/sources/local/app_database.dart' hide Enrollment;
 import 'package:adsum/data/sources/local/json_file_service.dart';
-import 'package:adsum/data/repositories/repositories.dart';
-import 'package:adsum/data/repositories/shared_data_repository.dart';
-import 'package:adsum/data/repositories/schedule_modification_repository.dart';
-import 'package:adsum/data/services/mock_data_seeder.dart';
+import 'package:adsum/data/sources/remote/calendar_remote_source.dart';
+import 'package:adsum/data/sources/remote/course_remote_source.dart';
+import 'package:adsum/data/sources/remote/mess_remote_source.dart';
+import 'package:adsum/data/sources/remote/syllabus_remote_source.dart';
+import 'package:adsum/data/sources/remote/university_remote_source.dart';
+import 'package:adsum/data/sources/remote/work_remote_source.dart';
+import 'package:adsum/data/sync/writers/attendance_writer.dart';
+import 'package:adsum/data/sync/writers/enrollment_writer.dart';
+import 'package:adsum/data/sync/writers/settings_writer.dart';
 import 'package:adsum/data/validation/data_validation.dart';
 import 'package:adsum/domain/models/models.dart';
 import 'package:adsum/domain/services/services.dart';
-import 'package:adsum/core/services/permission_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ============ Core Services ============
+
+/// Auth service
+final authServiceProvider = Provider<AuthService>((ref) {
+  return AuthService(ref.watch(supabaseClientProvider));
+});
+
+/// Supabase client (singleton)
+final supabaseClientProvider = Provider<SupabaseClient>((ref) {
+  return Supabase.instance.client;
+});
+
+/// Main database instance (singleton)
 
 /// Main database instance (singleton)
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -84,7 +108,7 @@ final calendarRepositoryProvider = Provider<CalendarRepository>((ref) {
 
 /// Shared Data repository (Universities, Hostels)
 final sharedDataRepositoryProvider = Provider<SharedDataRepository>((ref) {
-  return SharedDataRepository();
+  return SharedDataRepository(ref.watch(databaseProvider));
 });
 
 /// Mock Data Seeder (for testing)
@@ -98,6 +122,19 @@ final permissionServiceProvider = Provider<PermissionService>((ref) {
 });
 
 // ============ Service Providers ============
+
+/// Sync service (keeps queue processing)
+final syncServiceProvider = Provider<SyncService>((ref) {
+  return SyncService(ref.watch(databaseProvider), ref);
+});
+
+/// Realtime service
+final realtimeServiceProvider = Provider<RealtimeService>((ref) {
+  return RealtimeService(
+    ref.watch(supabaseClientProvider), 
+    ref.watch(actionItemRepositoryProvider),
+  );
+});
 
 /// Schedule service
 final scheduleServiceProvider = Provider<ScheduleService>((ref) {
@@ -148,7 +185,7 @@ final todayScheduleProvider = FutureProvider<List<ScheduleEvent>>((ref) async {
 });
 
 /// Schedule events for selected date
-final scheduleForDateProvider = FutureProvider.family<List<ScheduleEvent>, DateTime>(
+final FutureProviderFamily<List<ScheduleEvent>, DateTime> scheduleForDateProvider = FutureProvider.family<List<ScheduleEvent>, DateTime>(
   (ref, date) async {
     final service = ref.watch(scheduleServiceProvider);
     return service.getEventsForDate(date);
@@ -174,7 +211,7 @@ final pendingActionCountProvider = FutureProvider<int>((ref) async {
 });
 
 /// Attendance logs for a specific enrollment
-final attendanceLogsProvider = FutureProvider.family<List<AttendanceLog>, String>(
+final FutureProviderFamily<List<AttendanceLog>, String> attendanceLogsProvider = FutureProvider.family<List<AttendanceLog>, String>(
   (ref, enrollmentId) async {
     final repo = ref.watch(attendanceRepositoryProvider);
     return repo.getLogsForEnrollment(enrollmentId);
@@ -202,7 +239,7 @@ final completedWorkProvider = FutureProvider<List<Work>>((ref) async {
 });
 
 /// Work items for a specific course
-final courseWorkProvider = FutureProvider.family<List<Work>, String>(
+final FutureProviderFamily<List<Work>, String> courseWorkProvider = FutureProvider.family<List<Work>, String>(
   (ref, courseCode) async {
     final service = ref.watch(workServiceProvider);
     return service.getForCourse(courseCode);
@@ -210,7 +247,7 @@ final courseWorkProvider = FutureProvider.family<List<Work>, String>(
 );
 
 /// Comments for a work item
-final workCommentsProvider = FutureProvider.family<List<WorkComment>, String>(
+final FutureProviderFamily<List<WorkComment>, String> workCommentsProvider = FutureProvider.family<List<WorkComment>, String>(
   (ref, workId) async {
     final service = ref.watch(workServiceProvider);
     return service.getComments(workId);
@@ -218,7 +255,7 @@ final workCommentsProvider = FutureProvider.family<List<WorkComment>, String>(
 );
 
 /// Syllabus progress for a course (list of completed topic IDs)
-final syllabusProgressProvider = FutureProvider.family<List<String>, String>(
+final FutureProviderFamily<List<String>, String> syllabusProgressProvider = FutureProvider.family<List<String>, String>(
   (ref, courseCode) async {
     final service = ref.watch(syllabusServiceProvider);
     return service.getProgress(courseCode);
@@ -226,7 +263,7 @@ final syllabusProgressProvider = FutureProvider.family<List<String>, String>(
 );
 
 /// Custom syllabus for a course
-final customSyllabusProvider = FutureProvider.family<CustomSyllabus?, String>(
+final FutureProviderFamily<CustomSyllabus?, String> customSyllabusProvider = FutureProvider.family<CustomSyllabus?, String>(
   (ref, courseCode) async {
     final service = ref.watch(syllabusServiceProvider);
     return service.getCustomSyllabus(courseCode);
@@ -240,7 +277,7 @@ final todayMessMenuProvider = FutureProvider<List<MessMenu>>((ref) async {
 });
 
 /// Mess menus for a specific day
-final messMenuForDayProvider = FutureProvider.family<List<MessMenu>, MessDayOfWeek>(
+final FutureProviderFamily<List<MessMenu>, MessDayOfWeek> messMenuForDayProvider = FutureProvider.family<List<MessMenu>, MessDayOfWeek>(
   (ref, day) async {
     final service = ref.watch(messServiceProvider);
     return service.getMenusForDay(day);
@@ -254,7 +291,7 @@ final calendarEventsProvider = FutureProvider<List<CalendarEvent>>((ref) async {
 });
 
 /// Calendar events for a specific date
-final calendarEventsForDateProvider = FutureProvider.family<List<CalendarEvent>, DateTime>(
+final FutureProviderFamily<List<CalendarEvent>, DateTime> calendarEventsForDateProvider = FutureProvider.family<List<CalendarEvent>, DateTime>(
   (ref, date) async {
     final service = ref.watch(calendarServiceProvider);
     return service.getEventsForDate(date);
@@ -282,6 +319,46 @@ final deadLetterItemsProvider = FutureProvider<List<OfflineQueueItem>>((ref) asy
   return db.getDeadLetterItems();
 });
 
+// ============ Sync Writers ============
+
+final attendanceWriterProvider = Provider<AttendanceWriter>((ref) {
+  return AttendanceWriter(ref.watch(supabaseClientProvider));
+});
+
+final enrollmentWriterProvider = Provider<EnrollmentWriter>((ref) {
+  return EnrollmentWriter(ref.watch(supabaseClientProvider));
+});
+
+final settingsWriterProvider = Provider<SettingsWriter>((ref) {
+  return SettingsWriter(ref.watch(supabaseClientProvider));
+});
+
+// ============ Remote Data Sources ============
+
+final universityRemoteSourceProvider = Provider<UniversityRemoteSource>((ref) {
+  return UniversityRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final courseRemoteSourceProvider = Provider<CourseRemoteSource>((ref) {
+  return CourseRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final calendarRemoteSourceProvider = Provider<CalendarRemoteSource>((ref) {
+  return CalendarRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final workRemoteSourceProvider = Provider<WorkRemoteSource>((ref) {
+  return WorkRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final messRemoteSourceProvider = Provider<MessRemoteSource>((ref) {
+  return MessRemoteSource(ref.watch(supabaseClientProvider));
+});
+
+final syllabusRemoteSourceProvider = Provider<SyllabusRemoteSource>((ref) {
+  return SyllabusRemoteSource(ref.watch(supabaseClientProvider));
+});
+
 // ============ Shared Data Providers ============
 
 /// All Universities
@@ -291,7 +368,7 @@ final universitiesProvider = FutureProvider<List<University>>((ref) async {
 });
 
 /// Hostels for a University
-final hostelsProvider = FutureProvider.family<List<Hostel>, String>((ref, universityId) async {
+final FutureProviderFamily<List<Hostel>, String> hostelsProvider = FutureProvider.family<List<Hostel>, String>((ref, universityId) async {
   final repo = ref.watch(sharedDataRepositoryProvider);
   return repo.getHostels(universityId);
 });

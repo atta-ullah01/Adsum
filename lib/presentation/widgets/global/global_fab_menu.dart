@@ -29,24 +29,24 @@ class GlobalFabMenu extends StatelessWidget {
             const SizedBox(height: 24),
             
             // Navigation Section - 4 items
-            Text("Navigate", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Navigate', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavIcon(context, Ionicons.stats_chart, "Academics", () {
+                _buildNavIcon(context, Ionicons.stats_chart, 'Academics', () {
                    context.pop();
                    context.push('/academics');
                 }),
-                _buildNavIcon(context, Ionicons.notifications_outline, "Actions", () {
+                _buildNavIcon(context, Ionicons.notifications_outline, 'Actions', () {
                    context.pop();
                    context.push('/action-center');
                 }),
-                _buildNavIcon(context, Ionicons.calendar_outline, "Calendar", () {
+                _buildNavIcon(context, Ionicons.calendar_outline, 'Calendar', () {
                    context.pop();
                    context.push('/calendar');
                 }),
-                _buildNavIcon(context, Ionicons.restaurant_outline, "Mess", () {
+                _buildNavIcon(context, Ionicons.restaurant_outline, 'Mess', () {
                    context.pop();
                    context.push('/mess');
                 }),
@@ -58,18 +58,18 @@ class GlobalFabMenu extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Quick Actions Section - 3 items
-            Text("Quick Actions", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Quick Actions', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             
-            _buildActionItem(context, Ionicons.book_outline, "Add Course", "Enroll in a new subject", () {
+            _buildActionItem(context, Ionicons.book_outline, 'Add Course', 'Enroll in a new subject', () {
                context.pop();
                context.push('/manage-courses');
             }),
-            _buildActionItem(context, Ionicons.add_circle_outline, "Add Event", "Create personal reminder", () {
+            _buildActionItem(context, Ionicons.add_circle_outline, 'Add Event', 'Create personal reminder', () {
                context.pop();
                context.push('/calendar'); // TODO: Pass add mode parameter
             }),
-            _buildActionItem(context, Ionicons.settings_outline, "Settings", "App preferences & profile", () {
+            _buildActionItem(context, Ionicons.settings_outline, 'Settings', 'App preferences & profile', () {
                context.pop();
                context.push('/settings');
             }),
@@ -88,7 +88,7 @@ class GlobalFabMenu extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.bgApp,
               shape: BoxShape.circle,
             ),
@@ -105,12 +105,12 @@ class GlobalFabMenu extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
           children: [
             Container(
               width: 50, height: 50,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.bgApp,
                 shape: BoxShape.circle,
               ),

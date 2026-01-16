@@ -1,28 +1,24 @@
 import 'package:adsum/core/theme/app_colors.dart';
-import 'package:adsum/data/providers/data_providers.dart';
-import 'package:adsum/domain/models/models.dart';
+import 'package:adsum/presentation/pages/calendar/providers/holiday_injection_viewmodel.dart';
+import 'package:adsum/presentation/pages/calendar/widgets/extracted_holiday_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:go_router/go_router.dart';
 
-class HolidayInjectionPage extends ConsumerStatefulWidget {
+class HolidayInjectionPage extends ConsumerWidget {
   const HolidayInjectionPage({super.key});
 
   @override
-  ConsumerState<HolidayInjectionPage> createState() => _HolidayInjectionPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(holidayInjectionViewModelProvider);
+    final notifier = ref.read(holidayInjectionViewModelProvider.notifier);
 
-class _HolidayInjectionPageState extends ConsumerState<HolidayInjectionPage> {
-  bool _isProcessing = false;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Import Holidays", style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black)),
+        title: Text('Import Holidays', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -51,7 +47,7 @@ class _HolidayInjectionPageState extends ConsumerState<HolidayInjectionPage> {
                        children: [
                          const Icon(Ionicons.document_text, size: 64, color: Colors.grey),
                          const SizedBox(height: 16),
-                         Text("holiday_circular_2026.pdf", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.grey[700])),
+                         Text('holiday_circular_2026.pdf', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.grey[700])),
                        ],
                      ),
                    ),
@@ -70,7 +66,7 @@ class _HolidayInjectionPageState extends ConsumerState<HolidayInjectionPage> {
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                 boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)],
@@ -81,24 +77,22 @@ class _HolidayInjectionPageState extends ConsumerState<HolidayInjectionPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                       Text("Extracted Events", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+                       Text('Extracted Events', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
                        Container(
                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                          decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-                         child: Text("High Confidence", style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.success)),
+                         child: Text('High Confidence', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.success)),
                        )
                     ],
                   ),
                   const SizedBox(height: 16),
                   
                   Expanded(
-                    child: ListView(
-                      children: [
-                         _buildExtractedItem("Mahavir Jayanti", "04 April 2026", "Holiday"),
-                         _buildExtractedItem("Good Friday", "07 April 2026", "Holiday"),
-                         _buildExtractedItem("Dr. Ambedkar Jayanti", "14 April 2026", "Holiday"),
-                         _buildExtractedItem("Mid-Sem Pattern", "18 May 2026", "Exam Info", isLowConfidence: true),
-                      ],
+                    child: ListView.builder(
+                      itemCount: state.extractedEvents.length,
+                      itemBuilder: (context, index) {
+                        return ExtractedHolidayCard(event: state.extractedEvents[index]);
+                      },
                     ),
                   ),
                   
@@ -108,86 +102,26 @@ class _HolidayInjectionPageState extends ConsumerState<HolidayInjectionPage> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        setState(() => _isProcessing = true);
-                        
-                        final service = ref.read(calendarServiceProvider);
-                        
-                        // Add real events
-                        await service.addEvent(
-                          title: "Mahavir Jayanti",
-                          date: DateTime(2026, 4, 4),
-                          type: CalendarEventType.holiday,
-                          description: "Imported from PDF",
-                        );
-                        await service.addEvent(
-                          title: "Good Friday",
-                          date: DateTime(2026, 4, 7),
-                          type: CalendarEventType.holiday,
-                          description: "Imported from PDF",
-                        );
-                        await service.addEvent(
-                          title: "Dr. Ambedkar Jayanti",
-                          date: DateTime(2026, 4, 14),
-                          type: CalendarEventType.holiday,
-                          description: "Imported from PDF",
-                        );
-                        
-                        // Trigger refresh
-                        ref.invalidate(calendarEventsProvider);
-
-                        Future.delayed(const Duration(seconds: 1), () {
-                          if (mounted) {
-                            context.pop();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Holidays Imported to Calendar!")));
-                          }
-                        });
+                      onPressed: state.isProcessing ? null : () async {
+                        await notifier.importHolidays();
+                        if (context.mounted) {
+                           context.pop();
+                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Holidays Imported to Calendar!')));
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
-                      child: _isProcessing 
+                      child: state.isProcessing 
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : Text("Confirm & Update Calendar", style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        : Text('Confirm & Update Calendar', style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   )
                 ],
               ),
             ),
           )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExtractedItem(String title, String date, String type, {bool isLowConfidence = false}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
-        border: isLowConfidence ? Border.all(color: AppColors.warning) : null,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-           Column(
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-               Text(title, style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, fontSize: 16)),
-               Text(date, style: GoogleFonts.dmSans(color: Colors.grey, fontSize: 13)),
-             ],
-           ),
-           Container(
-             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-             decoration: BoxDecoration(
-               color: isLowConfidence ? AppColors.pastelOrange : AppColors.pastelPurple,
-               borderRadius: BorderRadius.circular(8),
-             ),
-             child: Text(type, style: GoogleFonts.dmSans(fontSize: 11, fontWeight: FontWeight.bold)),
-           )
         ],
       ),
     );

@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -21,8 +22,7 @@ void main() {
 
       final enrollment = await repo.addEnrollment(
         courseCode: 'CS101',
-        section: 'A',
-        targetAttendance: 80.0,
+        targetAttendance: 80,
         colorTheme: '#FF5733',
       );
 
@@ -36,10 +36,9 @@ void main() {
     test('addEnrollment with custom course', () async {
       final repo = helper.container.read(enrollmentRepositoryProvider);
 
-      final customCourse = CustomCourse(
+      const customCourse = CustomCourse(
         code: 'ELEC01',
         name: 'Guitar Practice',
-        instructor: 'Self',
       );
 
       final enrollment = await repo.addEnrollment(customCourse: customCourse);
@@ -54,7 +53,7 @@ void main() {
       await repo.addEnrollment(courseCode: 'MATH101');
       await repo.addEnrollment(courseCode: 'PHYS101');
       await repo.addEnrollment(
-        customCourse: CustomCourse(code: 'C1', name: 'Custom', instructor: 'Me'),
+        customCourse: const CustomCourse(code: 'C1', name: 'Custom', instructor: 'Me'),
       );
 
       final enrollments = await repo.getEnrollments();
@@ -82,10 +81,9 @@ void main() {
 
       final created = await repo.addEnrollment(
         courseCode: 'BIO101',
-        targetAttendance: 75.0,
       );
 
-      final updated = created.copyWith(targetAttendance: 85.0);
+      final updated = created.copyWith(targetAttendance: 85);
       await repo.updateEnrollment(updated);
 
       final fetched = await repo.getEnrollment(created.enrollmentId);
@@ -138,10 +136,9 @@ void main() {
     test('update non-existent enrollment does nothing', () async {
       final repo = helper.container.read(enrollmentRepositoryProvider);
       
-      final ghostEnrollment = Enrollment(
+      const ghostEnrollment = Enrollment(
         enrollmentId: 'ghost', 
-        courseCode: 'GHOST', 
-        stats: const EnrollmentStats()
+        courseCode: 'GHOST'
       );
       
       // Should not throw and not add the item

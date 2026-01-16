@@ -4,11 +4,11 @@ import 'package:uuid/uuid.dart';
 
 /// Repository for attendance data (attendance.json)
 class AttendanceRepository {
+
+  AttendanceRepository(this._jsonService);
   static const String _filename = 'attendance.json';
 
   final JsonFileService _jsonService;
-
-  AttendanceRepository(this._jsonService);
 
   /// Get all attendance logs
   Future<List<AttendanceLog>> getAllLogs() async {

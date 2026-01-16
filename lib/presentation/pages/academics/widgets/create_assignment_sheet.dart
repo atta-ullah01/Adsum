@@ -1,17 +1,17 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:ionicons/ionicons.dart';
 
 class CreateAssignmentSheet extends StatefulWidget {
-  final String? initialSubject;
   
   const CreateAssignmentSheet({
     super.key,
     this.initialSubject,
   });
+  final String? initialSubject;
 
   @override
   State<CreateAssignmentSheet> createState() => _CreateAssignmentSheetState();
@@ -26,20 +26,20 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 9, minute: 0); // New for Exams/Quizzes
   
   late String _selectedSubject;
-  String _selectedType = "Assignment";
+  String _selectedType = 'Assignment';
   final TextEditingController _descriptionCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _selectedSubject = widget.initialSubject ?? "CS-302";
+    _selectedSubject = widget.initialSubject ?? 'CS-302';
   }
 
   @override
   Widget build(BuildContext context) {
     // CR-Only Mode: Always broadcast
     const buttonColor = AppColors.accent;
-    const buttonText = "Broadcast to Class";
+    const buttonText = 'Broadcast to Class';
 
     return Container(
       padding: EdgeInsets.only(
@@ -56,13 +56,13 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
         children: [
           Row(
               children: [
-                Text("Issue Course Work", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('Issue Course Work', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 // CR Badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                  child: Text("CR AUTHORITY", style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                  child: Text('CR AUTHORITY', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.accent)),
                 ),
               ],
           ),
@@ -72,7 +72,7 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
           TextField(
             controller: _titleCtrl,
             decoration: InputDecoration(
-              labelText: "Task Title",
+              labelText: 'Task Title',
               labelStyle: GoogleFonts.dmSans(color: Colors.grey),
               filled: true,
               fillColor: Colors.grey[50],
@@ -88,17 +88,17 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                   Expanded(
                       flex: 3,
                       child: DropdownButtonFormField<String>(
-                        value: _selectedSubject,
+                        initialValue: _selectedSubject,
                         decoration: InputDecoration(
-                          labelText: "Subject",
+                          labelText: 'Subject',
                           labelStyle: GoogleFonts.dmSans(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.grey[50],
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
                         // Ensure selected subject is always in the list
-                        items:  {...{"CS-302", "PH-401", "HS-101"}, _selectedSubject}.map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.outfit(fontSize: 14)))).toList(),
+                        items:  {...{'CS-302', 'PH-401', 'HS-101'}, _selectedSubject}.map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.outfit(fontSize: 14)))).toList(),
                         onChanged: (val) => setState(() => _selectedSubject = val!),
                       ),
                   ),
@@ -107,16 +107,16 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                   Expanded(
                       flex: 2,
                       child: DropdownButtonFormField<String>(
-                        value: _selectedType,
+                        initialValue: _selectedType,
                         decoration: InputDecoration(
-                          labelText: "Type",
+                          labelText: 'Type',
                           labelStyle: GoogleFonts.dmSans(color: Colors.grey),
                           filled: true,
                           fillColor: Colors.grey[50],
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         ),
-                        items: ["Assignment", "Project", "Quiz", "Exam"].map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.outfit(fontSize: 14)))).toList(),
+                        items: ['Assignment', 'Project', 'Quiz', 'Exam'].map((s) => DropdownMenuItem(value: s, child: Text(s, style: GoogleFonts.outfit(fontSize: 14)))).toList(),
                         onChanged: (val) => setState(() => _selectedType = val!),
                       ),
                   ),
@@ -178,8 +178,8 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                TextField(
                  controller: _venueCtrl,
                  decoration: InputDecoration(
-                   labelText: "Venue / Seat",
-                   hintText: "e.g. LH-101 • A4",
+                   labelText: 'Venue / Seat',
+                   hintText: 'e.g. LH-101 • A4',
                    filled: true,
                    fillColor: Colors.grey[50],
                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -192,8 +192,8 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                  controller: _durationCtrl,
                  keyboardType: TextInputType.number,
                  decoration: InputDecoration(
-                   labelText: "Duration (minutes)",
-                   hintText: "e.g. 45",
+                   labelText: 'Duration (minutes)',
+                   hintText: 'e.g. 45',
                    filled: true,
                    fillColor: Colors.grey[50],
                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -239,8 +239,8 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
             controller: _descriptionCtrl,
             maxLines: 2,
             decoration: InputDecoration(
-              labelText: "Instructions (Optional)",
-              hintText: "e.g. Submit via email",
+              labelText: 'Instructions (Optional)',
+              hintText: 'e.g. Submit via email',
               filled: true,
               fillColor: Colors.grey[50],
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -259,17 +259,17 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                 // Format Start Date+Time for Exams/Quizzes
                 final formattedDate = DateFormat('EEE, d MMM').format(_selectedDate);
                 final formattedTime = _selectedTime.format(context);
-                final startAt = "$formattedDate, $formattedTime"; // e.g., "Mon, 10 Dec, 9:00 AM"
+                final startAt = '$formattedDate, $formattedTime'; // e.g., "Mon, 10 Dec, 9:00 AM"
 
                 context.pop({
-                  "title": _titleCtrl.text,
-                  "subject": _selectedSubject,
-                  "deadline": formattedDate, // Due Date (Assignments) or End Date (Quiz window)
-                  "start_at": startAt,      // For Exam/Quiz
-                  "type": _selectedType,
-                  "venue": _venueCtrl.text,
-                  "duration_minutes": _durationCtrl.text,
-                  "description": _descriptionCtrl.text,
+                  'title': _titleCtrl.text,
+                  'subject': _selectedSubject,
+                  'deadline': formattedDate, // Due Date (Assignments) or End Date (Quiz window)
+                  'start_at': startAt,      // For Exam/Quiz
+                  'type': _selectedType,
+                  'venue': _venueCtrl.text,
+                  'duration_minutes': _durationCtrl.text,
+                  'description': _descriptionCtrl.text,
                 });
               },
               style: ElevatedButton.styleFrom(

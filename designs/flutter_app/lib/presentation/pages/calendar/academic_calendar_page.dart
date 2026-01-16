@@ -260,7 +260,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
             padding: EdgeInsets.only(bottom: entry.key < dayEvents.length - 1 ? 16 : 0),
             child: _buildEventDetailsCard(entry.value),
           )
-        ).toList(),
+        ),
           
         if (dayEvents.isEmpty)
           Center(
@@ -439,7 +439,7 @@ class _AcademicCalendarPageState extends State<AcademicCalendarPage> {
                   setState(() => event['isActive'] = val);
                   Navigator.pop(context);
                 },
-                activeColor: Colors.black,
+                activeThumbColor: Colors.black,
               ),
             ),
             

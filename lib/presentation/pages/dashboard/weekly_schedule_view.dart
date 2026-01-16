@@ -19,7 +19,7 @@ class _WeeklyScheduleViewState extends State<WeeklyScheduleView> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Weekly Schedule", style: GoogleFonts.outfit(color: AppColors.textMain, fontWeight: FontWeight.bold)),
+        title: Text('Weekly Schedule', style: GoogleFonts.outfit(color: AppColors.textMain, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -40,7 +40,7 @@ class _WeeklyScheduleViewState extends State<WeeklyScheduleView> {
                   height: 60,
                   child: Center(
                     child: Text(
-                      "${index + 8}:00",
+                      '${index + 8}:00',
                       style: GoogleFonts.dmSans(fontSize: 10, color: Colors.grey),
                     ),
                   ),
@@ -86,7 +86,7 @@ class _WeeklyScheduleViewState extends State<WeeklyScheduleView> {
          child: Container(
            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
            decoration: BoxDecoration(color: AppColors.pastelBlue, borderRadius: BorderRadius.circular(8)),
-           child: Center(child: Text("App Design", style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold))),
+           child: Center(child: Text('App Design', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold))),
          ),
        );
     }
@@ -95,7 +95,7 @@ class _WeeklyScheduleViewState extends State<WeeklyScheduleView> {
          child: Container(
            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
            decoration: BoxDecoration(color: AppColors.pastelPink, borderRadius: BorderRadius.circular(8)),
-           child: Center(child: Text("Lab", style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold))),
+           child: Center(child: Text('Lab', style: GoogleFonts.dmSans(fontSize: 10, fontWeight: FontWeight.bold))),
          ),
        );
     }

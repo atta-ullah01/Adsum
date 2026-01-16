@@ -9,11 +9,6 @@ import 'package:ionicons/ionicons.dart';
 enum CRStatus { authorized, pending, none }
 
 class CourseAccess {
-  final String code;
-  final String title;
-  final String section;
-  final CRStatus status;
-  final Color pastelColor;
 
   CourseAccess({
     required this.code,
@@ -22,15 +17,14 @@ class CourseAccess {
     required this.status,
     required this.pastelColor,
   });
+  final String code;
+  final String title;
+  final String section;
+  final CRStatus status;
+  final Color pastelColor;
 }
 
-class ScheduleSlot {
-  final String id;
-  final String day;
-  final String time;
-  final String location;
-  final String type; // Lecture, Lab, Tutorial
-  final int weekday; // 1=Monday, 7=Sunday (matches DateTime.weekday)
+class ScheduleSlot { // 1=Monday, 7=Sunday (matches DateTime.weekday)
 
   ScheduleSlot({
     required this.id,
@@ -40,8 +34,14 @@ class ScheduleSlot {
     required this.type,
     required this.weekday,
   });
+  final String id;
+  final String day;
+  final String time;
+  final String location;
+  final String type; // Lecture, Lab, Tutorial
+  final int weekday;
   
-  String get displayLabel => "$day • $time • $location";
+  String get displayLabel => '$day • $time • $location';
 }
 
 // --- Page ---
@@ -98,7 +98,7 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("CR Authority", style: GoogleFonts.outfit(color: AppColors.textMain, fontWeight: FontWeight.bold)),
+        title: Text('CR Authority', style: GoogleFonts.outfit(color: AppColors.textMain, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -110,7 +110,7 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Course Selector
-            Text("Courses", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Courses', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             SizedBox(
               height: 130,
@@ -152,14 +152,14 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
         decoration: BoxDecoration(
           color: course.pastelColor,
           borderRadius: BorderRadius.circular(28),
-          border: isSelected ? Border.all(color: Colors.black, width: 2) : null,
+          border: isSelected ? Border.all(width: 2) : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(course.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15)),
-            Text("${course.code} • ${course.section}", style: GoogleFonts.dmSans(fontSize: 11, color: Colors.black54)),
+            Text('${course.code} • ${course.section}', style: GoogleFonts.dmSans(fontSize: 11, color: Colors.black54)),
             Align(
               alignment: Alignment.bottomRight,
               child: Container(
@@ -188,16 +188,16 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Step 1: Action Selector
-        Text("What do you want to do?", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('What do you want to do?', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
           runSpacing: 10,
           children: [
-            _buildActionChip("Cancel", Ionicons.close_circle, Colors.red, 'CANCEL'),
-            _buildActionChip("Reschedule", Ionicons.calendar, Colors.blue, 'RESCHEDULE'),
-            _buildActionChip("Extra Class", Ionicons.add_circle, Colors.green, 'EXTRA'),
-            _buildActionChip("Swap Room", Ionicons.swap_horizontal, Colors.purple, 'SWAP'),
+            _buildActionChip('Cancel', Ionicons.close_circle, Colors.red, 'CANCEL'),
+            _buildActionChip('Reschedule', Ionicons.calendar, Colors.blue, 'RESCHEDULE'),
+            _buildActionChip('Extra Class', Ionicons.add_circle, Colors.green, 'EXTRA'),
+            _buildActionChip('Swap Room', Ionicons.swap_horizontal, Colors.purple, 'SWAP'),
           ],
         ),
 
@@ -206,15 +206,15 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
           
           // Step 2 (conditional): Slot Selection - for Cancel, Reschedule, Swap
           if (_needsSlotSelection) ...[
-            Text("Which slot?", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Which slot?', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            ..._getSlots(_selectedCourse.code).map((s) => _buildSlotTile(s)),
+            ..._getSlots(_selectedCourse.code).map(_buildSlotTile),
             const SizedBox(height: 24),
           ],
 
           // Step 3a: Affected Date - "Which occurrence?" (for Cancel, Reschedule, Swap)
           if (_needsAffectedDate) ...[
-            Text("Which date is affected?", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Which date is affected?', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _buildDatePicker(
               _affectedDate, 
@@ -226,17 +226,17 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
 
           // Step 3b: New Date/Time - for Reschedule and Extra Class
           if (_needsNewDateTime) ...[
-            Text(_selectedAction == 'EXTRA' ? "When?" : "Reschedule to:", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(_selectedAction == 'EXTRA' ? 'When?' : 'Reschedule to:', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             // New Date (same day or different)
-            _buildDatePicker(_newDate, (d) => setState(() => _newDate = d), label: _selectedAction == 'EXTRA' ? "Date" : "New Date"),
+            _buildDatePicker(_newDate, (d) => setState(() => _newDate = d), label: _selectedAction == 'EXTRA' ? 'Date' : 'New Date'),
             const SizedBox(height: 12),
             // New Time
             Row(
               children: [
-                Expanded(child: _buildTimePicker("Start", _newStartTime, (t) => setState(() => _newStartTime = t))),
+                Expanded(child: _buildTimePicker('Start', _newStartTime, (t) => setState(() => _newStartTime = t))),
                 const SizedBox(width: 12),
-                Expanded(child: _buildTimePicker("End", _newEndTime, (t) => setState(() => _newEndTime = t))),
+                Expanded(child: _buildTimePicker('End', _newEndTime, (t) => setState(() => _newEndTime = t))),
               ],
             ),
             const SizedBox(height: 24),
@@ -244,16 +244,16 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
 
           // Step 4: New Location - for Reschedule, Extra, Swap
           if (_needsNewLocation) ...[
-            Text("New Location", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('New Location', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _buildInputBox(_locationController, "e.g. LH-201, Lab 3", Ionicons.location_outline),
+            _buildInputBox(_locationController, 'e.g. LH-201, Lab 3', Ionicons.location_outline),
             const SizedBox(height: 24),
           ],
 
           // Step 5: Reason - always required
-          Text("Reason", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('Reason', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
-          _buildInputBox(_reasonController, "Why this change?", Ionicons.chatbubble_outline, maxLines: 2),
+          _buildInputBox(_reasonController, 'Why this change?', Ionicons.chatbubble_outline, maxLines: 2),
           
           const SizedBox(height: 100), // Space for bottom sheet
         ],
@@ -311,8 +311,8 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("${slot.day} • ${slot.time}", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
-                  Text("${slot.type} @ ${slot.location}", style: GoogleFonts.dmSans(fontSize: 12, color: Colors.grey)),
+                  Text('${slot.day} • ${slot.time}', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+                  Text('${slot.type} @ ${slot.location}', style: GoogleFonts.dmSans(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),
@@ -322,9 +322,9 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
     );
   }
 
-  Widget _buildDatePicker(DateTime? date, ValueChanged<DateTime> onPicked, {String label = "Select Date", int? restrictToWeekday}) {
+  Widget _buildDatePicker(DateTime? date, ValueChanged<DateTime> onPicked, {String label = 'Select Date', int? restrictToWeekday}) {
     // Check if current date is valid for the weekday restriction
-    bool hasWarning = restrictToWeekday != null && date != null && date.weekday != restrictToWeekday;
+    final hasWarning = restrictToWeekday != null && date != null && date.weekday != restrictToWeekday;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,7 +354,7 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
                 Icon(Ionicons.calendar_outline, color: hasWarning ? Colors.red : Colors.grey),
                 const SizedBox(width: 12),
                 Text(
-                  date == null ? label : "${date.day}/${date.month}/${date.year}",
+                  date == null ? label : '${date.day}/${date.month}/${date.year}',
                   style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: date == null ? Colors.grey : (hasWarning ? Colors.red : AppColors.textMain)),
                 ),
               ],
@@ -375,7 +375,7 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
   
   DateTime _findNextWeekday(DateTime from, int? weekday) {
     if (weekday == null) return from;
-    DateTime next = from;
+    var next = from;
     while (next.weekday != weekday) {
       next = next.add(const Duration(days: 1));
     }
@@ -428,21 +428,21 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
         children: [
           Icon(_selectedCourse.status == CRStatus.pending ? Ionicons.hourglass_outline : Ionicons.shield_outline, size: 48, color: Colors.grey),
           const SizedBox(height: 16),
-          Text(_selectedCourse.status == CRStatus.pending ? "Request Pending" : "Unauthorized", style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(_selectedCourse.status == CRStatus.pending ? 'Request Pending' : 'Unauthorized', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(
             _selectedCourse.status == CRStatus.pending 
-                ? "Admin is reviewing your request."
-                : "You need approval to manage this schedule.",
+                ? 'Admin is reviewing your request.'
+                : 'You need approval to manage this schedule.',
             textAlign: TextAlign.center,
             style: GoogleFonts.dmSans(color: Colors.grey),
           ),
           if (_selectedCourse.status == CRStatus.none) ...[
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Request Sent!"))),
+              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request Sent!'))),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.black, shape: const StadiumBorder(), padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16)),
-              child: Text("Request Access", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.white)),
+              child: Text('Request Access', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.white)),
             ),
           ],
         ],
@@ -474,14 +474,14 @@ class _SchedulePatcherPageState extends State<SchedulePatcherPage> {
           child: ElevatedButton(
             onPressed: () {
               context.pop();
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Patch Signed & Submitted!")));
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Patch Signed & Submitted!')));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 18),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             ),
-            child: Text("Sign & Submit", style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+            child: Text('Sign & Submit', style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
           ),
         ),
       ),

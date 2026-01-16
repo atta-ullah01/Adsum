@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -23,7 +24,7 @@ void main() {
 
       // Create enrollment
       final enrollment = await enrollmentRepo.addEnrollment(
-        customCourse: CustomCourse(code: 'YOGA', name: 'Morning Yoga', instructor: 'Guru'),
+        customCourse: const CustomCourse(code: 'YOGA', name: 'Morning Yoga', instructor: 'Guru'),
         colorTheme: '#00FF00',
       );
 
@@ -72,10 +73,10 @@ void main() {
       final scheduleService = helper.container.read(scheduleServiceProvider);
 
       final e1 = await enrollmentRepo.addEnrollment(
-        customCourse: CustomCourse(code: 'A', name: 'Course A', instructor: 'X'),
+        customCourse: const CustomCourse(code: 'A', name: 'Course A', instructor: 'X'),
       );
       final e2 = await enrollmentRepo.addEnrollment(
-        customCourse: CustomCourse(code: 'B', name: 'Course B', instructor: 'Y'),
+        customCourse: const CustomCourse(code: 'B', name: 'Course B', instructor: 'Y'),
       );
 
       await scheduleRepo.addCustomSlot(

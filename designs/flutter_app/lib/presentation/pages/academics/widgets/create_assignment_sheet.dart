@@ -88,7 +88,7 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                   Expanded(
                       flex: 3,
                       child: DropdownButtonFormField<String>(
-                        value: _selectedSubject,
+                        initialValue: _selectedSubject,
                         decoration: InputDecoration(
                           labelText: "Subject",
                           labelStyle: GoogleFonts.dmSans(color: Colors.grey),
@@ -107,7 +107,7 @@ class _CreateAssignmentSheetState extends State<CreateAssignmentSheet> {
                   Expanded(
                       flex: 2,
                       child: DropdownButtonFormField<String>(
-                        value: _selectedType,
+                        initialValue: _selectedType,
                         decoration: InputDecoration(
                           labelText: "Type",
                           labelStyle: GoogleFonts.dmSans(color: Colors.grey),

@@ -2,12 +2,6 @@
 import 'package:equatable/equatable.dart';
 
 class University extends Equatable {
-  final String id;
-  final String name;
-  final String domain; // e.g., 'iitd.ac.in', for email validation
-  final String? logoUrl;
-  final DateTime? semesterStart;
-  final DateTime? semesterEnd;
 
   const University({
     required this.id,
@@ -32,6 +26,12 @@ class University extends Equatable {
           : null,
     );
   }
+  final String id;
+  final String name;
+  final String domain; // e.g., 'iitd.ac.in', for email validation
+  final String? logoUrl;
+  final DateTime? semesterStart;
+  final DateTime? semesterEnd;
 
   Map<String, dynamic> toJson() {
     return {
@@ -49,9 +49,6 @@ class University extends Equatable {
 }
 
 class Hostel extends Equatable {
-  final String id;
-  final String name;
-  final String universityId;
 
   const Hostel({
     required this.id,
@@ -66,6 +63,9 @@ class Hostel extends Equatable {
       universityId: json['university_id'] as String,
     );
   }
+  final String id;
+  final String name;
+  final String universityId;
 
   Map<String, dynamic> toJson() {
     return {

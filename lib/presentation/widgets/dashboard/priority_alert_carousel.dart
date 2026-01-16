@@ -1,19 +1,17 @@
-import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/domain/models/action_item.dart';
+import 'package:adsum/presentation/providers/action_center_provider.dart';
 import 'package:adsum/presentation/widgets/dashboard/emergency_pinner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ionicons/ionicons.dart';
-import 'package:adsum/presentation/providers/action_center_provider.dart';
-import 'package:adsum/domain/models/action_item.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ionicons/ionicons.dart';
 
 class PriorityAlertCarousel extends ConsumerStatefulWidget {
-  final DateTime selectedDate;
   
   const PriorityAlertCarousel({
-    super.key,
-    required this.selectedDate,
+    required this.selectedDate, super.key,
   });
+  final DateTime selectedDate;
 
   @override
   ConsumerState<PriorityAlertCarousel> createState() => _PriorityAlertCarouselState();
@@ -47,7 +45,7 @@ class _PriorityAlertCarouselState extends ConsumerState<PriorityAlertCarousel> {
     }
 
     final dayOffset = _getDayOffset(date);
-    List<Map<String, dynamic>> alerts = [];
+    final alerts = <Map<String, dynamic>>[];
 
     if (_isToday(date)) {
       // TODAY: Show Action Items from Repository

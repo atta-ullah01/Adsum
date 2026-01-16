@@ -9,11 +9,11 @@ import 'package:adsum/domain/models/schedule_modification.dart';
 /// - Room Swaps
 /// - Extra Classes
 class ScheduleModificationRepository {
+
+  ScheduleModificationRepository(this._jsonService);
   static const String _file = 'schedule_modifications.json';
 
   final JsonFileService _jsonService;
-
-  ScheduleModificationRepository(this._jsonService);
 
   /// Get all modifications
   Future<List<ScheduleModification>> getAll() async {
@@ -21,7 +21,7 @@ class ScheduleModificationRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => ScheduleModification.fromJson(json))
+        .map(ScheduleModification.fromJson)
         .toList();
   }
 

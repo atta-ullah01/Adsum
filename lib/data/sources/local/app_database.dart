@@ -1,16 +1,15 @@
 import 'dart:io';
 
+import 'package:adsum/core/utils/app_logger.dart';
+import 'package:adsum/data/sources/local/tables/global_schedules_table.dart';
+import 'package:adsum/data/sources/local/tables/offline_queue_table.dart';
+import 'package:adsum/data/sources/local/tables/sync_metadata_table.dart';
+import 'package:adsum/data/sources/local/tables/users_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-
-import 'package:adsum/core/utils/app_logger.dart';
-import 'package:adsum/data/sources/local/tables/users_table.dart';
-import 'package:adsum/data/sources/local/tables/enrollments_table.dart';
-import 'package:adsum/data/sources/local/tables/offline_queue_table.dart';
-import 'package:adsum/data/sources/local/tables/sync_metadata_table.dart';
 
 part 'app_database.g.dart';
 
@@ -18,20 +17,20 @@ part 'app_database.g.dart';
 /// 
 /// Stores runtime data that requires fast queries:
 /// - User profile (cached from cloud)
-/// - Enrollments with stats
+/// - Global Schedules (University Timetable Cache)
 /// - Offline sync queue
 /// - Sync metadata
 @DriftDatabase(tables: [
   Users,
-  Enrollments,
+  GlobalSchedules,
   OfflineQueue,
   SyncMetadata,
 ])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -46,11 +45,15 @@ class AppDatabase extends _$AppDatabase {
           context: {'from': from, 'to': to},
           tags: ['database', 'migration'],
         );
-        // Add migration logic here as schema evolves
-        // Example:
-        // if (from < 2) {
-        //   await m.addColumn(users, users.newColumn);
-        // }
+        
+        if (from < 2) {
+          // Schema v2: Replace Enrollments with GlobalSchedules
+          // We can't easily drop tables in Drift without raw SQL usually, 
+          // but createTable checks for existence.
+          // Since Enrollments was dead code, data loss isn't an issue.
+          await m.createTable(globalSchedules);
+          // Optional: await m.deleteTable('enrollments'); if we wanted to be clean
+        }
       },
       beforeOpen: (details) async {
         // Enable foreign keys
@@ -79,29 +82,38 @@ class AppDatabase extends _$AppDatabase {
   /// Clear user on logout
   Future<void> clearUser() => delete(users).go();
 
-  // ============ Enrollment Operations ============
+  // ============ Global Schedule Operations (Cache) ============
 
-  /// Get all enrollments
-  Future<List<Enrollment>> getAllEnrollments() => select(enrollments).get();
-
-  /// Watch enrollments for reactive UI
-  Stream<List<Enrollment>> watchEnrollments() => select(enrollments).watch();
-
-  /// Get enrollment by ID
-  Future<Enrollment?> getEnrollmentById(String id) {
-    return (select(enrollments)..where((e) => e.enrollmentId.equals(id)))
-        .getSingleOrNull();
+  /// Check if we have cached schedules for a course
+  Future<bool> hasSchedulesForCourse(String courseCode) async {
+    final count = countAll();
+    final query = selectOnly(globalSchedules)
+      ..where(globalSchedules.courseCode.equals(courseCode))
+      ..addColumns([count]);
+    final result = await query.getSingle();
+    return (result.read(count) ?? 0) > 0;
   }
 
-  /// Upsert enrollment
-  Future<void> upsertEnrollment(EnrollmentsCompanion enrollment) async {
-    await into(enrollments).insertOnConflictUpdate(enrollment);
+  /// Get cached schedules for a course (Layer 1)
+  Future<List<GlobalScheduleEntity>> getSchedulesForCourse(String courseCode) {
+    return (select(globalSchedules)..where((t) => t.courseCode.equals(courseCode))).get();
   }
 
-  /// Delete enrollment
-  Future<void> deleteEnrollment(String id) async {
-    await (delete(enrollments)..where((e) => e.enrollmentId.equals(id))).go();
+  /// Cache schedules (Clear old -> Insert new)
+  Future<void> cacheGlobalSchedules(String courseCode, List<GlobalSchedulesCompanion> entries) async {
+    await transaction(() async {
+      // 1. Clear existing cache for this course
+      await (delete(globalSchedules)..where((t) => t.courseCode.equals(courseCode))).go();
+      
+      // 2. Insert new entries
+      await batch((batch) {
+        batch.insertAll(globalSchedules, entries);
+      });
+    });
   }
+
+  /// Clear all cached schedules
+  Future<void> clearScheduleCache() => delete(globalSchedules).go();
 
   // ============ Offline Queue Operations ============
 
@@ -199,7 +211,7 @@ class AppDatabase extends _$AppDatabase {
   /// Clear all data (for logout or reset)
   Future<void> clearAllData() async {
     await delete(users).go();
-    await delete(enrollments).go();
+    await delete(globalSchedules).go();
     await delete(offlineQueue).go();
     await delete(syncMetadata).go();
     AppLogger.info('All database data cleared', tags: ['database']);

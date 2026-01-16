@@ -56,15 +56,7 @@ enum MessDayOfWeek {
 
 /// Represents a mess menu entry
 /// Maps to `mess_menus` and `/data/menu_cache.json` in SCHEMA.md
-class MessMenu extends Equatable {
-  final String menuId;
-  final String hostelId;
-  final MessDayOfWeek dayOfWeek;
-  final MealType mealType;
-  final String startTime;
-  final String endTime;
-  final String items;
-  final bool isModified; // Local edit flag
+class MessMenu extends Equatable { // Local edit flag
 
   const MessMenu({
     required this.menuId,
@@ -76,18 +68,6 @@ class MessMenu extends Equatable {
     required this.items,
     this.isModified = false,
   });
-
-  @override
-  List<Object?> get props => [
-        menuId,
-        hostelId,
-        dayOfWeek,
-        mealType,
-        startTime,
-        endTime,
-        items,
-        isModified,
-      ];
 
   factory MessMenu.fromJson(Map<String, dynamic> json) {
     return MessMenu(
@@ -101,6 +81,26 @@ class MessMenu extends Equatable {
       isModified: json['is_modified'] as bool? ?? false,
     );
   }
+  final String menuId;
+  final String hostelId;
+  final MessDayOfWeek dayOfWeek;
+  final MealType mealType;
+  final String startTime;
+  final String endTime;
+  final String items;
+  final bool isModified;
+
+  @override
+  List<Object?> get props => [
+        menuId,
+        hostelId,
+        dayOfWeek,
+        mealType,
+        startTime,
+        endTime,
+        items,
+        isModified,
+      ];
 
   Map<String, dynamic> toJson() {
     return {
@@ -145,18 +145,12 @@ class MessMenu extends Equatable {
 
 /// Menu cache metadata
 class MenuCache extends Equatable {
-  final DateTime? lastSyncedAt;
-  final String? currentHostelId;
-  final List<MessMenu> menus;
 
   const MenuCache({
     this.lastSyncedAt,
     this.currentHostelId,
     this.menus = const [],
   });
-
-  @override
-  List<Object?> get props => [lastSyncedAt, currentHostelId, menus];
 
   factory MenuCache.fromJson(Map<String, dynamic> json) {
     return MenuCache(
@@ -170,6 +164,12 @@ class MenuCache extends Equatable {
           [],
     );
   }
+  final DateTime? lastSyncedAt;
+  final String? currentHostelId;
+  final List<MessMenu> menus;
+
+  @override
+  List<Object?> get props => [lastSyncedAt, currentHostelId, menus];
 
   Map<String, dynamic> toJson() {
     return {

@@ -3,9 +3,9 @@ import 'package:adsum/domain/models/syllabus.dart';
 
 /// Service for syllabus management
 class SyllabusService {
-  final SyllabusRepository _repository;
 
   SyllabusService(this._repository);
+  final SyllabusRepository _repository;
 
   // ============ Progress Tracking ============
 

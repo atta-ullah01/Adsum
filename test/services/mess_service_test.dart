@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -20,7 +21,7 @@ void main() {
       final repo = helper.container.read(messRepositoryProvider);
       final service = helper.container.read(messServiceProvider);
 
-      final menu = MessMenu(
+      const menu = MessMenu(
         menuId: 'M1',
         hostelId: 'H1',
         dayOfWeek: MessDayOfWeek.mon,
@@ -30,7 +31,7 @@ void main() {
         items: 'Bread',
       );
 
-      await repo.saveCache(MenuCache(menus: [menu]));
+      await repo.saveCache(const MenuCache(menus: [menu]));
       
       // Verify initial
       var menus = await service.getMenusForDay(MessDayOfWeek.mon, hostelId: 'H1');
@@ -56,7 +57,7 @@ void main() {
       final repo = helper.container.read(messRepositoryProvider);
       final service = helper.container.read(messServiceProvider);
 
-      await repo.saveCache(MenuCache(menus: [
+      await repo.saveCache(const MenuCache(menus: [
         MessMenu(menuId: 'M1', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'A'),
         MessMenu(menuId: 'M2', hostelId: 'H1', dayOfWeek: MessDayOfWeek.tue, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'B'),
         MessMenu(menuId: 'M3', hostelId: 'H2', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'C'),
@@ -71,7 +72,7 @@ void main() {
       final repo = helper.container.read(messRepositoryProvider);
       final service = helper.container.read(messServiceProvider);
 
-      await repo.saveCache(MenuCache(menus: [
+      await repo.saveCache(const MenuCache(menus: [
         MessMenu(menuId: 'M1', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.dinner, startTime: '19:00', endTime: '20:00', items: 'Dinner'),
         MessMenu(menuId: 'M2', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'Breakfast'),
         MessMenu(menuId: 'M3', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.lunch, startTime: '12:00', endTime: '13:00', items: 'Lunch'),
@@ -87,9 +88,9 @@ void main() {
       final repo = helper.container.read(messRepositoryProvider);
       final service = helper.container.read(messServiceProvider);
 
-      await repo.saveCache(MenuCache(menus: [
+      await repo.saveCache(const MenuCache(menus: [
         MessMenu(menuId: 'M1', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'A', isModified: true),
-        MessMenu(menuId: 'M2', hostelId: 'H1', dayOfWeek: MessDayOfWeek.tue, mealType: MealType.lunch, startTime: '12:00', endTime: '13:00', items: 'B', isModified: false),
+        MessMenu(menuId: 'M2', hostelId: 'H1', dayOfWeek: MessDayOfWeek.tue, mealType: MealType.lunch, startTime: '12:00', endTime: '13:00', items: 'B'),
         MessMenu(menuId: 'M3', hostelId: 'H1', dayOfWeek: MessDayOfWeek.wed, mealType: MealType.dinner, startTime: '19:00', endTime: '20:00', items: 'C', isModified: true),
       ]));
 
@@ -120,14 +121,14 @@ void main() {
       final service = helper.container.read(messServiceProvider);
 
       // Initial menus
-      await repo.saveCache(MenuCache(menus: [
+      await repo.saveCache(const MenuCache(menus: [
         MessMenu(menuId: 'M1', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'Old'),
         MessMenu(menuId: 'M2', hostelId: 'H2', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'Keep'),
       ]));
 
       // Replace H1 menus
       await service.setMenusForHostel('H1', [
-        MessMenu(menuId: 'M3', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'New'),
+        const MessMenu(menuId: 'M3', hostelId: 'H1', dayOfWeek: MessDayOfWeek.mon, mealType: MealType.breakfast, startTime: '08:00', endTime: '09:00', items: 'New'),
       ]);
 
       final h1Menus = await service.getMenusForDay(MessDayOfWeek.mon, hostelId: 'H1');

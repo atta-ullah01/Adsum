@@ -4,9 +4,9 @@ import 'package:adsum/domain/models/work.dart';
 /// Service for academic work management
 /// Handles filtering, sorting, and state transitions
 class WorkService {
-  final WorkRepository _repository;
 
   WorkService(this._repository);
+  final WorkRepository _repository;
 
   // ============ Queries ============
 
@@ -19,7 +19,7 @@ class WorkService {
   Future<List<Work>> getPending() async {
     final all = await _repository.getAll();
     final states = await _repository.getAllStates();
-    final stateMap = {for (var s in states) s.workId: s};
+    final stateMap = {for (final s in states) s.workId: s};
 
     return all.where((w) {
       final state = stateMap[w.workId];
@@ -39,7 +39,7 @@ class WorkService {
   Future<List<Work>> getCompleted() async {
     final all = await _repository.getAll();
     final states = await _repository.getAllStates();
-    final stateMap = {for (var s in states) s.workId: s};
+    final stateMap = {for (final s in states) s.workId: s};
 
     return all.where((w) {
       final state = stateMap[w.workId];

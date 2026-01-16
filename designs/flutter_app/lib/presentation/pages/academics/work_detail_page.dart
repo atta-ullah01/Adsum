@@ -288,7 +288,7 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
   }
 
   void _showAskSheet(BuildContext context) {
-    final TextEditingController _ctrl = TextEditingController();
+    final TextEditingController ctrl = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -309,7 +309,7 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
             Text("Ask a Question", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextField(
-              controller: _ctrl,
+              controller: ctrl,
               autofocus: true,
               maxLines: 3,
               decoration: InputDecoration(
@@ -325,8 +325,8 @@ class _WorkDetailPageState extends State<WorkDetailPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                   if (_ctrl.text.isNotEmpty) {
-                     _addComment(_ctrl.text);
+                   if (ctrl.text.isNotEmpty) {
+                     _addComment(ctrl.text);
                      context.pop();
                    }
                 },

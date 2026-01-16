@@ -1,16 +1,16 @@
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/work.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:go_router/go_router.dart';
-import 'package:adsum/domain/models/work.dart';
-import 'package:adsum/data/providers/data_providers.dart';
 
 class WorkDetailPage extends ConsumerStatefulWidget {
-  final Map<String, dynamic> workItem;
 
-  const WorkDetailPage({super.key, required this.workItem});
+  const WorkDetailPage({required this.workItem, super.key});
+  final Map<String, dynamic> workItem;
 
   @override
   ConsumerState<WorkDetailPage> createState() => _WorkDetailPageState();
@@ -40,7 +40,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
 
   Future<void> _addComment(String text) async {
     // Ideally get current user ID from userProfileProvider
-    const userId = "current_user"; // Still hardcoded user ID until auth is fully linked
+    const userId = 'current_user'; // Still hardcoded user ID until auth is fully linked
     await ref.read(workServiceProvider).addComment(_work.workId, text, userId);
     ref.invalidate(workCommentsProvider(_work.workId));
   }
@@ -57,11 +57,9 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
       case WorkType.exam:
         typeColor = Colors.red;
         typeIcon = Ionicons.alert_circle;
-        break;
       case WorkType.quiz:
         typeColor = Colors.purple;
         typeIcon = Ionicons.timer;
-        break;
       default:
         typeColor = Colors.blue; 
         typeIcon = Ionicons.document_text;
@@ -89,7 +87,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
                 ref.read(workServiceProvider).setHidden(_work.workId, true).then((_) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Hidden from calendar")),
+                      const SnackBar(content: Text('Hidden from calendar')),
                     );
                     context.pop();
                   }
@@ -103,7 +101,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
                   children: [
                     Icon(Ionicons.eye_off_outline, size: 18, color: Colors.grey[700]),
                     const SizedBox(width: 12),
-                    Text("Hide from Calendar", style: GoogleFonts.dmSans()),
+                    Text('Hide from Calendar', style: GoogleFonts.dmSans()),
                   ],
                 ),
               ),
@@ -141,9 +139,9 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMetaRow(Ionicons.calendar_outline, "Window: ${_work.startAt} - ${_work.dueAt}"),
+                  _buildMetaRow(Ionicons.calendar_outline, 'Window: ${_work.startAt} - ${_work.dueAt}'),
                   const SizedBox(height: 8),
-                   _buildMetaRow(Ionicons.hourglass_outline, "Duration: ${_work.durationMinutes} mins"),
+                   _buildMetaRow(Ionicons.hourglass_outline, 'Duration: ${_work.durationMinutes} mins'),
                 ],
               ),
 
@@ -151,7 +149,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMetaRow(Ionicons.calendar, "Date: ${_work.startAt}"),
+                  _buildMetaRow(Ionicons.calendar, 'Date: ${_work.startAt}'),
                   const SizedBox(height: 8),
                    _buildMetaRow(Ionicons.location_outline, "Venue: ${_work.venue ?? 'TBD'}"),
                 ],
@@ -162,10 +160,10 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
             const SizedBox(height: 24),
             
             // 4. Instructions / Description
-            Text("DETAILS", style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1)),
+            Text('DETAILS', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1)),
             const SizedBox(height: 12),
             Text(
-              _work.description ?? "No additional details provided.",
+              _work.description ?? 'No additional details provided.',
               style: GoogleFonts.dmSans(fontSize: 16, height: 1.6, color: AppColors.textMain),
             ),
             
@@ -175,11 +173,11 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 Text("DISCUSSION", style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1)),
+                 Text('DISCUSSION', style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1)),
                  TextButton.icon(
                    onPressed: () => _showAskSheet(context),
-                   icon: Icon(Ionicons.chatbubble_ellipses_outline, size: 16, color: AppColors.primary),
-                   label: Text("Ask", style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                   icon: const Icon(Ionicons.chatbubble_ellipses_outline, size: 16, color: AppColors.primary),
+                   label: Text('Ask', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.primary)),
                    style: TextButton.styleFrom(padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                  )
               ],
@@ -189,18 +187,18 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
             // Comment List
             commentsAsync.when(
               data: (comments) {
-                if (comments.isEmpty) return const Text("No comments yet.");
+                if (comments.isEmpty) return const Text('No comments yet.');
                 return Column(
                   children: comments.map((c) => _buildComment(
                     c.userId, // Display raw user ID for now, or fetch name
                     c.text,
-                    "${c.createdAt.day}/${c.createdAt.month} ${c.createdAt.hour}:${c.createdAt.minute}", // Simple format
-                    isMe: c.userId == "current_user"
+                    '${c.createdAt.day}/${c.createdAt.month} ${c.createdAt.hour}:${c.createdAt.minute}', // Simple format
+                    isMe: c.userId == 'current_user'
                   )).toList(),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text("Error loading comments: $e"),
+              error: (e, _) => Text('Error loading comments: $e'),
             ),
             
             const SizedBox(height: 100), // Space for FAB
@@ -221,7 +219,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
              ref.invalidate(completedWorkProvider);
 
              if (context.mounted) {
-               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Marked as Completed! 🎉")));
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Marked as Completed! 🎉')));
                context.pop();
              }
           },
@@ -238,7 +236,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
             children: [
               const Icon(Ionicons.checkmark_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Text("Mark as Completed", style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Mark as Completed', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -334,7 +332,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
   }
 
   void _showAskSheet(BuildContext context) {
-    final TextEditingController _ctrl = TextEditingController();
+    final ctrl = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -352,14 +350,14 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Ask a Question", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text('Ask a Question', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             TextField(
-              controller: _ctrl,
+              controller: ctrl,
               autofocus: true,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: "Type your query here...",
+                hintText: 'Type your query here...',
                 hintStyle: GoogleFonts.dmSans(color: Colors.grey),
                 filled: true,
                 fillColor: Colors.grey[50],
@@ -371,8 +369,8 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                   if (_ctrl.text.isNotEmpty) {
-                     _addComment(_ctrl.text);
+                   if (ctrl.text.isNotEmpty) {
+                     _addComment(ctrl.text);
                      context.pop();
                    }
                 },
@@ -381,7 +379,7 @@ class _WorkDetailPageState extends ConsumerState<WorkDetailPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: Text("Post Question", style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                child: Text('Post Question', style: GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             )
           ],

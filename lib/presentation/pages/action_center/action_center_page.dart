@@ -1,11 +1,11 @@
+import 'package:adsum/domain/models/action_item.dart';
+import 'package:adsum/presentation/providers/action_center_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
-import 'package:adsum/presentation/providers/action_center_provider.dart';
-import 'package:adsum/domain/models/action_item.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:ionicons/ionicons.dart';
 
 class ActionCenterPage extends ConsumerStatefulWidget {
   const ActionCenterPage({super.key});
@@ -83,12 +83,12 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Action Center", style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black, height: 1.1)),
+            Text('Action Center', style: GoogleFonts.outfit(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black, height: 1.1)),
             const SizedBox(height: 6),
             if (_selectedTab == 0)
-              Text("$count items pending", style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey[500], fontWeight: FontWeight.w500))
+              Text('$count items pending', style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey[500], fontWeight: FontWeight.w500))
             else
-              Text("Audit log of past actions", style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey[500], fontWeight: FontWeight.w500)),
+              Text('Audit log of past actions', style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey[500], fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -101,9 +101,9 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         children: [
-          _buildTabPill("Pending", 0, true, hasActiveItems),
+          _buildTabPill('Pending', 0, true, hasActiveItems),
           const SizedBox(width: 12),
-          _buildTabPill("History", 1, false, false),
+          _buildTabPill('History', 1, false, false),
         ],
       ),
     );
@@ -146,7 +146,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
           children: [
             Icon(Ionicons.checkmark_done_circle, size: 64, color: Colors.green.shade200),
             const SizedBox(height: 16),
-            Text("All clear!", style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey)),
+            Text('All clear!', style: GoogleFonts.dmSans(fontSize: 16, color: Colors.grey)),
           ],
         ),
       );
@@ -168,14 +168,14 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
 
   // --- CARD 1: CONFLCIT (Complex Split View) ---
   Widget _buildConflictCard(ActionItem item) {
-    final Color bg = item.bgColor;
-    final Color accent = item.accentColor;
+    final bg = item.bgColor;
+    final accent = item.accentColor;
     final payload = item.payload;
     final dateStr = DateFormat('MMM d').format(item.createdAt);
     
     return Container(
       padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(40), border: Border.all(color: Colors.black, width: 1.5)),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(40), border: Border.all(width: 1.5)),
       child: Column(
         children: [
           // Header
@@ -185,7 +185,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text("Schedule Clash", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+                   Text('Schedule Clash', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
                    Text(dateStr, style: GoogleFonts.dmSans(fontSize: 13, color: Colors.black54, fontWeight: FontWeight.w500)),
                 ],
               ),
@@ -217,9 +217,9 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
           const SizedBox(height: 24),
           Row(
             children: [
-              Expanded(child: _buildActionButton("Keep Mine", Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, 'KEEP_MINE'))),
+              Expanded(child: _buildActionButton('Keep Mine', Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, 'KEEP_MINE'))),
               const SizedBox(width: 12),
-              Expanded(child: _buildActionButton("Accept Update", Colors.white, accent, () => _handleAction(item, 'ACCEPT_UPDATE'))),
+              Expanded(child: _buildActionButton('Accept Update', Colors.white, accent, () => _handleAction(item, 'ACCEPT_UPDATE'))),
             ],
           )
         ],
@@ -229,48 +229,44 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
 
   // --- CARD 2: GENERIC ACTION (Verify, Change, Assignment) ---
   Widget _buildGenericActionCard(ActionItem item) {
-    final Color bg = item.bgColor;
-    final Color accent = item.accentColor; 
+    final bg = item.bgColor;
+    final accent = item.accentColor; 
     final payload = item.payload;
     final dateStr = DateFormat('MMM d').format(item.createdAt);
 
     IconData icon;
-    String btn1 = "OK";
+    var btn1 = 'OK';
     String? btn2;
-    String action1 = "ACKNOWLEDGED";
+    var action1 = 'ACKNOWLEDGED';
     String? action2;
 
     switch (item.type) {
       case ActionItemType.verify:
         icon = Ionicons.help_circle;
-        btn1 = "Yes, Present";
-        action1 = "YES_PRESENT";
-        btn2 = "No, Absent";
-        action2 = "NO_ABSENT";
-        break;
+        btn1 = 'Yes, Present';
+        action1 = 'YES_PRESENT';
+        btn2 = 'No, Absent';
+        action2 = 'NO_ABSENT';
       case ActionItemType.assignmentDue:
         icon = Ionicons.document_text;
-        btn1 = "Mark Done";
-        action1 = "MARK_DONE";
-        btn2 = "Snooze";
-        action2 = "SNOOZE";
-        break;
+        btn1 = 'Mark Done';
+        action1 = 'MARK_DONE';
+        btn2 = 'Snooze';
+        action2 = 'SNOOZE';
       case ActionItemType.attendanceRisk:
         icon = Ionicons.warning;
-        btn1 = "Details";
-        action1 = "DETAILS";
-        break;
+        btn1 = 'Details';
+        action1 = 'DETAILS';
       case ActionItemType.scheduleChange:
       default:
         icon = Ionicons.information_circle;
-        btn1 = "Acknowledge";
-        action1 = "ACKNOWLEDGED";
-        break;
+        btn1 = 'Acknowledge';
+        action1 = 'ACKNOWLEDGED';
     }
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.black, width: 1.5)),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(24), border: Border.all(width: 1.5)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -327,7 +323,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
               Expanded(child: _buildActionButton(btn1, Colors.white, accent, () => _handleAction(item, action1))),
               if (btn2 != null) ...[
                 const SizedBox(width: 12),
-                Expanded(child: _buildActionButton(btn2!, Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, action2!))),
+                Expanded(child: _buildActionButton(btn2, Colors.white.withOpacity(0.6), Colors.black87, () => _handleAction(item, action2!))),
               ]
             ],
           )
@@ -371,12 +367,12 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
 
   void _handleAction(ActionItem item, String action) {
     ref.read(actionCenterProvider.notifier).resolveItem(item.itemId, action);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$action processed"), behavior: SnackBarBehavior.floating));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$action processed'), behavior: SnackBarBehavior.floating));
   }
   
   Widget _buildHistoryList(List<ActionItem> items) {
     if (items.isEmpty) {
-      return Center(child: Text("No history yet", style: GoogleFonts.dmSans(color: Colors.grey)));
+      return Center(child: Text('No history yet', style: GoogleFonts.dmSans(color: Colors.grey)));
     }
     
     // Sort by resolution time (using createdAt as proxy for now or updated field if available)
@@ -393,7 +389,7 @@ class _ActionCenterPageState extends ConsumerState<ActionCenterPage> {
 
         return Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.black, width: 1.5)),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(width: 1.5)),
           child: Row(
             children: [
               Container(

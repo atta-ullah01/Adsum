@@ -1,28 +1,27 @@
-import 'package:adsum/presentation/pages/attendance/academics_page.dart';
-import 'package:adsum/presentation/pages/attendance/history_log_page.dart';
-import 'package:adsum/presentation/pages/attendance/geofence_debugger_page.dart';
-import 'package:adsum/presentation/pages/courses/subject_detail_page.dart';
-import 'package:adsum/presentation/pages/mess/mess_menu_page.dart';
-import 'package:adsum/presentation/pages/mess/menu_editor_page.dart';
 import 'package:adsum/domain/models/mess.dart';
+import 'package:adsum/presentation/pages/academics/assignments_page.dart';
+import 'package:adsum/presentation/pages/academics/syllabus_editor_page.dart';
+import 'package:adsum/presentation/pages/academics/work_detail_page.dart';
+import 'package:adsum/presentation/pages/action_center/action_center_page.dart';
+import 'package:adsum/presentation/pages/attendance/academics_page.dart';
+import 'package:adsum/presentation/pages/attendance/geofence_debugger_page.dart';
+import 'package:adsum/presentation/pages/attendance/history_log_page.dart';
+import 'package:adsum/presentation/pages/auth/auth_page.dart';
 import 'package:adsum/presentation/pages/calendar/academic_calendar_page.dart';
 import 'package:adsum/presentation/pages/calendar/holiday_injection_page.dart';
-import 'package:adsum/presentation/pages/settings/settings_page.dart';
-import 'package:adsum/presentation/pages/settings/edit_profile_page.dart';
-import 'package:adsum/presentation/pages/academics/assignments_page.dart';
-import 'package:adsum/presentation/pages/academics/work_detail_page.dart';
-import 'package:adsum/presentation/pages/academics/syllabus_editor_page.dart';
-import 'package:go_router/go_router.dart';
-import 'package:adsum/presentation/pages/splash/splash_page.dart';
-import 'package:adsum/presentation/pages/auth/auth_page.dart';
 import 'package:adsum/presentation/pages/courses/courses_page.dart';
+import 'package:adsum/presentation/pages/courses/subject_detail_page.dart';
+import 'package:adsum/presentation/pages/cr_authority/audit_trail_page.dart';
+import 'package:adsum/presentation/pages/cr_authority/schedule_patcher_page.dart';
+import 'package:adsum/presentation/pages/dashboard/dashboard_page.dart';
+import 'package:adsum/presentation/pages/mess/menu_editor_page.dart';
+import 'package:adsum/presentation/pages/mess/mess_menu_page.dart';
+import 'package:adsum/presentation/pages/settings/edit_profile_page.dart';
+import 'package:adsum/presentation/pages/settings/settings_page.dart';
+import 'package:adsum/presentation/pages/splash/splash_page.dart';
 import 'package:adsum/presentation/pages/wizard/wizard_ocr_page.dart';
 import 'package:adsum/presentation/pages/wizard/wizard_sensors_page.dart';
-import 'package:adsum/presentation/pages/dashboard/dashboard_page.dart';
-
-import 'package:adsum/presentation/pages/action_center/action_center_page.dart';
-import 'package:adsum/presentation/pages/cr_authority/schedule_patcher_page.dart';
-import 'package:adsum/presentation/pages/cr_authority/audit_trail_page.dart';
+import 'package:go_router/go_router.dart';
 
 final router = GoRouter(
   initialLocation: '/',
@@ -64,7 +63,7 @@ final router = GoRouter(
     GoRoute(
       path: '/subject-detail',
       builder: (context, state) {
-        final extras = state.extra as Map<String, dynamic>;
+        final extras = state.extra! as Map<String, dynamic>;
         return SubjectDetailPage(
           courseTitle: extras['title'],
           courseCode: extras['code'],
@@ -75,14 +74,14 @@ final router = GoRouter(
     GoRoute(
       path: '/history-log',
       builder: (context, state) {
-         final extras = state.extra as Map<String, dynamic>;
+         final extras = state.extra! as Map<String, dynamic>;
          return HistoryLogPage(courseTitle: extras['title']);
       },
     ),
     GoRoute(
       path: '/geofence-debugger',
       builder: (context, state) {
-         final extras = state.extra as Map<String, dynamic>;
+         final extras = state.extra! as Map<String, dynamic>;
          return GeofenceDebuggerPage(courseTitle: extras['title']);
       },
     ),
@@ -135,14 +134,14 @@ final router = GoRouter(
     GoRoute(
       path: '/academics/detail',
       builder: (context, state) {
-        final workItem = state.extra as Map<String, dynamic>;
+        final workItem = state.extra! as Map<String, dynamic>;
         return WorkDetailPage(workItem: workItem);
       },
     ),
     GoRoute(
       path: '/syllabus-editor',
       builder: (context, state) {
-        final extras = state.extra as Map<String, dynamic>;
+        final extras = state.extra! as Map<String, dynamic>;
         return SyllabusEditorPage(courseCode: extras['courseCode']);
       },
     ),

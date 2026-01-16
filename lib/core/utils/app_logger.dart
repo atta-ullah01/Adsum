@@ -12,6 +12,8 @@ import 'package:path_provider/path_provider.dart';
 /// AppLogger.error('Failed to sync', error: e, stackTrace: st);
 /// ```
 class AppLogger {
+  
+  AppLogger._();
   static AppLogger? _instance;
   static File? _logFile;
   static const int _maxFileSizeBytes = 10 * 1024 * 1024; // 10MB
@@ -19,8 +21,6 @@ class AppLogger {
   
   /// Set to false during tests to avoid MissingPluginException from path_provider
   static bool enableFileLogging = true;
-  
-  AppLogger._();
   
   static Future<void> initialize() async {
     if (_instance != null) return;
@@ -197,13 +197,6 @@ enum LogLevel {
 }
 
 class LogEntry {
-  final DateTime timestamp;
-  final LogLevel level;
-  final String message;
-  final Map<String, dynamic>? context;
-  final List<String>? tags;
-  final String? error;
-  final String? stackTrace;
   
   const LogEntry({
     required this.timestamp,
@@ -214,6 +207,13 @@ class LogEntry {
     this.error,
     this.stackTrace,
   });
+  final DateTime timestamp;
+  final LogLevel level;
+  final String message;
+  final Map<String, dynamic>? context;
+  final List<String>? tags;
+  final String? error;
+  final String? stackTrace;
   
   String toConsoleString() {
     final buffer = StringBuffer();

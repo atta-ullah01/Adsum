@@ -15,7 +15,7 @@ class SettingsPage extends ConsumerStatefulWidget {
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
   // Mock State
-  bool _darkMode = false;
+  final bool _darkMode = false;
   bool _notifications = true; // Default ON
   bool _privateMode = false;
   String _userName = "Attaullah";
@@ -132,7 +132,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               trailing: Switch(
                 value: false,
                 onChanged: null, // Disabled
-                activeColor: Colors.grey,
+                activeThumbColor: Colors.grey,
               )
             ),
             _buildSettingTile(
@@ -142,7 +142,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               trailing: Switch(
                 value: _notifications,
                 onChanged: (val) => setState(() => _notifications = val),
-                 activeColor: AppColors.primary,
+                 activeThumbColor: AppColors.primary,
                  inactiveTrackColor: Colors.grey.shade200,
               )
             ),
@@ -162,7 +162,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               trailing: Switch(
                 value: isGuest ? false : _privateMode,
                 onChanged: isGuest ? null : (val) => setState(() => _privateMode = val),
-                activeColor: const Color(0xFF8B5CF6),
+                activeThumbColor: const Color(0xFF8B5CF6),
                 inactiveTrackColor: Colors.grey.shade200,
               )
             ),

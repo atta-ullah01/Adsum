@@ -1,13 +1,13 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
-import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
 import 'package:adsum/presentation/pages/courses/courses_page.dart';
+import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:go_router/go_router.dart';
 
 class AcademicsPage extends ConsumerWidget {
   const AcademicsPage({super.key});
@@ -46,8 +46,8 @@ class AcademicsPage extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                           Text("Academics", style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-                           Text("Your Session Progress", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted)),
+                           Text('Academics', style: GoogleFonts.outfit(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textMain)),
+                           Text('Your Session Progress', style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted)),
                         ],
                       ),
                     ),
@@ -91,8 +91,8 @@ class AcademicsPage extends ConsumerWidget {
                        Row(
                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                          children: [
-                           Text("Enrolled Courses", style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-                           Text("${enrollments.length} Active", style: GoogleFonts.dmSans(color: AppColors.textMuted, fontWeight: FontWeight.bold)),
+                           Text('Enrolled Courses', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
+                           Text('${enrollments.length} Active', style: GoogleFonts.dmSans(color: AppColors.textMuted, fontWeight: FontWeight.bold)),
                          ],
                        ),
                        const SizedBox(height: 16),
@@ -138,29 +138,29 @@ class AcademicsPage extends ConsumerWidget {
          mainAxisAlignment: MainAxisAlignment.center,
          children: [
            const SizedBox(height: 50),
-           Icon(Ionicons.school_outline, size: 64, color: AppColors.textMuted),
+           const Icon(Ionicons.school_outline, size: 64, color: AppColors.textMuted),
            const SizedBox(height: 16),
-           Text("No courses enrolled yet.", style: GoogleFonts.outfit(fontSize: 18, color: AppColors.textMuted)),
+           Text('No courses enrolled yet.', style: GoogleFonts.outfit(fontSize: 18, color: AppColors.textMuted)),
            const SizedBox(height: 8),
-           Text("Tap + to add your courses.", style: GoogleFonts.dmSans(color: Colors.grey)),
+           Text('Tap + to add your courses.', style: GoogleFonts.dmSans(color: Colors.grey)),
          ],
        ),
      );
   }
 
   Widget _buildSummaryCard(List<Enrollment> enrollments) {
-    int riskCount = enrollments.where((e) => e.stats.attendancePercent < e.targetAttendance).length;
-    bool isSafe = riskCount == 0;
+    final riskCount = enrollments.where((e) => e.stats.attendancePercent < e.targetAttendance).length;
+    final isSafe = riskCount == 0;
     
     // Calculate Total Safe Bunks
-    int totalBunks = 0;
-    for (var e in enrollments) {
+    var totalBunks = 0;
+    for (final e in enrollments) {
       totalBunks += e.stats.safeBunks;
     }
     
     // Colors
-    final Color bg = isSafe ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE); // Custom lighter shades
-    final Color accent = isSafe ? Colors.green[800]! : Colors.red[800]!;
+    final bg = isSafe ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE); // Custom lighter shades
+    final accent = isSafe ? Colors.green[800]! : Colors.red[800]!;
     final IconData icon = isSafe ? Ionicons.shield_checkmark : Ionicons.warning;
 
     return Container(
@@ -188,12 +188,12 @@ class AcademicsPage extends ConsumerWidget {
                    children: [
                      Container(
                        padding: const EdgeInsets.all(8),
-                       decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                       decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                        child: Icon(icon, size: 16, color: accent),
                      ),
                      const SizedBox(width: 8),
                      Text(
-                       isSafe ? "All Good!" : "Action Required",
+                       isSafe ? 'All Good!' : 'Action Required',
                        style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: accent, fontSize: 13),
                      ),
                    ],
@@ -203,14 +203,14 @@ class AcademicsPage extends ConsumerWidget {
                    crossAxisAlignment: CrossAxisAlignment.end,
                    children: [
                      Text(
-                       isSafe ? "$totalBunks" : "$riskCount",
-                       style: GoogleFonts.outfit(fontSize: 48, fontWeight: FontWeight.bold, color: accent, height: 1.0),
+                       isSafe ? '$totalBunks' : '$riskCount',
+                       style: GoogleFonts.outfit(fontSize: 48, fontWeight: FontWeight.bold, color: accent, height: 1),
                      ),
                      const SizedBox(width: 12),
                      Padding(
-                       padding: const EdgeInsets.only(bottom: 8.0),
+                       padding: const EdgeInsets.only(bottom: 8),
                        child: Text(
-                         isSafe ? "Safe Bunks\nAvailable" : "Subjects\nat Risk",
+                         isSafe ? 'Safe Bunks\nAvailable' : 'Subjects\nat Risk',
                          style: GoogleFonts.dmSans(fontSize: 14, color: accent, fontWeight: FontWeight.w500, height: 1.2),
                        ),
                      )
@@ -225,12 +225,12 @@ class AcademicsPage extends ConsumerWidget {
   }
 
   Widget _buildCourseCard(BuildContext context, Enrollment enrollment) {
-    Color bg = _parseColor(enrollment.colorTheme);
-    Color textDark = Colors.black; // Adjust based on contrast if needed
-    double percent = enrollment.stats.attendancePercent / 100;
+    final bg = _parseColor(enrollment.colorTheme);
+    const textDark = Colors.black; // Adjust based on contrast if needed
+    var percent = enrollment.stats.attendancePercent / 100;
     if (percent.isNaN) percent = 0.0;
     
-    bool isRisky = enrollment.stats.attendancePercent < enrollment.targetAttendance;
+    final isRisky = enrollment.stats.attendancePercent < enrollment.targetAttendance;
 
     return GestureDetector(
       onTap: () {
@@ -272,16 +272,16 @@ class AcademicsPage extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "${enrollment.stats.attendancePercent.toInt()}%",
+                  '${enrollment.stats.attendancePercent.toInt()}%',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 32, color: AppColors.textMain),
                 ),
                 const SizedBox(width: 12),
                 Flexible( 
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 6.0),
+                    padding: const EdgeInsets.only(bottom: 6),
                     child: !isRisky
-                       ? Text("${enrollment.stats.safeBunks} Safe Bunks", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)
-                       : Text("Risk: below ${enrollment.targetAttendance.toInt()}%", style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.danger, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                       ? Text('${enrollment.stats.safeBunks} Safe Bunks', style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.textMuted, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)
+                       : Text('Risk: below ${enrollment.targetAttendance.toInt()}%', style: GoogleFonts.dmSans(fontSize: 14, color: AppColors.danger, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                   ),
                 ),
               ],
@@ -307,7 +307,7 @@ class AcademicsPage extends ConsumerWidget {
 
   Color _parseColor(String hex) {
      if (hex.startsWith('#')) hex = hex.substring(1);
-     if (hex.length == 6) hex = 'FF' + hex;
+     if (hex.length == 6) hex = 'FF$hex';
      return Color(int.parse('0x$hex'));
   }
 }

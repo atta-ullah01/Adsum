@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -19,13 +20,13 @@ void main() {
     test('saveUser and getUser work correctly', () async {
       final repo = helper.container.read(userRepositoryProvider);
 
-      final user = UserProfile(
+      const user = UserProfile(
         userId: 'user_001',
         fullName: 'Alice Student',
         email: 'alice@university.edu',
         universityId: 'UNI001',
         defaultSection: 'B',
-        settings: const UserSettings(themeMode: 'DARK', notificationsEnabled: false),
+        settings: UserSettings(themeMode: 'DARK', notificationsEnabled: false),
       );
 
       await repo.saveUser(user);
@@ -42,11 +43,10 @@ void main() {
     test('updateSettings modifies nested settings object', () async {
       final repo = helper.container.read(userRepositoryProvider);
 
-      await repo.saveUser(UserProfile(
+      await repo.saveUser(const UserProfile(
         userId: 'user_002',
         fullName: 'Bob',
         email: 'bob@example.com',
-        settings: const UserSettings(notificationsEnabled: true),
       ));
 
       await repo.updateSettings(const UserSettings(

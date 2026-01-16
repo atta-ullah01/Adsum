@@ -1,5 +1,6 @@
 /// Schedule domain models - matches `/data/custom_schedules.json`
 /// and `/data/schedule_bindings.json`
+library;
 
 import 'package:flutter/foundation.dart';
 
@@ -58,6 +59,46 @@ enum DayOfWeek {
   String get shortName => name.substring(0, 1).toUpperCase() + name.substring(1);
 }
 
+/// Global schedule slot from `global_schedules` table
+@immutable
+class GlobalSchedule {
+
+  const GlobalSchedule({
+    required this.ruleId,
+    required this.courseCode,
+    required this.dayOfWeek, required this.startTime, required this.endTime, this.section,
+    this.locationName,
+    this.locationLat,
+    this.locationLong,
+    this.wifiSsid,
+  });
+
+  factory GlobalSchedule.fromJson(Map<String, dynamic> json) {
+    return GlobalSchedule(
+      ruleId: json['rule_id'] as String,
+      courseCode: json['course_code'] as String,
+      section: json['section'] as String?,
+      dayOfWeek: DayOfWeek.fromString(json['day_of_week'] as String?),
+      startTime: json['start_time'] as String,
+      endTime: json['end_time'] as String,
+      locationName: json['location_name'] as String?,
+      locationLat: (json['location_lat'] as num?)?.toDouble(),
+      locationLong: (json['location_long'] as num?)?.toDouble(),
+      wifiSsid: json['wifi_ssid'] as String?,
+    );
+  }
+  final String ruleId;
+  final String courseCode;
+  final String? section;
+  final DayOfWeek dayOfWeek;
+  final String startTime;
+  final String endTime;
+  final String? locationName;
+  final double? locationLat;
+  final double? locationLong;
+  final String? wifiSsid;
+}
+
 /// Schedule type for bindings
 enum ScheduleType {
   global,
@@ -80,11 +121,6 @@ enum ScheduleType {
 /// Custom schedule slot - matches `/data/custom_schedules.json`
 @immutable
 class CustomScheduleSlot {
-  final String ruleId;
-  final String enrollmentId;
-  final DayOfWeek dayOfWeek;
-  final String startTime; // "HH:mm" format
-  final String endTime;
 
   const CustomScheduleSlot({
     required this.ruleId,
@@ -103,6 +139,11 @@ class CustomScheduleSlot {
       endTime: json['end_time'] as String,
     );
   }
+  final String ruleId;
+  final String enrollmentId;
+  final DayOfWeek dayOfWeek;
+  final String startTime; // "HH:mm" format
+  final String endTime;
 
   Map<String, dynamic> toJson() => {
         'rule_id': ruleId,
@@ -132,14 +173,6 @@ class CustomScheduleSlot {
 /// Schedule binding for GPS/WiFi - matches `/data/schedule_bindings.json`
 @immutable
 class ScheduleBinding {
-  final String bindingId;
-  final String userId;
-  final String ruleId;
-  final ScheduleType scheduleType;
-  final String? locationName;
-  final double? locationLat;
-  final double? locationLong;
-  final String? wifiSsid;
 
   const ScheduleBinding({
     required this.bindingId,
@@ -151,9 +184,6 @@ class ScheduleBinding {
     this.locationLong,
     this.wifiSsid,
   });
-
-  bool get hasGpsBinding => locationLat != null && locationLong != null;
-  bool get hasWifiBinding => wifiSsid != null && wifiSsid!.isNotEmpty;
 
   factory ScheduleBinding.fromJson(Map<String, dynamic> json) {
     return ScheduleBinding(
@@ -167,6 +197,17 @@ class ScheduleBinding {
       wifiSsid: json['wifi_ssid'] as String?,
     );
   }
+  final String bindingId;
+  final String userId;
+  final String ruleId;
+  final ScheduleType scheduleType;
+  final String? locationName;
+  final double? locationLat;
+  final double? locationLong;
+  final String? wifiSsid;
+
+  bool get hasGpsBinding => locationLat != null && locationLong != null;
+  bool get hasWifiBinding => wifiSsid != null && wifiSsid!.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
         'binding_id': bindingId,
@@ -218,19 +259,7 @@ enum ScheduleEventType {
 
 /// A merged schedule event ready for UI display
 @immutable
-class ScheduleEvent {
-  final String id;
-  final String title;
-  final String subtitle;
-  final DateTime startTime;
-  final DateTime endTime;
-  final ScheduleEventType type;
-  final String? location;
-  final String color; // Hex string e.g., "#FF5733"
-  final bool isCancelled;
-  final String? enrollmentId;
-  final Map<String, dynamic> metadata;
-  final List<ScheduleEvent>? conflictingEvents; // List of events involved in this conflict
+class ScheduleEvent { // List of events involved in this conflict
 
   const ScheduleEvent({
     required this.id,
@@ -246,6 +275,18 @@ class ScheduleEvent {
     this.metadata = const {},
     this.conflictingEvents,
   });
+  final String id;
+  final String title;
+  final String subtitle;
+  final DateTime startTime;
+  final DateTime endTime;
+  final ScheduleEventType type;
+  final String? location;
+  final String color; // Hex string e.g., "#FF5733"
+  final bool isCancelled;
+  final String? enrollmentId;
+  final Map<String, dynamic> metadata;
+  final List<ScheduleEvent>? conflictingEvents;
   
   Duration get duration => endTime.difference(startTime);
   bool get isCurrent => DateTime.now().isAfter(startTime) && DateTime.now().isBefore(endTime);

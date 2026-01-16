@@ -1,7 +1,6 @@
-import 'package:uuid/uuid.dart';
-
 import 'package:adsum/data/sources/local/json_file_service.dart';
 import 'package:adsum/domain/models/calendar_event.dart';
+import 'package:uuid/uuid.dart';
 
 /// Repository for personal calendar events
 /// 
@@ -9,13 +8,13 @@ import 'package:adsum/domain/models/calendar_event.dart';
 /// - `events.json` - Personal calendar events
 /// - `calendar_overrides.json` - Hidden events
 class CalendarRepository {
+
+  CalendarRepository(this._jsonService);
   static const String _eventsFile = 'events.json';
   static const String _overridesFile = 'calendar_overrides.json';
   static const _uuid = Uuid();
 
   final JsonFileService _jsonService;
-
-  CalendarRepository(this._jsonService);
 
   // ============ Events CRUD ============
 
@@ -25,7 +24,7 @@ class CalendarRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => CalendarEvent.fromJson(json))
+        .map(CalendarEvent.fromJson)
         .toList();
   }
 
@@ -73,7 +72,7 @@ class CalendarRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => CalendarOverride.fromJson(json))
+        .map(CalendarOverride.fromJson)
         .toList();
   }
 

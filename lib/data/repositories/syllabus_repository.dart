@@ -7,12 +7,12 @@ import 'package:adsum/domain/models/syllabus.dart';
 /// - `syllabus_progress.json` - Maps course_code to list of completed topic IDs
 /// - `custom_syllabus.json` - User-defined syllabus for custom courses
 class SyllabusRepository {
+
+  SyllabusRepository(this._jsonService);
   static const String _progressFile = 'syllabus_progress.json';
   static const String _customFile = 'custom_syllabus.json';
 
   final JsonFileService _jsonService;
-
-  SyllabusRepository(this._jsonService);
 
   // ============ Progress Tracking ============
 
@@ -47,7 +47,7 @@ class SyllabusRepository {
     if (data == null) return [];
     return data
         .cast<Map<String, dynamic>>()
-        .map((json) => CustomSyllabus.fromJson(json))
+        .map(CustomSyllabus.fromJson)
         .toList();
   }
 

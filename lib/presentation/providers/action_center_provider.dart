@@ -1,10 +1,7 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/action_item.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ActionCenterNotifier extends AsyncNotifier<List<ActionItem>> {
   @override
@@ -17,7 +14,7 @@ class ActionCenterNotifier extends AsyncNotifier<List<ActionItem>> {
       final repo = ref.watch(actionItemRepositoryProvider);
       return repo.getAll();
     } catch (e) {
-      debugPrint("Error loading action items: $e");
+      debugPrint('Error loading action items: $e');
       return [];
     }
   }
@@ -36,7 +33,7 @@ class ActionCenterNotifier extends AsyncNotifier<List<ActionItem>> {
       } catch (e) {
         // Revert on failure
         state = AsyncValue.data(previousState);
-        debugPrint("Failed to resolve item: $e");
+        debugPrint('Failed to resolve item: $e');
       }
     }
   }

@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:adsum/core/theme/app_colors.dart';
+import 'package:adsum/data/providers/data_providers.dart';
+import 'package:adsum/domain/models/user_profile.dart';
+import 'package:adsum/presentation/providers/auth_provider.dart';
 import 'package:adsum/presentation/widgets/pastel_card.dart';
-import 'package:adsum/presentation/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:adsum/presentation/providers/auth_provider.dart';
-import 'package:adsum/data/providers/data_providers.dart';
-import 'package:adsum/domain/models/user_profile.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
@@ -20,6 +22,8 @@ class AuthPage extends ConsumerStatefulWidget {
 
 class _AuthPageState extends ConsumerState<AuthPage> {
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  
   
   // Form State
   String? _selectedUniversityId;
@@ -27,48 +31,93 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   final _sectionController = TextEditingController();
   final _nameController = TextEditingController();
   
-  bool _isLoading = false;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    final authService = ref.read(authServiceProvider);
+    _authSubscription = authService.onAuthStateChange.listen((data) {
+      final event = data.event;
+      if (event == AuthChangeEvent.signedIn) {
+        _handleAuthenticatedUser();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _sectionController.dispose();
     _nameController.dispose();
     super.dispose();
   }
 
+  Future<void> _handleAuthenticatedUser() async {
+    // User just signed in via Google
+    if (!mounted) return;
+    
+    // Check if we have form data pending, or if this is a fresh login
+    // For now, we assume this is the registration flow
+    
+    // If form is valid/filled, save the profile with the real UUID
+    final userId = ref.read(authServiceProvider).currentUser?.id;
+    if (userId == null) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      // 1. Create User Model with REAL ID
+      final user = UserProfile(
+        userId: userId, 
+        universityId: _selectedUniversityId ?? 'univ_placeholder', // Fallback if lost
+        fullName: _nameController.text.isEmpty ? 'Student' : _nameController.text,
+        email: ref.read(authServiceProvider).currentUser?.email ?? 'student@university.edu',
+        defaultSection: _sectionController.text.isEmpty ? 'A' : _sectionController.text.toUpperCase(),
+        homeHostelId: _selectedHostelId,
+      );
+
+      // 2. Save to Repository (Syncs to Supabase users table via SyncService later)
+      await ref.read(userRepositoryProvider).saveUser(user);
+
+      // 3. Update UI Provider
+      ref.read(authProvider.notifier).loginAsUser(user);
+
+      // 4. Navigate
+      if (mounted) {
+        context.push('/ocr');
+      }
+    } catch (e) {
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile Save Error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> _registerUser() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    // Trigger Google Sign In
+    // The actual profile saving happens in _handleAuthenticatedUser listener
+    // allowing both redirect (web) and deep link (mobile) flows
     
     setState(() => _isLoading = true);
 
     try {
-      // 1. Create User Model
-      final user = UserProfile(
-        userId: 'user_${DateTime.now().millisecondsSinceEpoch}', 
-        universityId: _selectedUniversityId!,
-        fullName: _nameController.text.isEmpty ? 'Student' : _nameController.text,
-        email: 'student@university.edu',
-        defaultSection: _sectionController.text.isEmpty ? 'A' : _sectionController.text.toUpperCase(),
-        homeHostelId: _selectedHostelId, // Optional
-        settings: const UserSettings(notificationsEnabled: true),
-      );
-
-      // 2. Save to Repository
-      await ref.read(userRepositoryProvider).saveUser(user);
-
-      // 3. Update Auth Provider State (Mock login for now)
-      ref.read(authProvider.notifier).loginAsUser();
-
-      // 4. Navigate
-      if (mounted) {
-        context.push('/ocr'); // Proceed to next onboarding step
-      }
+      await ref.read(authServiceProvider).signInWithGoogle();
+      // On mobile, this returns quickly. On web, page reloads.
+      // Wait for listener to catch signedIn event.
     } catch (e) {
       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Auth Error: $e')));
+         setState(() => _isLoading = false);
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -86,7 +135,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           children: [
             // Header
              Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -168,7 +217,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                padding: const EdgeInsets.all(16),
                                decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
                                width: double.infinity,
-                               child: Text("Select University first", style: GoogleFonts.dmSans(color: Colors.grey)),
+                               child: Text('Select University first', style: GoogleFonts.dmSans(color: Colors.grey)),
                              )
                            else
                              Consumer(
@@ -176,14 +225,14 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                   final hostelsAsync = ref.watch(hostelsProvider(_selectedUniversityId!));
                                   return hostelsAsync.when(
                                     loading: () => const LinearProgressIndicator(),
-                                    error: (err, _) => Text('Error loading hostels', style: const TextStyle(color: Colors.red)),
+                                    error: (err, _) => const Text('Error loading hostels', style: TextStyle(color: Colors.red)),
                                     data: (hostels) {
                                       if (hostels.isEmpty) {
                                         return Container(
                                           padding: const EdgeInsets.all(12),
                                           width: double.infinity,
                                           decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
-                                          child: Text("No hostels found for this university", style: GoogleFonts.dmSans(color: Colors.grey, fontSize: 13)),
+                                          child: Text('No hostels found for this university', style: GoogleFonts.dmSans(color: Colors.grey, fontSize: 13)),
                                         );
                                       }
                                       return _buildDropdownField(
@@ -261,11 +310,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                    borderRadius: BorderRadius.circular(12),
                                  ),
                                  child: Text(
-                                   'Student',
+                                   'Sign in with Google',
                                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
                                  ),
                                ),
-                               const Icon(Ionicons.arrow_forward_circle, size: 28, color: Colors.black54),
+                               const Icon(Ionicons.logo_google, size: 28, color: Colors.black54),
                              ],
                            ),
                            const SizedBox(height: 20),
@@ -282,8 +331,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                        onTap: () {
                           // Allow guest mode (skip persistence or save rough generic profile?)
                           // For now, save a Generic Guest Profile
-                          _nameController.text = "Guest";
-                          _sectionController.text = "A"; 
+                          _nameController.text = 'Guest';
+                          _sectionController.text = 'A'; 
                           _registerUser();
                        },
                        child: Row(
@@ -336,7 +385,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         border: Border.all(color: Colors.transparent),
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         items: items,
         onChanged: onChanged,
         style: GoogleFonts.dmSans(fontSize: 15, color: AppColors.textMain),

@@ -1,6 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:adsum/data/providers/data_providers.dart';
 import 'package:adsum/domain/models/models.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -21,11 +22,11 @@ void main() {
       final service = helper.container.read(syllabusServiceProvider);
 
       // Create custom syllabus
-      final topic1 = SyllabusTopic(topicId: 'T1', title: 'Start');
-      final topic2 = SyllabusTopic(topicId: 'T2', title: 'End');
-      final unit = SyllabusUnit(unitId: 'U1', title: 'Unit 1', unitOrder: 1, topics: [topic1, topic2]);
+      const topic1 = SyllabusTopic(topicId: 'T1', title: 'Start');
+      const topic2 = SyllabusTopic(topicId: 'T2', title: 'End');
+      const unit = SyllabusUnit(unitId: 'U1', title: 'Unit 1', unitOrder: 1, topics: [topic1, topic2]);
       
-      await repo.saveCustomSyllabus(CustomSyllabus(courseCode: 'MATH101', units: [unit]));
+      await repo.saveCustomSyllabus(const CustomSyllabus(courseCode: 'MATH101', units: [unit]));
 
       // Initially 0%
       expect(await service.getCompletionPercentage('MATH101'), 0.0);
@@ -103,7 +104,7 @@ void main() {
     test('saveCustomSyllabus and getCustomSyllabus work', () async {
       final service = helper.container.read(syllabusServiceProvider);
 
-      final syllabus = CustomSyllabus(
+      const syllabus = CustomSyllabus(
         courseCode: 'CS101',
         units: [
           SyllabusUnit(unitId: 'U1', title: 'Intro', unitOrder: 1, topics: [
@@ -123,7 +124,7 @@ void main() {
     test('deleteCustomSyllabus removes syllabus and progress', () async {
       final service = helper.container.read(syllabusServiceProvider);
 
-      await service.saveCustomSyllabus(CustomSyllabus(
+      await service.saveCustomSyllabus(const CustomSyllabus(
         courseCode: 'CS101',
         units: [SyllabusUnit(unitId: 'U1', title: 'Unit', unitOrder: 1, topics: [
           SyllabusTopic(topicId: 'T1', title: 'Topic'),

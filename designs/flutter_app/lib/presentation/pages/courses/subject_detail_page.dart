@@ -2,13 +2,11 @@ import 'package:adsum/core/theme/app_colors.dart';
 import 'package:adsum/presentation/widgets/animations/fade_slide_transition.dart';
 import 'package:adsum/presentation/widgets/navigation/custom_segmented_control.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:adsum/presentation/pages/attendance/history_log_page.dart';
 
-import 'package:adsum/presentation/widgets/charts/weekly_trend_chart.dart';
 import 'package:adsum/presentation/pages/academics/widgets/create_assignment_sheet.dart';
 
 
@@ -44,9 +42,9 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
   final int bunksAvailable = 3; 
   
   // Settings Mock Data
-  double _targetAttendance = 75.0;
+  final double _targetAttendance = 75.0;
   String _selectedColor = "Blue";
-  String _currentSection = "A"; // Mock Section
+  final String _currentSection = "A"; // Mock Section
 
   final List<String> _tabs = ["Stats", "Syllabus", "Work", "Info"];
 
@@ -709,7 +707,7 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
                                ],
                              ),
                            );
-                         }).toList(),
+                         }),
                    ],
                  ),
                )
@@ -794,7 +792,7 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
          Text(label, style: GoogleFonts.dmSans(color: AppColors.textMuted, fontSize: 12)),
          const SizedBox(height: 4),
          DropdownButtonFormField<String>(
-           value: currentValue,
+           initialValue: currentValue,
            items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
            onChanged: onChanged,
            style: GoogleFonts.dmSans(fontWeight: FontWeight.bold, color: AppColors.textMain, fontSize: 16),

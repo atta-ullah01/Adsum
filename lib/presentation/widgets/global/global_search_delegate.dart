@@ -1,15 +1,15 @@
 import 'package:adsum/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:go_router/go_router.dart';
 
 class GlobalSearchDelegate extends SearchDelegate {
   final List<String> _recentSearches = [
-    "Mobile App Design",
-    "Prof. Sarah",
-    "Computer Lab 4",
-    "Hostel Menu",
+    'Mobile App Design',
+    'Prof. Sarah',
+    'Computer Lab 4',
+    'Hostel Menu',
   ];
 
   // Mock Data Source - In real app, this would come from a SearchProvider
@@ -66,7 +66,7 @@ class GlobalSearchDelegate extends SearchDelegate {
   ];
 
   @override
-  String get searchFieldLabel => "Search courses, profs...";
+  String get searchFieldLabel => 'Search courses, profs...';
 
   @override
   TextStyle get searchFieldStyle => GoogleFonts.dmSans(fontSize: 16, color: AppColors.textMain);
@@ -132,7 +132,7 @@ class GlobalSearchDelegate extends SearchDelegate {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("RECENT SEARCHES", style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1.2)),
+            Text('RECENT SEARCHES', style: GoogleFonts.dmSans(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[400], letterSpacing: 1.2)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 12,
@@ -160,8 +160,8 @@ class GlobalSearchDelegate extends SearchDelegate {
 
   Widget _buildResultsList(BuildContext context, String searchQuery) {
     final suggestions = _allData.where((element) {
-      final title = element['title'].toString().toLowerCase();
-      final type = element['type'].toString().toLowerCase();
+      final title = (element['title'] as String).toLowerCase();
+      final type = (element['type'] as String).toLowerCase();
       final q = searchQuery.toLowerCase();
       return title.contains(q) || type.contains(q);
     }).toList();
@@ -179,7 +179,7 @@ class GlobalSearchDelegate extends SearchDelegate {
       );
     }
 
-    return Container(
+    return ColoredBox(
       color: Colors.white,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -187,22 +187,27 @@ class GlobalSearchDelegate extends SearchDelegate {
         separatorBuilder: (context, index) => const Divider(height: 1, indent: 70),
         itemBuilder: (context, index) {
           final item = suggestions[index];
+          final type = item['type'] as String;
+          final title = item['title'] as String;
+          final subtitle = item['subtitle'] as String;
+          final route = item['route'] as String?;
+          
           return ListTile(
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: _getColorForType(item['type']).withOpacity(0.1),
+                color: _getColorForType(type).withOpacity(0.1),
                 shape: BoxShape.circle
               ),
-              child: Icon(_getIconForType(item['type']), color: _getColorForType(item['type']), size: 20),
+              child: Icon(_getIconForType(type), color: _getColorForType(type), size: 20),
             ),
-            title: Text(item['title'], style: GoogleFonts.dmSans(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16)),
-            subtitle: Text(item['subtitle'], style: GoogleFonts.dmSans(color: Colors.grey, fontSize: 13)),
+            title: Text(title, style: GoogleFonts.dmSans(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16)),
+            subtitle: Text(subtitle, style: GoogleFonts.dmSans(color: Colors.grey, fontSize: 13)),
             onTap: () {
-              if (item['route'] != null) {
-                context.push(item['route'], extra: item['args']);
+              if (route != null) {
+                context.push(route, extra: item['args']);
               } else {
-                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Showing details for ${item['title']}")));
+                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Showing details for $title")));
               }
             },
           );

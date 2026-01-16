@@ -4,6 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
 
 class CourseCard extends StatelessWidget {
+
+  const CourseCard({
+    required this.startTime, required this.endTime, required this.title, required this.location, required this.instructor, required this.color, super.key,
+    this.isGlobal = false,
+    this.isCustom = false,
+    this.onTap,
+  });
   final String startTime;
   final String endTime;
   final String title;
@@ -14,23 +21,10 @@ class CourseCard extends StatelessWidget {
   final bool isCustom;
   final VoidCallback? onTap;
 
-  const CourseCard({
-    super.key,
-    required this.startTime,
-    required this.endTime,
-    required this.title,
-    required this.location,
-    required this.instructor,
-    required this.color,
-    this.isGlobal = false,
-    this.isCustom = false,
-    this.onTap,
-  });
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,7 +32,7 @@ class CourseCard extends StatelessWidget {
           SizedBox(
             width: 70,
             child: Padding(
-              padding: const EdgeInsets.only(top: 18.0),
+              padding: const EdgeInsets.only(top: 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -96,7 +90,7 @@ class CourseCard extends StatelessWidget {
                             '$location • $instructor',
                             style: GoogleFonts.dmSans(
                               fontSize: 13,
-                              color: AppColors.textMain.withOpacity(0.7),
+                              color: AppColors.textMain.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -105,7 +99,7 @@ class CourseCard extends StatelessWidget {
                     if (isGlobal)
                       Icon(
                         Ionicons.lock_closed_outline,
-                        color: AppColors.textMain.withOpacity(0.4),
+                        color: AppColors.textMain.withValues(alpha: 0.4),
                         size: 24,
                       ),
                     if (isCustom)
@@ -113,13 +107,13 @@ class CourseCard extends StatelessWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           Ionicons.create,
                           size: 16,
-                          color: AppColors.textMain.withOpacity(0.7),
+                          color: AppColors.textMain.withValues(alpha: 0.7),
                         ),
                       ),
                   ],
